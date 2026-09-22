@@ -1044,8 +1044,20 @@ function e3Fail(msg){ $('#vmap').style.display='none'; $('#map').style.display='
 function e3Init(){ if(!window.__VW3D_TRY) return; if(typeof vw==='undefined'){ e3Fail('인증키·도메인 또는 WebGL 3D API 권한 확인'); return; }
   try{ $('#vmap').style.display='block'; $('#map').style.display='none';
     const cam=new vw.CameraPosition(new vw.CoordZ(126.95,33.62,210000),new vw.Direction(0,-48,0));
-    const opt=new vw.MapOptions(vw.BasemapType.GRAPHIC,'',vw.DensityType.FULL,vw.DensityType.BASIC,false,cam,cam);
-    E3.map=new vw.Map('vmap',opt); if(E3.map.start) try{E3.map.start()}catch(e){}
+    let m=null;
+    try{ m=new vw.Map(); }catch(e){ m=null; }
+    if(m&&typeof m.setOption==='function'){          /* 웹지엘 3D 지도 API 3.0 방식 */
+      m.setOption({mapId:'vmap',initPosition:cam,logo:true,navigation:true});
+      if(typeof m.setMapId==='function') m.setMapId('vmap');
+      if(typeof m.setInitPosition==='function') m.setInitPosition(cam);
+      if(typeof m.setLogoVisible==='function') m.setLogoVisible(true);
+      if(typeof m.setNavigationZoomVisible==='function') m.setNavigationZoomVisible(true);
+      m.start();
+    } else {                                          /* 2.0 호환 방식 */
+      const opt=new vw.MapOptions(vw.BasemapType.GRAPHIC,'',vw.DensityType.FULL,vw.DensityType.BASIC,false,cam,cam);
+      m=new vw.Map('vmap',opt); if(m.start) try{m.start()}catch(e){}
+    }
+    E3.map=m;
   }catch(e){ e3Fail(e.message); return; }
   const t0=Date.now(); (function poll(){ const v=(window.ws3d&&ws3d.viewer)||(E3.map&&(E3.map.viewer||E3.map._viewer))||window.viewer;
     if(v&&v.scene&&typeof Cesium!=='undefined'){ e3Ready(v); return; } if(Date.now()-t0>20000){ e3Fail('3D 엔진 응답 없음'); return; } setTimeout(poll,300); })(); }
