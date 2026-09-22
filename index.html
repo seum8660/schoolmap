@@ -365,14 +365,14 @@ const by = (arr,k)=>arr.reduce((m,s)=>((m[s[k]]??=[]).push(s),m),{});
 const short = n => n.replace(/예시|\(분교장\)/g,'');
 
 /* ---------- 지표 ---------- */
-let RANK=[];
+let RANK=[]; const SMALL=60;  /* 재구조화 검토 대상: 학생수 60명 이하 */
 function derive(){
   const ag=SCHOOLS.map(s=>NOW-s.yr), st=SCHOOLS.map(s=>s.st);
   const aMin=Math.min(...ag),aMax=Math.max(...ag),sMin=Math.min(...st),sMax=Math.max(...st);
   const dec=SCHOOLS.map(s=>s.st5>0?Math.max(0,(s.st5-s.st)/s.st5):0), dMax=Math.max(...dec)||1;
   SCHOOLS.forEach((s,i)=>{ s.age=ag[i]; s.dec=dec[i]; s.pa=s.st>0?s.ar/s.st:0;
     s.score=((s.age-aMin)/(aMax-aMin||1))*.5+(1-(s.st-sMin)/(sMax-sMin||1))*.3+(dec[i]/dMax)*.2; });
-  RANK=[...SCHOOLS].sort((a,b)=>b.score-a.score);
+  RANK=[...SCHOOLS].filter(s=>s.st<=SMALL).sort((a,b)=>b.score-a.score);
 }
 
 /* ---------- 브이월드 배경지도 ---------- */
@@ -397,12 +397,12 @@ function styleFor(k){
 }
 function setBM(k){
   if(!VWKEY){ const v=prompt('브이월드 인증키를 입력하십시오.\n(vworld.kr → 오픈API → 인증키 발급)'); if(!v) return; VWKEY=v.trim(); LS.set('vwkey',VWKEY); }
-  S.bm=k; LS.set('bm',k); vwErr=0; fallback=false; ready=false; renderRight();
+  S.bm=k; LS.set('bm2',k); vwErr=0; fallback=false; ready=false; renderRight();
   if(map) map.setStyle(styleFor(k),{diff:false});
 }
 function toast(m){ let el=$('#toast'); if(!el){el=document.createElement('div');el.id='toast';el.style.cssText='position:absolute;left:50%;bottom:130px;transform:translateX(-50%);background:#23282b;color:#fff;padding:10px 16px;border-radius:10px;font-size:12.5px;z-index:20;max-width:560px;line-height:1.5';document.body.appendChild(el);} el.textContent=m; el.style.display='block'; clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display='none',7000); }
 /* ---------- 상태 ---------- */
-const S={ bm:(LS.get('bm') in BMS)?LS.get('bm'):'sat', metric:'st', cmode:'age', is3d:true, rot:false, drone:false, sg:true, grid:false, col:true, vwb:true,
+const S={ bm:(LS.get('bm2') in BMS)?LS.get('bm2'):'white', metric:'st', cmode:'age', is3d:true, rot:false, drone:false, sg:true, grid:false, col:true, vwb:true,
   fac:new Set(['초','중','고']), yr:null };
 const pass=s=>S.fac.has(s.lv)&&(S.yr===null||s.yr===S.yr);
 const METRICS={
@@ -607,7 +607,7 @@ const QA=[
   ev:[['t1','수치',`현재 ${n}곳 → ${NOW+5}년 ${n+L.length}곳`],['t2','근거',`준공 ${NOW-39}~${NOW-35}년 학교`],['t3','한계','기간 중 개축·폐교 계획은 반영하지 않았습니다.']],
   ch:{t:'연도별 신규 도래와 누적(10곳)',a:'신규 도래',b:'누적(10곳)',rows:rows.map(r=>({...r,b:Math.round(r.b/10)}))},ids:L,go:'도래 예정 학교'};}},
  {q:'재구조화를 먼저 검토할 학교 5곳은?',k:'후보 우선 재구조화 순위 상위 제안',f(){const L=RANK.slice(0,5);
-  return{c:`1순위는 ${L[0].n}(${L[0].sg})입니다. 준공 ${L[0].age}년, 학생 ${L[0].st}명입니다.`,d:`점수는 경과연수 50%, 학생수(적을수록) 30%, 2년 감소율 20%로 매겼습니다. 아래 버튼을 누르면 5곳을 차례로 비행합니다.`,
+  return{c:`학생 ${SMALL}명 이하 ${RANK.length}개교 중 1순위는 ${L[0].n}(${L[0].sg})입니다. 준공 ${L[0].age}년, 학생 ${L[0].st}명입니다.`,d:`점수는 경과연수 50%, 학생수(적을수록) 30%, 2년 감소율 20%로 매겼습니다. 아래 버튼을 누르면 5곳을 차례로 비행합니다.`,
   ev:L.slice(0,3).map((s,i)=>['t1','수치',`${i+1}위 ${s.n} · ${s.age}년 · ${s.st}명 · 감소 ${(s.dec*100).toFixed(0)}%`]).concat([['t2','근거','점수 = 경과×0.5 + 학생수 역×0.3 + 감소율×0.2'],['t3','한계','가중치는 예시이며 통학여건·지역의견은 별도 검토가 필요합니다.']]),
   ch:{t:'후보 5곳 경과연수와 학생수',a:'경과(년)',b:'학생수',rows:L.map(s=>({l:short(s.n),a:s.age,b:s.st}))},ids:L,go:'후보 5곳 드론 비행',drone:true};}},
 ];
@@ -664,7 +664,7 @@ function renderStatus(){ const L=SCHOOLS.filter(pass),o=L.filter(s=>s.age>=40),s
   <div class="kpi hot" style="grid-column:span 2"><small>노후 + 소규모 교차</small><b>${b.length}<em>곳 · 재구조화 1차 검토군</em></b></div></div>
   <table><thead><tr><th>${GL()}</th><th>학교</th><th>학생</th><th>평균경과</th><th>40년↑</th></tr></thead><tbody>${Object.entries(g).sort((a,b)=>b[1].length-a[1].length).map(([k,v])=>`<tr class="cl" data-sg="${k}"><td>${k}</td><td>${v.length}</td><td>${fmt(v.reduce((x,s)=>x+s.st,0))}</td><td>${avg(v.map(s=>s.age)).toFixed(1)}</td><td>${v.filter(s=>s.age>=40).length}</td></tr>`).join('')}</tbody></table>`;
   document.querySelectorAll('tr.cl').forEach(tr=>tr.onclick=()=>{ if(!REGION) setRegion(tr.dataset.sg); else { const L=SCHOOLS.filter(s=>s.em===tr.dataset.sg&&pass(s)); highlight(L); fitTo(L);} }); }
-function renderCand(){ const L=RANK.filter(pass).slice(0,20); head('03','재구조화 제안 · 상위 20','경과 50% · 소규모 30% · 2년 감소율 20%. 행을 누르면 이동합니다.');
+function renderCand(){ const L=RANK.filter(pass).slice(0,20); head('03','재구조화 제안 · 상위 20',`학생 ${SMALL}명 이하 ${RANK.filter(pass).length}개교 중 · 경과 50% · 학생수 30% · 2년 감소율 20% · 행을 누르면 상세`);
   $('#lbody').innerHTML=`<table><thead><tr><th>학교</th><th>경과</th><th>학생</th><th>감소</th><th>점수</th></tr></thead><tbody>${L.map((s,i)=>`<tr class="cl" data-id="${s.id}"><td>${i+1}. ${s.n}<br><span style="color:var(--sub);font-size:11px">${s.sg}</span></td><td>${s.age}년</td><td>${s.st}</td><td>${(s.dec*100).toFixed(0)}%</td><td><b>${(s.score*100).toFixed(0)}</b></td></tr>`).join('')}</tbody></table>
   <div class="note" style="margin-top:10px"><b>제안 방향</b>1~5위는 통폐합·거점화 검토, 6~20위는 공간재구조화(유휴교실 전환·복합화) 검토 대상으로 분류하는 방안을 제안합니다.</div>
   <div class="btns"><button class="pri" id="cD">상위 5곳 드론 비행</button></div>`;
@@ -696,7 +696,7 @@ function renderSrc(){ const miss=SCHOOLS.filter(s=>!s.yr||!s.x||!s.y).length; he
   <div class="note"><b>출처</b>준공년도·연면적 KEIIS 건물정보 / 학생·학급 학교알리미 / 위치 전국초중등학교위치표준데이터 / 시군 경계 통계청(southkorea-maps) / 배경지도 국토교통부 브이월드 / 3D 건물 OpenStreetMap</div>
   <div class="note"><b>계산식</b>경과연수 = ${NOW} − 대표 준공년도(연면적 가중평균)<br>격자: 확대 수준에 따라 5km·2km·600m·250m 정사각형으로 학교를 묶음<br>재구조화 점수 = 경과(정규화)×0.5 + (1−학생수 정규화)×0.3 + 2년 감소율(정규화)×0.2</div>
   <div class="note"><b>결측</b>좌표·준공년도 결측 ${miss}건${fallback?'<br>배경지도 서버에 연결하지 못해 시군 경계만 표시 중입니다.':''}</div>`;
-  $('#vwSave').onclick=()=>{ VWKEY=$('#vwk').value.trim(); LS.set('vwkey',VWKEY); if(VWKEY){ setBM('sat'); toast('브이월드 영상지도로 전환했습니다.'); } else if(map){ ready=false; map.setStyle(styleFor('sat'),{diff:false}); } renderSrc(); };
+  $('#vwSave').onclick=()=>{ VWKEY=$('#vwk').value.trim(); LS.set('vwkey',VWKEY); if(VWKEY){ setBM('white'); toast('브이월드 백지도로 전환했습니다.'); } else if(map){ ready=false; map.setStyle(styleFor('white'),{diff:false}); } renderSrc(); };
   document.querySelectorAll('.siDs').forEach(bt=>bt.onclick=async()=>{ try{ const j=await (await fetch('data/'+bt.dataset.f,{cache:'no-store'})).json(); siReady(siRows(j)); $('#siOut').scrollIntoView({block:'nearest',behavior:'smooth'}); }catch(e){ toast('자료 파일을 읽지 못했습니다.'); } });
   $('#kBtn').onclick=()=>$('#kFile').click();
   $('#kClr').onclick=()=>{ try{localStorage.removeItem('keiis')}catch(e){} ALL.forEach(s=>{ delete s.bl; }); toast('기억한 건물정보를 지웠습니다. 새로고침하면 예시값으로 돌아갑니다.'); KEIIS=null; renderSrc(); };
@@ -887,7 +887,7 @@ function l3Sum(){ const L=SCHOOLS.filter(pass), g=by(L,GK()), T=L.reduce((x,s)=>
   <div class="l3g"><div class="l3c"><h3>${GL()}별 평균 경과연수<small>막대 색 = 노후도${REGION?'':' · 누르면 해당 시군으로'}</small></h3>${hbars(ageRows,'년')}</div>
   <div class="l3c"><h3>${GL()}별 최근 2년 학생 감소율<small>${fmt(T5)} → ${fmt(T)}명</small></h3>${hbars(decRows,'%')}</div>
   <div class="l3c"><h3>준공 연대별 학교 수<small>파랑 = 40년 이상</small></h3><div class="vb">${decs.map((d,i)=>`<div><b>${dc[i]}</b><i class="${NOW-d-9>=40?'o':''}" style="height:${dc[i]/dm*82}%"></i></div>`).join('')}</div><div class="vbl">${decs.map(d=>`<span>${d}년대</span>`).join('')}</div></div>
-  <div class="l3c"><h3>재구조화 우선검토 상위 10<small>경과 50% · 소규모 30% · 감소율 20%</small></h3><table class="l3t"><thead><tr><th>학교</th><th>${GL()}</th><th>경과</th><th>학생</th><th>점수</th></tr></thead><tbody>${top.map((s,i)=>`<tr data-id="${s.id}"><td>${i+1}. ${s.n}</td><td>${s[GK()]}</td><td style="color:${GC(s.age)};font-weight:700">${s.age}년</td><td>${s.st}</td><td><b>${(s.score*100).toFixed(0)}</b></td></tr>`).join('')}</tbody></table></div></div>`;
+  <div class="l3c"><h3>재구조화 우선검토 상위 10<small>학생 60명 이하 · 경과 50% · 학생수 30% · 감소율 20%</small></h3><table class="l3t"><thead><tr><th>학교</th><th>${GL()}</th><th>경과</th><th>학생</th><th>점수</th></tr></thead><tbody>${top.map((s,i)=>`<tr data-id="${s.id}"><td>${i+1}. ${s.n}</td><td>${s[GK()]}</td><td style="color:${GC(s.age)};font-weight:700">${s.age}년</td><td>${s.st}</td><td><b>${(s.score*100).toFixed(0)}</b></td></tr>`).join('')}</tbody></table></div></div>`;
   l3Bind(); $('#l3body').querySelectorAll('.hb').forEach(h=>h.onclick=()=>{ if(!REGION) setRegion(h.dataset.k); });
   $('#l3body').querySelectorAll('tr[data-id]').forEach(tr=>tr.onclick=()=>l3Open(+tr.dataset.id)); }
 let L3F={q:'',lv:'',sort:'score',dir:-1};
@@ -941,7 +941,7 @@ function renderDetail(){ const s=DETAIL; if(!s) return;
   <div class="note" ${s.bl&&s.bl.length?'hidden':''}><b>교내 건물 ${B.length?B.length+'동':''}${src('브이월드 도로명주소건물 · 층수×바닥면적 추정')}</b>
    ${B.length?`<table style="margin-top:6px"><thead><tr><th>건물</th><th>지상층</th><th>바닥면적</th><th>연면적(추정)</th></tr></thead><tbody>${B.map(b=>`<tr><td>${b.n}</td><td>${b.fl}층</td><td>${fmt(b.fa)}㎡</td><td>${fmt(b.ga)}㎡</td></tr>`).join('')}</tbody></table>`
    :`<div style="color:var(--sub);font-size:11.5px;margin-top:4px">${VWKEY?'학교로 확대되면 브이월드 건물 정보를 불러와 여기에 표시합니다. 정확한 동별 목록은 [데이터·방법] → KEIIS 건물정보 불러오기로 반영됩니다.':'브이월드 키가 등록된 주소(깃허브 페이지)에서 건물 목록이 표시됩니다.'}</div>`}</div>
-  <div class="note"><b>재구조화 검토</b>점수 ${(s.score*100).toFixed(0)}점 · ${RN()} ${rank}위 / ${SCHOOLS.length}개교<br><span style="color:var(--sub);font-size:11.5px">경과 50% · 소규모 30% · 2년 감소율 20% (예시 가중치)</span></div>`;
+  <div class="note"><b>재구조화 검토</b>${s.st<=SMALL?`점수 ${(s.score*100).toFixed(0)}점 · ${RN()} 대상 ${RANK.length}개교 중 <b style="display:inline;color:#0064FF">${rank}위</b>`:`검토 대상 아님 (학생 ${fmt(s.st)}명 · 기준 ${SMALL}명 이하)`}<br><span style="color:var(--sub);font-size:11.5px">경과 50% · 소규모 30% · 2년 감소율 20% (예시 가중치)</span></div>`;
   $('#dBack').onclick=closeSchool;
   const bg=$('#lbody').querySelector('.big'); if(bg) bg.onclick=e=>e.target.closest('.ch').classList.toggle('big');
 }
