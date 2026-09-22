@@ -306,7 +306,7 @@ function setBM(k){
 }
 function toast(m){ let el=$('#toast'); if(!el){el=document.createElement('div');el.id='toast';el.style.cssText='position:absolute;left:50%;bottom:130px;transform:translateX(-50%);background:#23282b;color:#fff;padding:10px 16px;border-radius:10px;font-size:12.5px;z-index:20;max-width:560px;line-height:1.5';document.body.appendChild(el);} el.textContent=m; el.style.display='block'; clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display='none',7000); }
 /* ---------- 상태 ---------- */
-const S={ bm:'sat', metric:'st', cmode:'age', is3d:true, rot:false, drone:false, sg:true, grid:false, col:true,
+const S={ bm:'sat', metric:'st', cmode:'age', is3d:true, rot:false, drone:false, sg:true, grid:false, col:true, vwb:true,
   fac:new Set(['초','중','고']), yr:null };
 const pass=s=>S.fac.has(s.lv)&&(S.yr===null||s.yr===S.yr);
 const METRICS={
@@ -347,8 +347,8 @@ function gridFC(){
     return {type:'Feature',properties:{v:val,t:val/mx,h:120+val/mx*H,n:v.length,ids:v.map(s=>s.id).join(',')},geometry:{type:'Polygon',coordinates:[[[x0,y0],[x1,y0],[x1,y1],[x0,y1],[x0,y0]]]}};})};
 }
 function circ(x,y,r,n=12){const kx=111.32*Math.cos(y*Math.PI/180),a=[];for(let i=0;i<=n;i++){const t=i/n*2*Math.PI;a.push([x+r*Math.cos(t)/kx,y+r*Math.sin(t)/110.57]);}return a;}
-function colFC(){ const z=map?map.getZoom():7, r=z>13?0.05:z>12?0.08:z>10?0.2:0.5, mx=Math.max(...SCHOOLS.map(s=>s.st));
-  return {type:'FeatureCollection',features:SCHOOLS.filter(pass).map(s=>({type:'Feature',properties:{id:s.id,h:(HLIDS.has(s.id)?Math.max(150+s.st/mx*cellDeg()*111000*2.4, cellDeg()*111000*0.9):150+s.st/mx*cellDeg()*111000*2.4),c:colColor(s),hl:HLIDS.has(s.id)?1:0},geometry:{type:'Polygon',coordinates:[circ(s.x,s.y,r)]}}))}; }
+function colFC(){ const z=map?map.getZoom():7, pin=z>=14.5&&S.vwb&&VWKEY&&!vwbFail, r=pin?0.011:z>13?0.05:z>12?0.08:z>10?0.2:0.5, mx=Math.max(...SCHOOLS.map(s=>s.st));
+  return {type:'FeatureCollection',features:SCHOOLS.filter(pass).map(s=>({type:'Feature',properties:{id:s.id,h:pin?95:(HLIDS.has(s.id)?Math.max(150+s.st/mx*cellDeg()*111000*2.4, cellDeg()*111000*0.9):150+s.st/mx*cellDeg()*111000*2.4),c:colColor(s),hl:HLIDS.has(s.id)?1:0},geometry:{type:'Polygon',coordinates:[circ(s.x,s.y,r)]}}))}; }
 function sgFC(){ const g=by(ALL,'sg'); return {type:'FeatureCollection',features:GEO.features.map(f=>({...f,properties:{...f.properties,avg:avg((g[f.properties.name]||[]).map(s=>s.age))}}))}; }
 
 function addOverlays(){
@@ -364,14 +364,16 @@ function addOverlays(){
   map.addLayer({id:'sg-sel',type:'line',source:'sg',filter:['==',['get','name'],REGION||'__'],paint:{'line-color':'#e0782a','line-width':3.2}});
   if(!vw) map.addLayer({id:'sg-line',type:'line',source:'sg',paint:{'line-color':vw&&S.bm!=='base'&&S.bm!=='white'?'#ffffff':'#9fb3a8','line-width':vw?1.4:1}},sym&&sym.id);
   if(!noBase&&!vw) map.addLayer({id:'sg-lbl',type:'symbol',source:'sg',layout:{'text-field':['get','name'],'text-size':12,'text-font':['Noto Sans Regular']},paint:{'text-color':'#51605a','text-halo-color':'#fff','text-halo-width':1.5}});
+  map.addSource('vwb',{type:'geojson',data:vwbFC()});
+  map.addLayer({id:'vwb3d',type:'fill-extrusion',source:'vwb',minzoom:13.5,layout:{visibility:S.vwb?'visible':'none'},paint:{'fill-extrusion-color':['get','c'],'fill-extrusion-height':['get','h'],'fill-extrusion-opacity':.93}});
   map.addSource('grid',{type:'geojson',data:gridFC()});
   map.addLayer({id:'grid',type:'fill-extrusion',source:'grid',paint:{'fill-extrusion-color':['interpolate',['linear'],['get','t'],0,'#cfe9df',.25,'#8fd0b5',.5,'#4fb18c',.75,'#2a9373',1,'#146b52'],'fill-extrusion-height':['*',['get','h'],hK],'fill-extrusion-opacity':.82}});
   map.addSource('col',{type:'geojson',data:colFC()});
   map.addLayer({id:'col',type:'fill-extrusion',source:'col',layout:{visibility:'none'},paint:{'fill-extrusion-color':['get','c'],'fill-extrusion-height':['*',['get','h'],hK],'fill-extrusion-opacity':.95}});
-  ready=true; applyView(); regionStyle();
+  ready=true; applyView(); regionStyle(); vwbSync(); vwbQueue();
 }
 if(map){ map.on('style.load',()=>{clearTimeout(fbT);addOverlays();if(!introDone)intro();});
-let lastD=0; map.on('zoomend',()=>{ if(!ready) return; const d=cellDeg(); if(d!==lastD){lastD=d; refresh();} });
+let lastD=''; map.on('zoomend',()=>{ if(!ready) return; const d=cellDeg()+'|'+(map.getZoom()>=14.5); if(d!==lastD){lastD=d; refresh();} });
 }
 function refresh(){ if(!map){ drawCV(); return; } if(!ready) return; map.getSource('grid').setData(gridFC()); map.getSource('col').setData(colFC()); map.getSource('sg').setData(sgFC());
   $('#sub').textContent=S.col?`전라남도${REGION?' '+REGION:''} · 학교 건물 ${SCHOOLS.filter(pass).length}개교 · 2026-09-21 기준`:`전라남도 · 학교 ${({0.05:'5km',0.018:'2km',0.006:'600m',0.0025:'250m'})[cellDeg()]} 격자 · 2026-09-21 기준`; }
@@ -381,7 +383,7 @@ function applyView(){ if(!map){drawCV();return;} if(!ready) return;
   ['sg-fill','sg-line'].forEach(l=>{ if(map.getLayer(l)) map.setLayoutProperty(l,'visibility',S.sg?'visible':'none'); }); }
 function highlight(L){ HL=L; HLIDS=new Set(L.map(s=>s.id));
   if(L.length&&!S.col){ S.col=true; S.grid=false; renderRight(); applyView(); }
-  renderLegend(); if(!map){drawCV();return;} if(ready) map.getSource('col').setData(colFC()); }
+  renderLegend(); if(!map){drawCV();return;} if(ready){ map.getSource('col').setData(colFC()); vwbSync(); } }
 function leftPad(){ return innerWidth>980?Math.min(innerWidth*.31,430)+60:40; }
 function fitTo(L){ if(!L.length||!map) return;
   if(L.length===1){ map.flyTo({center:[L[0].x,L[0].y],zoom:13.8,pitch:60,bearing:-25,duration:2400}); return; }
@@ -410,7 +412,7 @@ function renderRight(){
   $('#oMet').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{S.metric=b.dataset.k;S.grid=true;renderRight();refresh();applyView();renderLegend();});
   $('#oRing').innerHTML=Object.entries(RINGS).map(([k,r])=>`<button class="opt ${S.cmode===k&&!HLIDS.size?'on':''}" data-k="${k}" style="--c:${r.c}"><span class="ci"></span>${r.l}<span class="ct">${r.f?SCHOOLS.filter(s=>pass(s)&&r.f(s)).length:''}</span></button>`).join('');
   $('#oRing').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ S.cmode=b.dataset.k; HL=[]; HLIDS=new Set(); if(!S.col){S.col=true;S.grid=false;applyView();} renderRight(); refresh(); renderLegend(); });
-  const V=[['is3d','⬡','입체 보기'],['rot','⟳','자동 회전'],['drone','✈','드론 비행'],['grid','▥','격자 기둥'],['col','▮','학교 기둥']];
+  const V=[['is3d','⬡','입체 보기'],['rot','⟳','자동 회전'],['drone','✈','드론 비행'],['vwb','🏢','전체 건물 3D'],['grid','▥','격자 기둥'],['col','▮','학교 기둥']];
   $('#oView').innerHTML=V.map(([k,i,l])=>`<button class="opt ${S[k]?'on':''}" data-k="${k}"><span class="ic">${i}</span>${l}</button>`).join('');
   $('#oView').querySelectorAll('.opt').forEach(b=>b.onclick=()=>toggleView(b.dataset.k));
   const cnt=k=>SCHOOLS.filter(s=>s.lv===k&&(S.yr===null||s.yr===S.yr)).length;
@@ -422,6 +424,7 @@ function renderRight(){
 function toggleView(k){
   if(k==='drone'){ S.drone?stopDrone():startDrone(); return; }
   S[k]=!S[k];
+  if(k==='vwb'){ vwbSync(); if(S.vwb) vwbQueue(); }
   if(k==='is3d'&&map) map.easeTo({pitch:S.is3d?55:0,duration:900});
   if(k==='rot'){ if(S.rot) spin(); }
   if(k==='col'&&S.col) S.grid=false; if(k==='grid'&&S.grid) S.col=false;
@@ -688,6 +691,45 @@ $('#demoBtn').onclick=()=>{ const b=$('#demoBtn');
   [0,2,QA.length-1].forEach((qi,k)=>dq.push(setTimeout(()=>{ if(!demo) return; openQA(qi,true); if(k===2) dq.push(setTimeout(()=>demo&&startDrone(),4500)); },1800+k*10000)));
   dq.push(setTimeout(()=>{demo=false;b.textContent='🖥 시연';b.classList.remove('run');},1800+20000+4500+32000)); };
 
+/* ---------- 브이월드 전체 건물 3D (도로명주소건물, 화면 범위만 불러옴) ---------- */
+const VWB=new Map(); let vwbT=0, vwbBusy=false, vwbFail=false, vwbSeq=0;
+const VWB_MIN_Z=14.5;
+function vwbFloors(p){ for(const k of ['gro_flo_co','grnd_flr','GRO_FLO_CO','flr_co','flo_co']) { const v=parseInt(p[k]); if(v>0) return Math.min(v,60); } return 1; }
+function vwbColor(f){ const p=f.properties||{}, nm=String(p.buld_nm||p.bd_nm||p.BULD_NM||'');
+  if(/학교|초등|중학|고등/.test(nm)){ const c=turfCenter(f.geometry); let best=null,bd=1e9; ALL.forEach(s=>{ const d=(s.x-c[0])**2+(s.y-c[1])**2; if(d<bd){bd=d;best=s;} });
+    if(best&&bd<0.0000207){ f.properties._sid=best.id; return HLIDS.size?(HLIDS.has(best.id)?'#e0782a':'#b9bdb6'):GC(best.age); } }
+  return '#ecebe6'; }
+function turfCenter(g){ const r=(g.type==='MultiPolygon'?g.coordinates[0][0]:g.coordinates[0]); let x=0,y=0; r.forEach(p=>{x+=p[0];y+=p[1];}); return [x/r.length,y/r.length]; }
+function vwbFC(){ const f=[]; VWB.forEach(v=>f.push({type:'Feature',geometry:v.geometry,properties:{h:vwbFloors(v.properties)*3.3,c:vwbColor(v)}})); return {type:'FeatureCollection',features:f}; }
+function vwbSync(){ if(!map||!ready||!map.getSource('vwb')) return; map.getSource('vwb').setData(vwbFC());
+  map.setLayoutProperty('vwb3d','visibility',S.vwb?'visible':'none');
+  if(map.getLayer('bld3d')) map.setLayoutProperty('bld3d','visibility',(S.vwb&&VWB.size&&!vwbFail)?'none':'visible'); }
+function vwbJsonp(url){ return new Promise((ok,no)=>{ const cb='__vwb'+(++vwbSeq), sc=document.createElement('script'); let done=false;
+  window[cb]=d=>{ done=true; ok(d); cleanup(); }; const cleanup=()=>{ delete window[cb]; sc.remove(); };
+  sc.onerror=()=>{ if(!done){ no(new Error('network')); cleanup(); } }; setTimeout(()=>{ if(!done){ no(new Error('timeout')); cleanup(); } },10000);
+  sc.src=url+'&callback='+cb; document.head.appendChild(sc); }); }
+function vwbQueue(){ clearTimeout(vwbT); vwbT=setTimeout(vwbLoad,450); }
+async function vwbLoad(){
+  if(!map||!S.vwb||!VWKEY||vwbBusy||vwbFail||map.getZoom()<VWB_MIN_Z) return;
+  const b=map.getBounds(), cx=(b.getWest()+b.getEast())/2, cy=(b.getSouth()+b.getNorth())/2, hw=Math.min(.012,(b.getEast()-b.getWest())/2), hh=Math.min(.009,(b.getNorth()-b.getSouth())/2);
+  const box=[cx-hw,cy-hh,cx+hw,cy+hh].map(v=>v.toFixed(5)).join(',');
+  vwbBusy=true;
+  try{
+    for(let page=1;page<=3;page++){
+      const u='https://api.vworld.kr/req/data?service=data&version=2.0&request=GetFeature&data=LT_C_SPBD&format=json&errorformat=json&crs=EPSG:4326&size=1000&page='+page+'&geomFilter=BOX('+box+')&key='+encodeURIComponent(VWKEY)+'&domain='+encodeURIComponent(location.origin);
+      const d=await vwbJsonp(u), r=d&&d.response;
+      if(!r||r.status==='ERROR'){ throw new Error((r&&r.error&&r.error.text)||'응답 오류'); }
+      if(r.status==='NOT_FOUND') break;
+      const fs=(r.result&&r.result.featureCollection&&r.result.featureCollection.features)||[];
+      fs.forEach(f=>{ const id=f.id||(f.properties&&(f.properties.bd_mgt_sn||f.properties.BD_MGT_SN))||JSON.stringify(f.geometry.coordinates).slice(0,60); if(!VWB.has(id)) VWB.set(id,f); });
+      const tot=+((r.page&&r.page.total)||1); if(page>=tot) break;
+    }
+    if(VWB.size>25000){ const ks=[...VWB.keys()].slice(0,VWB.size-25000); ks.forEach(k=>VWB.delete(k)); }
+    vwbSync();
+  }catch(e){ vwbFail=true; vwbSync(); toast('브이월드 건물 자료를 불러오지 못했습니다('+e.message+'). 기본 3D 건물로 표시합니다.'); }
+  vwbBusy=false;
+}
+if(map){ map.on('moveend',()=>{ if(S.vwb) vwbQueue(); }); }
 /* ---------- 지역 선택 ---------- */
 function regionStyle(){ if(!map||!ready) return;
   map.setFilter('sg-sel',['==',['get','name'],REGION||'__']);
