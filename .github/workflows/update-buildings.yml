@@ -31,7 +31,11 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git pull --rebase || true
-          git add data/buildings.json
-          git diff --cached --quiet || git commit -m "건축물대장 자료 자동 갱신"
-          git push
+          git add -A data
+          if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
+          git commit -m "건축물대장 자료 자동 갱신"
+          for i in 1 2 3 4 5; do
+            git fetch origin main && git rebase origin/main && git push && exit 0
+            echo "재시도 $i"; git rebase --abort 2>/dev/null || true; sleep 5
+          done
+          exit 1
