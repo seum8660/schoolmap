@@ -60,7 +60,7 @@ for i, s in enumerate(schools, 1):
         how = "표제부"
         if not items and base["ji"] != "0000":                 # 부번 없이 재조회
             q2 = dict(base); q2["ji"] = "0000"; items = call(q2); how = "표제부(부번생략)"
-        if not items and base["plat"] == "0":                   # 산 지번으로 재조회
+        if not items and base["platGbCd"] == "0":                   # 산 지번으로 재조회
             q3 = dict(base); q3["platGbCd"] = "1"; items = call(q3); how = "표제부(산)"
         if not items:                                           # 총괄표제부
             items = call(base, RECAP); how = "총괄표제부"
