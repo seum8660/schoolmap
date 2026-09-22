@@ -50,14 +50,30 @@ def num(v):
     except Exception: return 0.0
 
 schools = json.load(open(os.path.join(HERE, "schools_base.json"), encoding="utf-8"))
+PNU = {}
+pf = os.path.join(HERE, "school_pnu.json")
+if os.path.exists(pf):
+    try:
+        PNU = {k: v.get("pnu", []) for k, v in (json.load(open(pf, encoding="utf-8")).get("schools") or {}).items()}
+        print(f"학교 지번(PNU) 자료 {len(PNU)}개교 사용")
+    except Exception as e:
+        print("school_pnu.json 읽기 실패: %s" % e, file=sys.stderr)
+
+def q_from_pnu(pnu):
+    return {"sigunguCd": pnu[0:5], "bjdongCd": pnu[5:10], "platGbCd": "1" if pnu[10] == "2" else "0",
+            "bun": pnu[11:15], "ji": pnu[15:19], "numOfRows": "200", "pageNo": "1", "_type": "json"}
 if LIMIT: schools = schools[:LIMIT]
 res, fail, got, zero = {}, 0, 0, 0
 for i, s in enumerate(schools, 1):
     try:
+        items, how = [], ""
+        for pnu in PNU.get(s["code"], []):
+            got_items = call(q_from_pnu(pnu))
+            if got_items: items += got_items; how = "PNU"
         base = {"sigunguCd": s["sigungu"], "bjdongCd": s["bjdong"], "platGbCd": s.get("plat", "0"),
                 "bun": s["bun"], "ji": s["ji"], "numOfRows": "200", "pageNo": "1", "_type": "json"}
-        items = call(base)
-        how = "표제부"
+        if not items:
+            items = call(base); how = "표제부"
         if not items and base["ji"] != "0000":                 # 부번 없이 재조회
             q2 = dict(base); q2["ji"] = "0000"; items = call(q2); how = "표제부(부번생략)"
         if not items and base["platGbCd"] == "0":                   # 산 지번으로 재조회
