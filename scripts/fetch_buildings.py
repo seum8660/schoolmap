@@ -15,13 +15,16 @@ LIMIT = int(os.environ.get("LIMIT") or 0)
 EPS = ["https://apis.data.go.kr/1613000/BldRgstHubService/getBrTitleInfo",
        "https://apis.data.go.kr/1613000/BldRgstService_v2/getBrTitleInfo"]
 EP = [None]
+LAST_CNT = ["?"]
+RECAP = ["https://apis.data.go.kr/1613000/BldRgstHubService/getBrRecapTitleInfo",
+         "https://apis.data.go.kr/1613000/BldRgstService_v2/getBrRecapTitleInfo"]
 SKIP = ("공동주택", "단독주택", "근린생활", "업무시설", "창고")
 if not BK: sys.exit("BLDG_KEY 환경변수가 없습니다.")
 
-def call(q):
+def call(q, ep_list=None):
     key = BK if "%" in BK else urllib.parse.quote(BK, safe="")
     last = ""
-    for ep in ([EP[0]] if EP[0] else EPS):
+    for ep in (ep_list or ([EP[0]] if EP[0] else EPS)):
         url = ep + "?serviceKey=" + key + "&" + urllib.parse.urlencode(q)
         for i in range(3):
             try:
@@ -30,7 +33,8 @@ def call(q):
                     d = json.loads(r.read().decode("utf-8"))
                 h = (d.get("response") or {}).get("header") or {}
                 if str(h.get("resultCode", "00")) in ("00", "0"):
-                    EP[0] = ep
+                    if not ep_list: EP[0] = ep
+                    LAST_CNT[0] = ((d.get("response") or {}).get("body") or {}).get("totalCount", "?")
                     items = ((d.get("response") or {}).get("body") or {}).get("items") or {}
                     items = items.get("item", []) if isinstance(items, dict) else []
                     return [items] if isinstance(items, dict) else items
@@ -47,11 +51,22 @@ def num(v):
 
 schools = json.load(open(os.path.join(HERE, "schools_base.json"), encoding="utf-8"))
 if LIMIT: schools = schools[:LIMIT]
-res, fail, got = {}, 0, 0
+res, fail, got, zero = {}, 0, 0, 0
 for i, s in enumerate(schools, 1):
     try:
-        items = call({"sigunguCd": s["sigungu"], "bjdongCd": s["bjdong"], "platGbCd": s.get("plat", "0"),
-                      "bun": s["bun"], "ji": s["ji"], "numOfRows": "200", "pageNo": "1", "_type": "json"})
+        base = {"sigunguCd": s["sigungu"], "bjdongCd": s["bjdong"], "platGbCd": s.get("plat", "0"),
+                "bun": s["bun"], "ji": s["ji"], "numOfRows": "200", "pageNo": "1", "_type": "json"}
+        items = call(base)
+        how = "표제부"
+        if not items and base["ji"] != "0000":                 # 부번 없이 재조회
+            q2 = dict(base); q2["ji"] = "0000"; items = call(q2); how = "표제부(부번생략)"
+        if not items and base["plat"] == "0":                   # 산 지번으로 재조회
+            q3 = dict(base); q3["platGbCd"] = "1"; items = call(q3); how = "표제부(산)"
+        if not items:                                           # 총괄표제부
+            items = call(base, RECAP); how = "총괄표제부"
+        if not items:
+            zero += 1
+            if zero <= 3: print(f"  ? {s['n']}({s['addr']}) 건물 0건 · totalCount={LAST_CNT[0]}", file=sys.stderr)
         rows = []
         for it in items:
             ymd = str(it.get("useAprDay") or "").strip()
@@ -63,7 +78,7 @@ for i, s in enumerate(schools, 1):
                          "a": round(num(it.get("totArea"))), "fl": int(num(it.get("grndFlrCnt"))),
                          "u": u, "s": (it.get("strctCdNm") or "").replace("구조", "").strip(),
                          "eq": (it.get("rserthqkDsgnApplyYn") or "").strip()})
-        res[s["code"]] = {"n": s["n"], "addr": s["addr"], "b": rows}
+        res[s["code"]] = {"n": s["n"], "addr": s["addr"], "how": how, "b": rows}
         if rows: got += 1
     except Exception as e:
         fail += 1
@@ -76,4 +91,4 @@ os.makedirs(os.path.dirname(OUT), exist_ok=True)
 kst = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M")
 json.dump({"updated": kst, "source": "국토교통부 건축HUB 건축물대장(표제부)", "schools": res},
           open(OUT, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-print(f"완료: {len(res)}개교 조회 · 건물 확인 {got}개교 · 실패 {fail}개교 → data/buildings.json")
+print(f"완료: {len(res)}개교 조회 · 건물 확인 {got}개교 · 0건 {zero}개교 · 실패 {fail}개교 → data/buildings.json")
