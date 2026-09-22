@@ -1,1 +1,50 @@
 
+name: 사이트 배포
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["학교알리미 자료 갱신"]
+    types: [completed]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 브이월드 키 주입(저장소 코드에는 남지 않음)
+        env:
+          VWORLD_KEY: ${{ secrets.VWORLD_KEY }}
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp -r data _site/ 2>/dev/null || true
+          python3 - <<'PY'
+          import os
+          p = "_site/index.html"
+          t = open(p, encoding="utf-8").read()
+          k = os.environ.get("VWORLD_KEY", "").strip()
+          t = t.replace("const VW_KEY_DEFAULT = '';", "const VW_KEY_DEFAULT = '" + k + "';", 1)
+          open(p, "w", encoding="utf-8").write(t)
+          print("키 주입 완료" if k else "VWORLD_KEY 미등록 - 키 없이 배포")
+          PY
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
