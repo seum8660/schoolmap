@@ -240,7 +240,7 @@ tr.cl{cursor:pointer}tr.cl:hover{background:#faf8f2}
 <div class="badge glass hide" id="badge"><span class="dot"></span><div><small id="bdgT">드론 비행 1 / 5</small><b id="bdgN"></b></div><div class="pg" id="bdgP"></div></div>
 
 <aside class="right glass" id="right">
-  <h4>배경지도</h4><div id="oBm"></div>
+  <div id="oBm" hidden></div>
   <h4>비중</h4><div id="oMet"></div>
   <h4>학교 색상</h4><div id="oRing"></div>
   <h4>보기</h4><div id="oView"></div>
@@ -287,7 +287,7 @@ const VW_KEY_DEFAULT = '';
 /* ▲▲▲ 키는 발급 시 등록한 주소(예: https://아이디.github.io)에서만 작동 ▲▲▲ */
 let VWKEY=new URLSearchParams(location.search).get('vwkey')||LS.get('vwkey')||VW_KEY_DEFAULT||'';
 let vwErr=0;
-const BMS={base:'브이월드 일반',sat:'브이월드 위성',hyb:'위성 + 지명',white:'브이월드 흰색'};
+const BMS={sat:'브이월드 영상'};
 function styleFor(k){
   if(!VWKEY) return FALLBACK;
   const b='https://api.vworld.kr/req/wmts/1.0.0/'+VWKEY+'/', src={}, layers=[{id:'bg',type:'background',paint:{'background-color':'#eef0ee'}}];
@@ -306,7 +306,7 @@ function setBM(k){
 }
 function toast(m){ let el=$('#toast'); if(!el){el=document.createElement('div');el.id='toast';el.style.cssText='position:absolute;left:50%;bottom:130px;transform:translateX(-50%);background:#23282b;color:#fff;padding:10px 16px;border-radius:10px;font-size:12.5px;z-index:20;max-width:560px;line-height:1.5';document.body.appendChild(el);} el.textContent=m; el.style.display='block'; clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display='none',7000); }
 /* ---------- 상태 ---------- */
-const S={ bm:(LS.get('bm') in BMS)?LS.get('bm'):'base', metric:'st', cmode:'age', is3d:true, rot:false, drone:false, sg:true, grid:false, col:true,
+const S={ bm:'sat', metric:'st', cmode:'age', is3d:true, rot:false, drone:false, sg:true, grid:false, col:true,
   fac:new Set(['초','중','고']), yr:null };
 const pass=s=>S.fac.has(s.lv)&&(S.yr===null||s.yr===S.yr);
 const METRICS={
@@ -330,6 +330,7 @@ try{
   const tc=document.createElement('canvas'); if(!(tc.getContext('webgl2')||tc.getContext('webgl'))) throw new Error('no webgl');
   map=new maplibregl.Map({container:'map',style:styleFor(S.bm),center:[126.9,34.8],zoom:6.3,pitch:0,antialias:true,attributionControl:{compact:true}});
   map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'bottom-right');
+  map.scrollZoom.enable(); map.scrollZoom.setWheelZoomRate(1/300); map.scrollZoom.setZoomRate(1/80); map.dragPan.enable(); map.doubleClickZoom.enable();
   map.on('error',e=>{ if(e.sourceId){ if(e.sourceId.startsWith('vw')&&++vwErr===4) toast('브이월드 지도를 불러오지 못했습니다. 인증키와 등록한 서비스 주소를 확인하십시오. (근거 그래프 탭)'); return; }
     if(!map.isStyleLoaded()&&!fallback){ clearTimeout(fbT); fallback=true; map.setStyle(FALLBACK);} });
   fbT=setTimeout(()=>{ if(!map.isStyleLoaded()&&!fallback){fallback=true;map.setStyle(FALLBACK);} },5000);
@@ -359,9 +360,9 @@ function addOverlays(){
   }
   map.addSource('sg',{type:'geojson',data:sgFC()});
   const vw=!!VWKEY&&!fallback, noBase=!VWKEY||fallback;
-  map.addLayer({id:'sg-fill',type:'fill',source:'sg',paint:{'fill-color':['interpolate',['linear'],['get','avg'],25,'#f1f6f2',33,'#e3efe6',40,'#cfe4d6'],'fill-opacity':noBase?1:vw?(S.bm==='base'||S.bm==='white'?.35:.12):.55}},sym&&sym.id);
+  map.addLayer({id:'sg-fill',type:'fill',source:'sg',paint:{'fill-color':['interpolate',['linear'],['get','avg'],25,'#f1f6f2',33,'#e3efe6',40,'#cfe4d6'],'fill-opacity':vw?0:noBase?1:.55}},sym&&sym.id);
   map.addLayer({id:'sg-sel',type:'line',source:'sg',filter:['==',['get','name'],REGION||'__'],paint:{'line-color':'#e0782a','line-width':3.2}});
-  map.addLayer({id:'sg-line',type:'line',source:'sg',paint:{'line-color':vw&&S.bm!=='base'&&S.bm!=='white'?'#ffffff':'#9fb3a8','line-width':vw?1.4:1}},sym&&sym.id);
+  if(!vw) map.addLayer({id:'sg-line',type:'line',source:'sg',paint:{'line-color':vw&&S.bm!=='base'&&S.bm!=='white'?'#ffffff':'#9fb3a8','line-width':vw?1.4:1}},sym&&sym.id);
   if(!noBase&&!vw) map.addLayer({id:'sg-lbl',type:'symbol',source:'sg',layout:{'text-field':['get','name'],'text-size':12,'text-font':['Noto Sans Regular']},paint:{'text-color':'#51605a','text-halo-color':'#fff','text-halo-width':1.5}});
   map.addSource('grid',{type:'geojson',data:gridFC()});
   map.addLayer({id:'grid',type:'fill-extrusion',source:'grid',paint:{'fill-extrusion-color':['interpolate',['linear'],['get','t'],0,'#cfe9df',.25,'#8fd0b5',.5,'#4fb18c',.75,'#2a9373',1,'#146b52'],'fill-extrusion-height':['*',['get','h'],hK],'fill-extrusion-opacity':.82}});
@@ -377,7 +378,7 @@ function refresh(){ if(!map){ drawCV(); return; } if(!ready) return; map.getSour
 function applyView(){ if(!map){drawCV();return;} if(!ready) return;
   map.setLayoutProperty('grid','visibility',S.grid?'visible':'none');
   map.setLayoutProperty('col','visibility',S.col?'visible':'none');
-  ['sg-fill','sg-line'].forEach(l=>map.setLayoutProperty(l,'visibility',S.sg?'visible':'none')); }
+  ['sg-fill','sg-line'].forEach(l=>{ if(map.getLayer(l)) map.setLayoutProperty(l,'visibility',S.sg?'visible':'none'); }); }
 function highlight(L){ HL=L; HLIDS=new Set(L.map(s=>s.id));
   if(L.length&&!S.col){ S.col=true; S.grid=false; renderRight(); applyView(); }
   renderLegend(); if(!map){drawCV();return;} if(ready) map.getSource('col').setData(colFC()); }
@@ -409,7 +410,7 @@ function renderRight(){
   $('#oMet').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{S.metric=b.dataset.k;S.grid=true;renderRight();refresh();applyView();renderLegend();});
   $('#oRing').innerHTML=Object.entries(RINGS).map(([k,r])=>`<button class="opt ${S.cmode===k&&!HLIDS.size?'on':''}" data-k="${k}" style="--c:${r.c}"><span class="ci"></span>${r.l}<span class="ct">${r.f?SCHOOLS.filter(s=>pass(s)&&r.f(s)).length:''}</span></button>`).join('');
   $('#oRing').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ S.cmode=b.dataset.k; HL=[]; HLIDS=new Set(); if(!S.col){S.col=true;S.grid=false;applyView();} renderRight(); refresh(); renderLegend(); });
-  const V=[['is3d','⬡','입체 보기'],['rot','⟳','자동 회전'],['drone','✈','드론 비행'],['sg','▦','시군별'],['grid','▥','격자 기둥'],['col','▮','학교 기둥']];
+  const V=[['is3d','⬡','입체 보기'],['rot','⟳','자동 회전'],['drone','✈','드론 비행'],['grid','▥','격자 기둥'],['col','▮','학교 기둥']];
   $('#oView').innerHTML=V.map(([k,i,l])=>`<button class="opt ${S[k]?'on':''}" data-k="${k}"><span class="ic">${i}</span>${l}</button>`).join('');
   $('#oView').querySelectorAll('.opt').forEach(b=>b.onclick=()=>toggleView(b.dataset.k));
   const cnt=k=>SCHOOLS.filter(s=>s.lv===k&&(S.yr===null||s.yr===S.yr)).length;
@@ -583,7 +584,7 @@ function renderSrc(){ const miss=SCHOOLS.filter(s=>!s.yr||!s.x||!s.y).length; he
   <div class="note"><b>출처</b>준공년도·연면적 KEIIS 건물정보 / 학생·학급 학교알리미 / 위치 전국초중등학교위치표준데이터 / 시군 경계 통계청(southkorea-maps) / 배경지도 국토교통부 브이월드 / 3D 건물 OpenStreetMap</div>
   <div class="note"><b>계산식</b>경과연수 = ${NOW} − 대표 준공년도(연면적 가중평균)<br>격자: 확대 수준에 따라 5km·2km·600m·250m 정사각형으로 학교를 묶음<br>재구조화 점수 = 경과(정규화)×0.5 + (1−학생수 정규화)×0.3 + 2년 감소율(정규화)×0.2</div>
   <div class="note"><b>결측</b>좌표·준공년도 결측 ${miss}건${fallback?'<br>배경지도 서버에 연결하지 못해 시군 경계만 표시 중입니다.':''}</div>`;
-  $('#vwSave').onclick=()=>{ VWKEY=$('#vwk').value.trim(); LS.set('vwkey',VWKEY); if(VWKEY){ setBM('base'); toast('브이월드 일반지도로 전환했습니다.'); } else if(map){ ready=false; map.setStyle(styleFor('base'),{diff:false}); } renderSrc(); };
+  $('#vwSave').onclick=()=>{ VWKEY=$('#vwk').value.trim(); LS.set('vwkey',VWKEY); if(VWKEY){ setBM('sat'); toast('브이월드 영상지도로 전환했습니다.'); } else if(map){ ready=false; map.setStyle(styleFor('sat'),{diff:false}); } renderSrc(); };
   document.querySelectorAll('.siDs').forEach(bt=>bt.onclick=async()=>{ try{ const j=await (await fetch('data/'+bt.dataset.f,{cache:'no-store'})).json(); siReady(siRows(j)); $('#siOut').scrollIntoView({block:'nearest',behavior:'smooth'}); }catch(e){ toast('자료 파일을 읽지 못했습니다.'); } });
   $('#kBtn').onclick=()=>$('#kFile').click();
   $('#kClr').onclick=()=>{ try{localStorage.removeItem('keiis')}catch(e){} toast('기억한 건물정보를 지웠습니다. 새로고침하면 예시값으로 돌아갑니다.'); KEIIS=null; renderSrc(); };
@@ -690,6 +691,7 @@ $('#demoBtn').onclick=()=>{ const b=$('#demoBtn');
 /* ---------- 지역 선택 ---------- */
 function regionStyle(){ if(!map||!ready) return;
   map.setFilter('sg-sel',['==',['get','name'],REGION||'__']);
+  if(VWKEY&&!fallback) return;
   if(regionStyle.base===undefined) regionStyle.base=map.getPaintProperty('sg-fill','fill-opacity');
   map.setPaintProperty('sg-fill','fill-opacity', REGION?['case',['==',['get','name'],REGION],Math.max(.35,+regionStyle.base||.35),.06]:regionStyle.base); }
 function setRegion(r){
@@ -705,7 +707,7 @@ if(map) map.on('click','sg-fill',e=>{ if(!S.sg) return; const n=e.features[0].pr
 function drawCV(){
   const cv=$('#cv'); cv.style.display='block'; const W=cv.clientWidth,H=cv.clientHeight,dpr=devicePixelRatio||1;
   cv.width=W*dpr; cv.height=H*dpr; const c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0);
-  c.fillStyle='#eceeec'; c.fillRect(0,0,W,H);
+  c.fillStyle='#eceeec'; c.fillRect(0,0,W,H); c.setTransform(dpr*CVV.k,0,0,dpr*CVV.k,dpr*CVV.tx,dpr*CVV.ty);
   const L0=innerWidth>980?Math.min(W*.31,430)+40:20, R0=innerWidth>980?250:20, T0=90, B0=140;
   const bx=[125.0,127.95], by=[33.95,35.55], kx=Math.cos(34.8*Math.PI/180);
   const sw=(W-L0-R0)/((bx[1]-bx[0])*kx), sh=(H-T0-B0)/((by[1]-by[0])*0.62), s=Math.min(sw,sh);
@@ -727,6 +729,16 @@ function drawCV(){
   GEO.features.forEach(f=>{ const L=g[f.properties.name]||[]; if(!L.length) return; const [X,Y]=P(avg(L.map(v=>v.x)),avg(L.map(v=>v.y))); c.fillText(f.properties.name,X,Y+16); });
 }
 const by2=by; let hK2=1;
+const CVV={k:1,tx:0,ty:0};
+(function(){ const cv=$('#cv'); let drag=null;
+  cv.addEventListener('wheel',e=>{ e.preventDefault(); const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+    const nk=Math.min(14,Math.max(1,CVV.k*(e.deltaY<0?1.18:1/1.18))), f=nk/CVV.k; CVV.tx=mx-(mx-CVV.tx)*f; CVV.ty=my-(my-CVV.ty)*f; CVV.k=nk;
+    if(nk===1){CVV.tx=0;CVV.ty=0;} drawCV(); },{passive:false});
+  cv.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY,tx:CVV.tx,ty:CVV.ty}; cv.setPointerCapture(e.pointerId); cv.style.cursor='grabbing'; });
+  cv.addEventListener('pointermove',e=>{ if(!drag) return; CVV.tx=drag.tx+e.clientX-drag.x; CVV.ty=drag.ty+e.clientY-drag.y; drawCV(); });
+  cv.addEventListener('pointerup',()=>{ drag=null; cv.style.cursor='grab'; });
+  cv.addEventListener('dblclick',()=>{ CVV.k=1;CVV.tx=0;CVV.ty=0; drawCV(); });
+  cv.style.cursor='grab'; cv.style.touchAction='none'; })();
 if(!map){ addEventListener('resize',drawCV); hK2=0; const t0=performance.now(); (function st(t){hK2=Math.min(1,(t-t0)/2500); drawCV(); if(hK2<1) requestAnimationFrame(st);})(t0);
   $('#sub').textContent='전라남도 · 간이 입체 지도(3D 엔진 사용 불가 환경) · 2026-09-21 기준'; }
 derive(); renderRight(); renderTL(); renderLegend(); setTab('ask');
