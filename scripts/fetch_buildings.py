@@ -17,7 +17,7 @@ OUT = os.path.join(HERE, "..", "data", "buildings.json")
 LIMIT = int(os.environ.get("LIMIT") or 0)          # 시험용: 앞에서부터 N개교만
 if not VW or not BK: sys.exit("VWORLD_KEY 또는 BLDG_KEY 환경변수가 없습니다.")
 
-def get(url, tries=3):
+def get(url, tries=3, tag=""):
     for i in range(tries):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Referer": DOMAIN + "/"})
@@ -25,7 +25,7 @@ def get(url, tries=3):
                 return json.loads(r.read().decode("utf-8"))
         except Exception as e:
             if i == tries - 1:
-                raise RuntimeError(str(e).replace(VW, "***").replace(BK, "***"))
+                raise RuntimeError(tag + str(e).replace(VW, "***").replace(BK, "***"))
             time.sleep(1.5 * (i + 1))
 
 def vw_parcels(x, y):
@@ -33,28 +33,42 @@ def vw_parcels(x, y):
     base = "https://api.vworld.kr/req/data?service=data&version=2.0&request=GetFeature&data=LP_PA_CBND_BUBUN&format=json&geometry=false&crs=EPSG:4326&size=100"
     auth = "&key=" + urllib.parse.quote(VW) + "&domain=" + urllib.parse.quote(DOMAIN)
     out = {}
-    d = get(base + auth + "&geomFilter=" + urllib.parse.quote(f"POINT({x} {y})"))
+    d = get(base + auth + "&geomFilter=" + urllib.parse.quote(f"POINT({x} {y})"), tag="[브이월드 지적] ")
     r = d.get("response", {})
     if r.get("status") == "ERROR": raise RuntimeError("브이월드: " + str(r.get("error", {}).get("text", "")))
     for f in (r.get("result", {}).get("featureCollection", {}).get("features") or []):
         p = f.get("properties", {}); out[p.get("pnu")] = p.get("jibun", "")
     b = f"BOX({x-0.0016},{y-0.0013},{x+0.0016},{y+0.0013})"
-    d = get(base + auth + "&geomFilter=" + urllib.parse.quote(b) + "&attrFilter=" + urllib.parse.quote("jibun:like:학"))
+    d = get(base + auth + "&geomFilter=" + urllib.parse.quote(b) + "&attrFilter=" + urllib.parse.quote("jibun:like:학"), tag="[브이월드 지적] ")
     for f in (d.get("response", {}).get("result", {}).get("featureCollection", {}).get("features") or []):
         p = f.get("properties", {})
         if str(p.get("jibun", "")).strip().endswith("학"): out[p.get("pnu")] = p.get("jibun", "")
     return {k: v for k, v in out.items() if k and len(k) == 19}
 
+BLD_EPS = ["https://apis.data.go.kr/1613000/BldRgstHubService/getBrTitleInfo",
+           "https://apis.data.go.kr/1613000/BldRgstService_v2/getBrTitleInfo"]
+BLD_EP = [None]
+
 def bldg(pnu):
     q = {"sigunguCd": pnu[0:5], "bjdongCd": pnu[5:10], "platGbCd": "1" if pnu[10] == "2" else "0",
          "bun": pnu[11:15], "ji": pnu[15:19], "numOfRows": "200", "pageNo": "1", "_type": "json"}
     key = BK if "%" in BK else urllib.parse.quote(BK, safe="")
-    url = "https://apis.data.go.kr/1613000/BldRgstHubService/getBrTitleInfo?serviceKey=" + key + "&" + urllib.parse.urlencode(q)
-    d = get(url)
+    eps = [BLD_EP[0]] if BLD_EP[0] else BLD_EPS
+    last = None
+    for ep in eps:
+        try:
+            d = get(ep + "?serviceKey=" + key + "&" + urllib.parse.urlencode(q), tries=2, tag="[건축물대장] ")
+            head0 = (d.get("response") or {}).get("header") or {}
+            if str(head0.get("resultCode", "00")) in ("00", "0"):
+                BLD_EP[0] = ep
+                break
+            last = str(head0.get("resultMsg", "")) + " (" + ep.split("/")[-2] + ")"
+        except Exception as e:
+            last = str(e) + " (" + ep.split("/")[-2] + ")"
+        d = None
+    if not d:
+        raise RuntimeError("건축물대장: " + str(last))
     body = (d.get("response") or {}).get("body") or {}
-    head = (d.get("response") or {}).get("header") or {}
-    if str(head.get("resultCode", "00")) not in ("00", "0"):
-        raise RuntimeError("건축물대장: " + str(head.get("resultMsg", "")))
     items = (body.get("items") or {})
     items = items.get("item", []) if isinstance(items, dict) else []
     return [items] if isinstance(items, dict) else items
@@ -85,7 +99,10 @@ for i, s in enumerate(schools, 1):
         res[s["code"]] = {"n": s["n"], "pnu": list(pnus.keys()), "b": rows}
     except Exception as e:
         fail += 1; print(f"  ! {s['n']}: {e}", file=sys.stderr)
-        if fail >= 25 and fail > i * 0.5: sys.exit("오류가 많아 중단합니다. 키 권한·도메인을 확인하십시오.")
+        if fail == 1: print("  (첫 실패 상세는 위 '!' 줄의 [대괄호] 표시로 어느 서버인지 구분됩니다)", file=sys.stderr)
+        if fail >= 5 and fail == i:
+            sys.exit("첫 %d개교 모두 실패했습니다. 위 '!' 줄의 오류 문구를 확인하십시오." % i)
+        if fail >= 40 and fail > i * 0.5: sys.exit("오류가 많아 중단합니다.")
     if i % 50 == 0: print(f"  {i}/{len(schools)} 처리")
     time.sleep(0.1)
 
