@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script>
 const VW_KEY_DEFAULT = '';
-(function(){ var k=null; try{ k=new URLSearchParams(location.search).get('vwkey')||localStorage.getItem('vwkey'); }catch(e){} k=k||VW_KEY_DEFAULT; var eng=null; try{ eng=localStorage.getItem('engine'); }catch(e){}
+(function(){ var k=VW_KEY_DEFAULT; var eng=null; try{ eng=localStorage.getItem('engine'); }catch(e){}
   window.__VW3D_TRY=!!k && eng!=='ml' && /^https?:$/.test(location.protocol);
   if(window.__VW3D_TRY) document.write('<script src="https://map.vworld.kr/js/webglMapInit.js.do?version=3.0&apiKey='+encodeURIComponent(k)+'&domain='+encodeURIComponent(location.origin)+'"><\/script>'); })();
 </script>
@@ -398,7 +398,7 @@ function derive(){
 const LS={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 /* ▼ 브이월드 인증키는 <head>의 VW_KEY_DEFAULT에서 설정(배포 시 자동 주입) ▼ */
 /* ▲▲▲ 키는 발급 시 등록한 주소(예: https://아이디.github.io)에서만 작동 ▲▲▲ */
-let VWKEY=new URLSearchParams(location.search).get('vwkey')||LS.get('vwkey')||VW_KEY_DEFAULT||'';
+let VWKEY=(typeof VW_KEY_DEFAULT!=='undefined'?VW_KEY_DEFAULT:'')||'';
 let vwErr=0;
 const BMS={sat:'영상',hyb:'영상 + 지명',base:'일반',white:'흰색(백지도)',midnight:'야간'};
 function styleFor(k){
@@ -414,7 +414,7 @@ function styleFor(k){
   return {version:8,sources:src,layers};
 }
 function setBM(k){
-  if(!VWKEY){ const v=prompt('브이월드 인증키를 입력하십시오.\n(vworld.kr → 오픈API → 인증키 발급)'); if(!v) return; VWKEY=v.trim(); LS.set('vwkey',VWKEY); }
+  if(!VWKEY){ toast('브이월드 지도는 인증키가 적용된 주소(깃허브 페이지)에서 표시됩니다.'); return; }
   S.bm=k; LS.set('bm2',k); vwErr=0; fallback=false; ready=false; renderRight();
   if(map) map.setStyle(styleFor(k),{diff:false});
 }
@@ -792,32 +792,60 @@ function renderFuture(){ const rows=[0,5,10].map(y=>({l:`${NOW+y}년`,a:SCHOOLS.
 function renderSrc(){ const miss=SCHOOLS.filter(s=>!s.yr||!s.x||!s.y).length; head('05','근거 그래프 · 데이터와 방법','출처, 계산식, 결측, 실자료 불러오기');
   $('#lbody').innerHTML=`${IS_SAMPLE?`<div class="note warn"><b>일부 예시값이 포함되어 있습니다</b>학교명·위치·학교급·설립형태·본교/분교 842개교는 실자료(전국초중등학교위치표준데이터, 2026-03-20 기준)입니다. <b>준공년도·학생수·연면적은 화면 확인용 예시값</b>이므로 KEIIS 건물정보와 학교알리미 자료로 교체해야 합니다.</div>`:''}
   <div class="note"><b>실자료 불러오기</b>CSV(UTF-8) 열: 학교명, 학교급, 시군, 위도, 경도, 준공년도, 연면적, 학생수, 5년전학생수, 학급수, 분교여부(Y/N), 설립<div class="btns"><button id="tpl">양식 받기</button><button class="pri" id="up">CSV 불러오기</button></div><input type="file" id="upF" accept=".csv" hidden></div>
-  <div class="note"><b>브이월드 인증키</b>${VWKEY?'등록됨 · '+VWKEY.slice(0,6)+'••••':'미등록 · 시군 경계만 표시 중'}<div class="btns"><input id="vwk" placeholder="인증키 붙여넣기" style="flex:2;border:1px solid var(--line);border-radius:9px;padding:8px;font:inherit;font-size:12.5px" value="${VWKEY}"><button class="pri" id="vwSave">저장·적용</button></div><div style="font-size:11.5px;color:var(--sub);margin-top:6px">키는 이 PC의 브라우저에만 저장됩니다. 발급 시 등록한 서비스 주소(예: http://localhost:8080)로 열어야 지도가 표시됩니다.</div></div>
   <div class="note"><b>KEIIS 건물정보 불러오기 <span style="font-weight:400;color:var(--sub)">· 비공개 자료</span></b>
-   <div style="font-size:11.5px;color:var(--sub);line-height:1.6">파일은 <b>이 PC의 브라우저 안에서만</b> 읽으며 깃허브나 외부로 전송되지 않습니다. 학교별 준공년도(연면적 가중평균)와 연면적만 계산해 이 PC에 기억합니다.</div>
-   <div class="btns"><button class="pri" id="kBtn">건물정보 엑셀 선택</button><button id="kClr">기억 지우기</button></div><input type="file" id="kFile" accept=".xlsx,.xls" multiple hidden>
-   <div id="kOut" style="font-size:11.5px;color:var(--sub);margin-top:6px">${KEIIS?`적용 중 · ${KEIIS.n}개교 · ${KEIIS.date}`:'미적용 · 준공년도·연면적은 예시값'}</div></div>
-  <div class="note"><b>학교알리미 자동 갱신 자료</b>${SIAUTO?`<div style="font-size:11.5px;margin:2px 0 6px"><b>학생수 ${SIAUTO.hit}개교 자동 반영</b> · 갱신 ${SIAUTO.updated} · 공시연도 ${Object.entries(SIAUTO.years||{}).map(([k,v])=>k+' '+v).join(', ')}${SIAUTO.miss.length?`<br>미매칭 ${SIAUTO.miss.length}개교: ${SIAUTO.miss.slice(0,10).join(', ')}${SIAUTO.miss.length>10?' 외':''}`:''}</div>`:''}${SIDATA?`<div style="font-size:11.5px;color:var(--sub);margin:2px 0 6px">갱신 ${SIDATA.updated} · ${SIDATA.sido} · 인증키는 깃허브 비밀저장소에만 보관</div><div class="btns" style="flex-wrap:wrap">${SIDATA.files.map(f=>`<button class="siDs" data-f="${f.file}">${f.name} (${f.year}) ${f.rows}건</button>`).join('')}</div>`:`<div style="font-size:11.5px;color:var(--sub)">아직 수집된 자료가 없습니다. 깃허브 Actions에서 「학교알리미 자료 갱신」을 실행하면 data 폴더에 자료가 생성됩니다.</div>`}</div>
-  <div class="note"><b>학교알리미 직접 연동(이 PC 전용)</b>
-   <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">
-    <input id="siKey" placeholder="학교알리미 인증키" value="${LS.get('sikey')||''}" style="grid-column:span 2" class="fi">
-    <input id="siType" placeholder="서비스코드(apiType)" value="${LS.get('sitype')||''}" class="fi">
-    <input id="siYr" placeholder="공시연도(예: 2026)" value="${LS.get('siyr')||NOW}" class="fi">
-   </div>
-   <div class="btns"><button class="pri" id="siGo">학생수 불러오기</button><button id="siFileBtn">응답 파일(JSON)</button></div><input type="file" id="siFile" accept=".json,.txt" hidden multiple>
-   <div id="siOut" style="font-size:11.5px;color:var(--sub);margin-top:6px">서비스코드는 학교알리미 Open API 안내의 「학생수」 항목 apiType 값을 넣으십시오. 전남(시도코드 46) 초·중·고를 한 번에 불러와 학교명으로 맞춥니다.</div></div>
+   <div style="font-size:11.5px;color:var(--sub);line-height:1.6">파일은 <b>이 PC의 브라우저 안에서만</b> 읽으며 외부로 전송되지 않습니다. 계산 결과는 <b>브라우저를 닫으면 지워지는 임시 저장소</b>에만 둡니다.</div>
+   <div class="btns"><button class="pri" id="kBtn">건물정보 엑셀 선택</button><button id="kClr">지우기</button></div><input type="file" id="kFile" accept=".xlsx,.xls" multiple hidden>
+   <div id="kOut" style="font-size:11.5px;color:var(--sub);margin-top:6px">${KEIIS?`적용 중 · ${KEIIS.n}개교 · ${KEIIS.date} · 브라우저 종료 시 삭제`:'미적용'}</div></div>
+  <div class="note"><b>학교 지번(PNU) 수집</b>
+   <div style="font-size:11.5px;color:var(--sub);line-height:1.6">브이월드 지적도에서 842개교의 학교용지 필지번호를 모아 파일로 내려받습니다(약 5~10분). 내려받은 <b>school_pnu.json</b>을 깃허브 <b>scripts</b> 폴더에 올리면 건축물대장 수집이 이 지번으로 조회합니다.</div>
+   <div class="btns"><button class="pri" id="pnuGo">지번 수집 시작</button><button id="pnuStop">중지</button></div>
+   <div id="pnuOut" style="font-size:11.5px;color:var(--sub);margin-top:6px">준비됨</div></div>
+  <div class="note"><b>자동 갱신 자료</b><div style="font-size:11.5px;color:var(--sub);margin-top:2px">${SIAUTO?`학생수 학교알리미 <b>${SIAUTO.hit}개교</b> · 갱신 ${SIAUTO.updated}`:'학생수 미수집'} / ${BLDAUTO?`준공년도 건축물대장 <b>${BLDAUTO.hit}개교</b> · 갱신 ${BLDAUTO.updated}`:'준공년도 미수집'}<br>깃허브에서 자동 수집되며 인증키는 비밀저장소에만 보관됩니다.</div></div>
+  <div class="note"><b>자료 보호</b>공개 페이지에는 공개 자료(학교 위치·학교알리미 학생수·건축물대장)만 올라갑니다. 인증키는 페이지 배포 시에만 주입되어 저장소 코드에 남지 않으며, KEIIS 등 비공개 자료는 서버로 전송되지 않습니다.</div>
   <div class="note"><b>출처</b>준공년도·연면적 KEIIS 건물정보 / 학생·학급 학교알리미 / 위치 전국초중등학교위치표준데이터 / 시군 경계 통계청(southkorea-maps) / 배경지도 국토교통부 브이월드 / 3D 건물 OpenStreetMap</div>
-  <div class="note"><b>계산식</b>경과연수 = ${NOW} − 대표 준공년도(연면적 가중평균)<br>격자: 확대 수준에 따라 5km·2km·600m·250m 정사각형으로 학교를 묶음<br>재구조화 점수 = 경과(정규화)×0.5 + (1−학생수 정규화)×0.3 + 2년 감소율(정규화)×0.2</div>
+  <div class="note"><b>계산식</b>경과연수 = ${NOW} − 대표 준공년도<br>대표 준공년도 = <b>교사동 계열(교사동·본관·별관·후관·신관·구관)</b> 건물의 사용승인일을 연면적으로 가중평균 (관사·기숙사·체육관·강당·급식실·창고 등 제외, 해당 동이 없으면 전체 건물로 계산)<br>격자: 확대 수준에 따라 5km·2km·600m·250m 정사각형으로 학교를 묶음<br>재구조화 점수 = 경과(정규화)×0.5 + (1−학생수 정규화)×0.3 + 2년 감소율(정규화)×0.2</div>
   <div class="note"><b>결측</b>좌표·준공년도 결측 ${miss}건${fallback?'<br>배경지도 서버에 연결하지 못해 시군 경계만 표시 중입니다.':''}</div>`;
-  $('#vwSave').onclick=()=>{ VWKEY=$('#vwk').value.trim(); LS.set('vwkey',VWKEY); if(VWKEY){ setBM('white'); toast('브이월드 백지도로 전환했습니다.'); } else if(map){ ready=false; map.setStyle(styleFor('white'),{diff:false}); } renderSrc(); };
-  document.querySelectorAll('.siDs').forEach(bt=>bt.onclick=async()=>{ try{ const j=await (await fetch('data/'+bt.dataset.f,{cache:'no-store'})).json(); siReady(siRows(j)); $('#siOut').scrollIntoView({block:'nearest',behavior:'smooth'}); }catch(e){ toast('자료 파일을 읽지 못했습니다.'); } });
+  $('#pnuGo').onclick=pnuCollect; $('#pnuStop').onclick=()=>{PNU.stop=true;};
   $('#kBtn').onclick=()=>$('#kFile').click();
-  $('#kClr').onclick=()=>{ try{localStorage.removeItem('keiis')}catch(e){} ALL.forEach(s=>{ delete s.bl; }); toast('기억한 건물정보를 지웠습니다. 새로고침하면 예시값으로 돌아갑니다.'); KEIIS=null; renderSrc(); };
+  $('#kClr').onclick=()=>{ try{sessionStorage.removeItem('keiis');localStorage.removeItem('keiis')}catch(e){} ALL.forEach(s=>{ if(s.bsrc==='keiis'){ delete s.bl; delete s.bsrc; } }); KEIIS=null; toast('불러온 건물정보를 지웠습니다.'); renderSrc(); };
   $('#kFile').onchange=async e=>{ const fs=[...e.target.files]; if(!fs.length) return; $('#kOut').textContent='읽는 중…'; try{ keiisLoad(await Promise.all(fs.map(f=>f.arrayBuffer())), fs.map(f=>f.name)); }catch(err){ $('#kOut').textContent='읽기 실패: '+err.message; } };
-  $('#siGo').onclick=siFetch; $('#siFileBtn').onclick=()=>$('#siFile').click();
-  $('#siFile').onchange=async e=>{ const rows=[]; for(const f of e.target.files){ try{ rows.push(...siRows(JSON.parse(await f.text()))); }catch(err){ toast(f.name+' 파일을 읽지 못했습니다.'); } } siReady(rows); };
   $('#tpl').onclick=()=>{const b=new Blob(['\ufeff학교명,학교급,시군,위도,경도,준공년도,연면적,학생수,5년전학생수,학급수,분교여부,설립\n목포○○초,초,목포시,34.8118,126.3922,1985,6200,420,480,18,N,공립\n'],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='학교시설_입력양식.csv';a.click();};
   $('#up').onclick=()=>$('#upF').click(); $('#upF').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>loadCSV(rd.result);rd.readAsText(f,'utf-8');}; }
+/* ---------- 학교 지번(PNU) 수집: 브라우저에서 브이월드 호출 ---------- */
+const PNU={stop:false,run:false,out:{}};
+function vwUrl(geom,attr){ return 'https://api.vworld.kr/req/data?service=data&version=2.0&request=GetFeature&data=LP_PA_CBND_BUBUN&format=json&errorformat=json&crs=EPSG:4326&size=100&geometry=false&geomFilter='+encodeURIComponent(geom)+(attr?'&attrFilter='+encodeURIComponent(attr):'')+'&key='+encodeURIComponent(VWKEY)+'&domain='+encodeURIComponent(location.origin); }
+function vwFeat(d){ const r=d&&d.response; if(!r||r.status==='ERROR') throw new Error((r&&r.error&&r.error.text)||'응답 오류'); return (r.result&&r.result.featureCollection&&r.result.featureCollection.features)||[]; }
+async function pnuCollect(){
+  if(!VWKEY){ toast('브이월드 인증키가 적용된 주소(깃허브 페이지)에서 실행하십시오.'); return; }
+  if(PNU.run) return; PNU.run=true; PNU.stop=false; PNU.out={}; const t0=Date.now();
+  let n=0, ok=0, er=0;
+  for(const s of ALL){
+    if(PNU.stop) break;
+    try{
+      const set={};
+      try{ vwFeat(await vwbJsonp(vwUrl(`POINT(${s.x} ${s.y})`))).forEach(f=>{ const p=f.properties||{}; if(p.pnu) set[p.pnu]=String(p.jibun||''); }); }catch(e){}
+      try{ vwFeat(await vwbJsonp(vwUrl(`BOX(${(s.x-0.0016).toFixed(6)},${(s.y-0.0013).toFixed(6)},${(s.x+0.0016).toFixed(6)},${(s.y+0.0013).toFixed(6)})`,'jibun:like:학')))
+            .forEach(f=>{ const p=f.properties||{}; if(p.pnu&&String(p.jibun||'').trim().endsWith('학')) set[p.pnu]=String(p.jibun||''); }); }catch(e){}
+      const pl=Object.keys(set).filter(k=>k&&k.length===19);
+      if(pl.length){ PNU.out[s.code]={n:s.n,pnu:pl,jibun:pl.map(k=>set[k])}; ok++; } else er++;
+    }catch(e){ er++; }
+    n++;
+    if(n%5===0||n===ALL.length){ const sec=Math.round((Date.now()-t0)/1000), left=Math.round(sec/n*(ALL.length-n));
+      $('#pnuOut').innerHTML=`수집 중 ${n}/${ALL.length} · 성공 ${ok} · 미확인 ${er} · 남은 시간 약 ${Math.max(1,Math.round(left/60))}분`; await new Promise(r=>setTimeout(r,0)); }
+  }
+  PNU.run=false;
+  const blob=new Blob([JSON.stringify({updated:new Date().toISOString().slice(0,16).replace('T',' '),count:ok,schools:PNU.out},null,0)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='school_pnu.json'; a.click();
+  $('#pnuOut').innerHTML=`<b>완료 ${ok}개교</b> · 미확인 ${er}개교 · school_pnu.json 내려받음 → 깃허브 scripts 폴더에 올리십시오.`;
+  toast(`지번 수집 완료 ${ok}개교 · 파일을 깃허브 scripts 폴더에 올리십시오.`);
+}
+/* ---------- 준공년도 산정 대상 건물(교사동 계열) ---------- */
+const EDU_RE=/교사|본관|별관|후관|신관|구관/, EDU_EX=/관사|기숙|유치|병설|체육|강당|급식|창고|차고|화장실|경비|정화|펌프|보일러|관리동/;
+const isEdu=n=>EDU_RE.test(String(n||''))&&!EDU_EX.test(String(n||''));
+function yrFromRows(rows){ const v=(rows||[]).filter(b=>b.y>1900&&b.a>0);
+  const e=v.filter(b=>isEdu(b.n)); const use=e.length?e:v; if(!use.length) return null;
+  const A=use.reduce((x,b)=>x+b.a,0);
+  return {yr:Math.round(use.reduce((x,b)=>x+b.y*b.a,0)/A), ar:Math.round(v.reduce((x,b)=>x+b.a,0)), nb:v.length, basis:e.length?'교사동':'전체', ne:use.length}; }
 /* ---------- 학교알리미 학생수 자동 적용(data/schoolinfo.json) ---------- */
 let SIAUTO=null;
 function siAutoApply(j){
@@ -831,17 +859,17 @@ fetch('data/schoolinfo.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).the
   toast(`학교알리미 학생수 ${h}개교 자동 반영 (${j.updated} 갱신)`); }).catch(()=>{});
 let BLDAUTO=null;
 fetch('data/buildings.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.schools) return; let hit=0;
-  ALL.forEach(s=>{ if(s.bsrc==='keiis') return; const o=j.schools[s.code]; if(!o||!o.b||!o.b.length) return; const v=o.b.filter(b=>b.y>1900&&b.a>0); if(!v.length) return;
-    const A=v.reduce((x,b)=>x+b.a,0); s.yr=Math.round(v.reduce((x,b)=>x+b.y*b.a,0)/A); s.ar=Math.round(A); s.nb=v.length;
+  ALL.forEach(s=>{ if(s.bsrc==='keiis') return; const o=j.schools[s.code]; if(!o||!o.b||!o.b.length) return; const r=yrFromRows(o.b); if(!r) return;
+    s.yr=r.yr; s.ar=r.ar; s.nb=r.nb; s.ybasis=r.basis; s.yn=r.ne;
     s.bl=o.b.slice().sort((a,b)=>a.y-b.y).map(b=>({n:b.n,y:b.y,d:b.d,a:b.a,fl:b.fl,u:b.u,s:b.s,g:'',eq:b.eq})); s.bsrc='bldg'; hit++; });
   if(!hit) return; BLDAUTO={hit,updated:j.updated}; derive(); onFilter(); if(curTab==='ask') renderAsk(); else if(!DETAIL) setTab(curTab); else renderDetail(); stampAll();
   toast(`건축물대장 준공년도·연면적 ${hit}개교 자동 반영 (${j.updated} 갱신)`); }).catch(()=>{});
 function stampAll(){ const k=KEIIS?`준공년도 KEIIS ${KEIIS.n}개교`:BLDAUTO?`준공년도 건축물대장 ${BLDAUTO.hit}개교`:'준공년도 예시값', s=SIAUTO?`학생수 학교알리미 ${SIAUTO.hit}개교`:'학생수 예시값';
   $('#stamp').textContent=`학교 위치 실자료 · ${s} · ${k}`; }
 /* ---------- KEIIS 건물정보(비공개, 브라우저 내 처리) ---------- */
-let KEIIS=(()=>{try{return JSON.parse(localStorage.getItem('keiis')||'null')}catch(e){return null}})();
+let KEIIS=(()=>{try{return JSON.parse(sessionStorage.getItem('keiis')||'null')}catch(e){return null}})();
 const kNorm=s=>String(s||'').replace(/\s|\(.*?\)/g,'');
-function keiisApply(K){ let hit=0; const m=K.m; ALL.forEach(s=>{ const v=m[kNorm(s.n)]; if(v){ s.yr=v[0]; s.ar=v[1]; s.nb=v[2]; s.bl=(K.bl||{})[kNorm(s.n)]||null; s.bsrc='keiis'; hit++; } }); return hit; }
+function keiisApply(K){ let hit=0; const m=K.m; ALL.forEach(s=>{ const v=m[kNorm(s.n)]; if(v){ s.yr=v[0]; s.ar=v[1]; s.nb=v[2]; s.ybasis=v[3]||'전체'; s.yn=v[4]||v[2]; s.bl=(K.bl||{})[kNorm(s.n)]||null; s.bsrc='keiis'; hit++; } }); return hit; }
 function keiisLoad(bufs,names){
   if(typeof XLSX==='undefined') throw new Error('엑셀 읽기 기능을 불러오지 못했습니다');
   const agg={};
@@ -852,10 +880,10 @@ function keiisLoad(bufs,names){
     rows.slice(1).forEach(r=>{ const sn=r[cS]; if(!sn) return; if(cM>=0){ if(String(r[cM]).includes('공동')) return; } else if(r[16]&&String(r[16]).includes('공동')) return;
       const y=parseInt(String(r[cU]).replace(/[^0-9]/g,'').slice(0,4)), a=parseFloat(String(r[cA]).replace(/,/g,''))||0; if(!y||y<1900) return;
       const k=kNorm(sn); (agg[k]??={w:0,a:0,n:0,b:[]}); agg[k].b.push({n:String(r[cN]||'건물'),y,d:String(r[cU]||''),a,fl:parseInt(r[cF])||0,u:String(r[cUse]||''),s:String(r[cSt]||'').replace('구조',''),g:String(r[cG]||'').trim().charAt(0)}); agg[k].w+=y*(a||1); agg[k].a+=(a||1); agg[k].n++; agg[k].ar=(agg[k].ar||0)+a; }); });
-  const m={}, bl={}; Object.entries(agg).forEach(([k,v])=>{ m[k]=[Math.round(v.w/v.a),Math.round(v.ar),v.n]; bl[k]=v.b.sort((a,b)=>a.y-b.y); });
+  const m={}, bl={}; Object.entries(agg).forEach(([k,v])=>{ const rows=v.b.slice().sort((a,b)=>a.y-b.y); const r=yrFromRows(rows); m[k]=r?[r.yr,r.ar,r.nb,r.basis,r.ne]:[Math.round(v.w/v.a),Math.round(v.ar),v.n,'전체',v.n]; bl[k]=rows; });
   const K={m,bl,n:Object.keys(m).length,date:new Date().toLocaleDateString('ko-KR')};
   const hit=keiisApply(K); if(!K.n){ $('#kOut').textContent='건물 행을 찾지 못했습니다. KEIIS 건물정보 엑셀인지 확인하십시오.'; return; }
-  try{localStorage.setItem('keiis',JSON.stringify(K))}catch(e){} KEIIS=K;
+  try{sessionStorage.setItem('keiis',JSON.stringify(K))}catch(e){} KEIIS=K;
   derive(); onFilter(); keiisStamp(hit); renderSrc();
   const miss=ALL.filter(s=>!m[kNorm(s.n)]).map(s=>s.n);
   $('#kOut').innerHTML=`<b>${hit}개교 적용</b> (파일 ${names.length}개, 학교 ${K.n}곳)${miss.length?` · 미적용 ${miss.length}개교: ${miss.slice(0,12).join(', ')}${miss.length>12?' 외':''}`:''}`;
@@ -867,19 +895,6 @@ if(KEIIS){ const h=keiisApply(KEIIS); setTimeout(()=>keiisStamp(h),0); }
 const siNorm=s=>String(s||'').replace(/\s|\(.*?\)|전라남도|학교$/g,'').replace(/등학교$|학교$/,'');
 function siRows(j){ if(Array.isArray(j)) return j; for(const k of ['list','data','row','items','result']) if(j&&Array.isArray(j[k])) return j[k];
   for(const v of Object.values(j||{})) if(v&&typeof v==='object'){ const r=siRows(v); if(r.length) return r; } return []; }
-function siURL(kind){ const k=$('#siKey').value.trim(),ty=$('#siType').value.trim(),yr=$('#siYr').value.trim();
-  return `https://www.schoolinfo.go.kr/openApi.do?apiKey=${encodeURIComponent(k)}&apiType=${encodeURIComponent(ty)}&pbanYr=${yr}&schulKndCode=${kind}&sidoCode=46`; }
-async function siFetch(){
-  const k=$('#siKey').value.trim(),ty=$('#siType').value.trim(); if(!k||!ty){toast('인증키와 서비스코드를 입력하십시오.');return;}
-  LS.set('sikey',k); LS.set('sitype',ty); LS.set('siyr',$('#siYr').value.trim());
-  const out=$('#siOut'); out.textContent='불러오는 중…'; const rows=[]; const fails=[];
-  for(const kind of ['02','03','04']){ try{ const r=await fetch(siURL(kind)); const j=JSON.parse(await r.text()); rows.push(...siRows(j)); }catch(e){ fails.push(kind); } }
-  if(fails.length===3){ const nm={'02':'초','03':'중','04':'고'};
-    out.innerHTML=`브라우저 보안정책(CORS)으로 직접 호출이 막혔습니다. 아래 주소를 각각 열어 화면 내용을 <b>Ctrl+S</b>로 저장한 뒤 [응답 파일(JSON)]으로 불러오십시오.<br>${['02','03','04'].map(c=>`<a href="${siURL(c)}" target="_blank" rel="noopener">${nm[c]}등학교 자료 열기</a>`).join(' · ')}`; return; }
-  siReady(rows);
-}
-let SIROWS=[], SIDATA=null;
-fetch('data/schoolinfo_manifest.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(m=>{ if(m&&m.files){ SIDATA=m; if(curTab==='src') renderSrc(); } }).catch(()=>{});
 function siReady(rows){
   const out=$('#siOut'); if(!rows.length){ out.textContent='받은 자료가 없습니다. 서비스코드·공시연도·인증키를 확인하십시오.'; return; }
   SIROWS=rows; const keys=Object.keys(rows[0]);
@@ -1062,12 +1077,12 @@ function renderDetail(){ const s=DETAIL; if(!s) return;
    <div class="kpi ${dSt<-10?'hot':''}"><small>2년 전 대비</small><b>${dSt>0?'+':''}${dSt.toFixed(1)}<em>% (${fmt(s.st5||0)}명)</em></b></div></div>
   ${chartHTML({t:'학생수 변화',a:'2년 전',b:'현재',rows:[{l:'학생수',a:s.st5||0,b:s.st}]})}
   <h3 style="font-size:13.5px;margin:12px 0 6px">건물 현황${src(s.bsrc==='keiis'?'KEIIS 건물정보':s.bsrc==='bldg'?'건축물대장':'준공년도 예시값')}</h3>
-  <div class="kpis"><div class="kpi"><small>대표 준공년도</small><b>${s.yr}<em>년</em></b></div>
+  <div class="kpis"><div class="kpi"><small>대표 준공년도${s.ybasis?` · ${s.ybasis} ${s.yn}동`:''}</small><b>${s.yr}<em>년</em></b></div>
    <div class="kpi"><small>경과연수</small><b style="color:${GC(s.age)}">${s.age}<em>년</em></b></div>
    <div class="kpi"><small>연면적</small><b>${fmt(s.ar)}<em>㎡</em></b></div>
    <div class="kpi"><small>학생 1인당 연면적</small><b>${s.st?(s.ar/s.st).toFixed(1):'-'}<em>㎡</em></b></div></div>
-  ${s.bl&&s.bl.length?`<div class="note"><b>건물 목록 ${s.bl.length}동${src(s.bsrc==='bldg'?'국토교통부 건축물대장(표제부)':'KEIIS 건물정보 · 이 PC에서만 표시')}</b>
-   <div style="overflow-x:auto"><table style="margin-top:6px;min-width:520px"><thead><tr><th>건물명</th><th>사용승인</th><th>경과</th><th>연면적</th><th>층</th><th>주용도</th><th>구조</th><th>${s.bsrc==='bldg'?'내진':'등급'}</th></tr></thead><tbody>${s.bl.map(b=>`<tr${'CDE'.includes(b.g)&&b.g?' style="background:#fdecea"':''}><td>${b.n}</td><td>${b.d.slice(0,10)}</td><td style="color:${GC(NOW-b.y)};font-weight:700">${NOW-b.y}년</td><td>${fmt(b.a)}㎡</td><td>${b.fl||'-'}</td><td>${b.u}</td><td>${b.s}</td><td>${s.bsrc==='bldg'?(b.eq==='1'?'적용':b.eq==='0'?'<span style="color:#F04452;font-weight:700">미적용</span>':'-'):(b.g||'-')}</td></tr>`).join('')}</tbody></table></div></div>`:''}
+  ${s.bl&&s.bl.length?`<div class="note"><b>건물 목록 ${s.bl.length}동 <span style="font-weight:400;color:#0064FF">· 파란 줄 = 준공년도 산정 대상(교사동 계열)</span>${src(s.bsrc==='bldg'?'국토교통부 건축물대장(표제부)':'KEIIS 건물정보 · 이 PC에서만 표시')}</b>
+   <div style="overflow-x:auto"><table style="margin-top:6px;min-width:520px"><thead><tr><th>건물명</th><th>사용승인</th><th>경과</th><th>연면적</th><th>층</th><th>주용도</th><th>구조</th><th>${s.bsrc==='bldg'?'내진':'등급'}</th></tr></thead><tbody>${s.bl.map(b=>`<tr${isEdu(b.n)?' style="background:#EEF5FF"':('CDE'.includes(b.g)&&b.g?' style="background:#fdecea"':'')}><td>${b.n}</td><td>${b.d.slice(0,10)}</td><td style="color:${GC(NOW-b.y)};font-weight:700">${NOW-b.y}년</td><td>${fmt(b.a)}㎡</td><td>${b.fl||'-'}</td><td>${b.u}</td><td>${b.s}</td><td>${s.bsrc==='bldg'?(b.eq==='1'?'적용':b.eq==='0'?'<span style="color:#F04452;font-weight:700">미적용</span>':'-'):(b.g||'-')}</td></tr>`).join('')}</tbody></table></div></div>`:''}
   <div class="note" ${s.bl&&s.bl.length?'hidden':''}><b>교내 건물 ${B.length?B.length+'동':''}${src('브이월드 도로명주소건물 · 층수×바닥면적 추정')}</b>
    ${B.length?`<table style="margin-top:6px"><thead><tr><th>건물</th><th>지상층</th><th>바닥면적</th><th>연면적(추정)</th></tr></thead><tbody>${B.map(b=>`<tr><td>${b.n}</td><td>${b.fl}층</td><td>${fmt(b.fa)}㎡</td><td>${fmt(b.ga)}㎡</td></tr>`).join('')}</tbody></table>`
    :`<div style="color:var(--sub);font-size:11.5px;margin-top:4px">${VWKEY?'학교로 확대되면 브이월드 건물 정보를 불러와 여기에 표시합니다. 정확한 동별 목록은 [데이터·방법] → KEIIS 건물정보 불러오기로 반영됩니다.':'브이월드 키가 등록된 주소(깃허브 페이지)에서 건물 목록이 표시됩니다.'}</div>`}</div>
