@@ -24,7 +24,6 @@ jobs:
           python-version: "3.12"
       - name: 건축물대장 수집
         env:
-          VWORLD_KEY: ${{ secrets.VWORLD_KEY }}
           BLDG_KEY: ${{ secrets.BLDG_KEY }}
           LIMIT: ${{ github.event.inputs.limit }}
         run: python scripts/fetch_buildings.py
