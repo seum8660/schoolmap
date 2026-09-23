@@ -388,7 +388,7 @@ let ALL=SCHOOLS, REGION=null;
 const GK=()=>REGION?'em':'sg', GL=()=>REGION?'읍면동':'시군', RN=()=>REGION||'전남', T0=(a,i)=>a[i]?a[i][0]:'-';
 let IS_SAMPLE = true;
 const NOW = 2026;
-const $ = s => document.querySelector(s);
+const Q = s => document.querySelector(s);
 const fmt = n => Math.round(n).toLocaleString('ko-KR');
 const avg = a => a.length ? a.reduce((x,y)=>x+y,0)/a.length : 0;
 const by = (arr,k)=>arr.reduce((m,s)=>((m[s[k]]??=[]).push(s),m),{});
@@ -429,7 +429,7 @@ function setBM(k){
   S.bm=k; LS.set('bm2',k); vwErr=0; fallback=false; ready=false; renderRight();
   if(map) map.setStyle(styleFor(k),{diff:false});
 }
-function toast(m){ let el=$('#toast'); if(!el){el=document.createElement('div');el.id='toast';el.style.cssText='position:absolute;left:50%;bottom:130px;transform:translateX(-50%);background:#23282b;color:#fff;padding:10px 16px;border-radius:10px;font-size:12.5px;z-index:20;max-width:560px;line-height:1.5';document.body.appendChild(el);} el.textContent=m; el.style.display='block'; clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display='none',7000); }
+function toast(m){ let el=Q('#toast'); if(!el){el=document.createElement('div');el.id='toast';el.style.cssText='position:absolute;left:50%;bottom:130px;transform:translateX(-50%);background:#23282b;color:#fff;padding:10px 16px;border-radius:10px;font-size:12.5px;z-index:20;max-width:560px;line-height:1.5';document.body.appendChild(el);} el.textContent=m; el.style.display='block'; clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display='none',7000); }
 /* ---------- 상태 ---------- */
 const S={ bm:(LS.get('bm2') in BMS)?LS.get('bm2'):'white', metric:'st', cmode:'age', is3d:true, rot:false, drone:false, sg:true, grid:false, col:true, vwb:true,
   fac:new Set(['초','중','고']), yr:null };
@@ -467,7 +467,7 @@ try{
     if(!map.isStyleLoaded()&&!fallback){ clearTimeout(fbT); fallback=true; map.setStyle(FALLBACK);} });
   fbT=setTimeout(()=>{ if(!map.isStyleLoaded()&&!fallback){fallback=true;map.setStyle(FALLBACK);} },5000);
 }catch(err){ console.warn('3D 지도 대신 간이 입체 지도로 표시합니다:',err.message); map=null; }
-setTimeout(()=>{ const i=$('#intro'); if(i){ i.style.opacity=0; setTimeout(()=>i.remove(),800);} },2500);
+setTimeout(()=>{ const i=Q('#intro'); if(i){ i.style.opacity=0; setTimeout(()=>i.remove(),800);} },2500);
 
 function cellDeg(){ const z=map?map.getZoom():7; return z<8.5?0.05:z<10.5?0.018:z<12.5?0.006:0.0025; }
 function gridFC(){
@@ -524,7 +524,7 @@ if(map){ map.on('style.load',()=>{clearTimeout(fbT);addOverlays();if(!introDone)
 let lastD=''; map.on('zoomend',()=>{ if(!ready) return; const z=map.getZoom(); const d=cellDeg()+'|'+repMode()+'|'+(z>=13?3:z>=11.5?2:1); if(d!==lastD){lastD=d; refresh();} });
 }
 function refresh(){ if(E3.on){ e3Sync(); return; } if(!map){ drawCV(); return; } if(!ready) return; map.getSource('grid').setData(gridFC()); map.getSource('col').setData(colFC()); map.getSource('roof')&&map.getSource('roof').setData(roofFC()); labelsSync(); map.getSource('sg').setData(sgFC());
-  $('#sub').textContent=S.col?`전라남도${REGION?' '+REGION:''} · 학교 건물 ${SCHOOLS.filter(pass).length}개교 · 2026-09-21 기준`:`전라남도 · 학교 ${({0.05:'5km',0.018:'2km',0.006:'600m',0.0025:'250m'})[cellDeg()]} 격자 · 2026-09-21 기준`; }
+  Q('#sub').textContent=S.col?`전라남도${REGION?' '+REGION:''} · 학교 건물 ${SCHOOLS.filter(pass).length}개교 · 2026-09-21 기준`:`전라남도 · 학교 ${({0.05:'5km',0.018:'2km',0.006:'600m',0.0025:'250m'})[cellDeg()]} 격자 · 2026-09-21 기준`; }
 function applyView(){ if(!map){drawCV();return;} if(!ready) return;
   map.setLayoutProperty('grid','visibility',S.grid?'visible':'none');
   map.setLayoutProperty('col','visibility',S.col?'visible':'none'); if(map.getLayer('roof')) map.setLayoutProperty('roof','visibility',S.col?'visible':'none');
@@ -544,7 +544,7 @@ map.on('mousemove','col',e=>{ const s=SCHOOLS.find(v=>v.id===e.features[0].prope
   pop.setLngLat(e.lngLat).setHTML(`<b>${s.n}</b><br>${s.ad||s.sg}${s.of?`<br>${s.of}`:''}<br>준공 ${s.yr}년(${s.age}년)<br>학생 ${s.st}명 · 2년 전 ${s.st5}명<br>연면적 ${fmt(s.ar)}㎡${s.nb?` · ${s.nb}개동`:''}`).addTo(map); });
 ['grid','col'].forEach(l=>map.on('mouseleave',l,()=>{map.getCanvas().style.cursor='';pop.remove();})); }
 
-function intro(){ introDone=true; $('#intro').style.opacity=0; setTimeout(()=>$('#intro')?.remove(),800);
+function intro(){ introDone=true; Q('#intro').style.opacity=0; setTimeout(()=>Q('#intro')?.remove(),800);
   const red=matchMedia('(prefers-reduced-motion: reduce)').matches, t0=performance.now(), D=3000;
   try{ const cam=map.cameraForBounds([[125.9,34.0],[127.9,35.5]],{padding:document.body.classList.contains('l2')?{left:80,right:80,top:110,bottom:90}:{left:leftPad(),right:250,top:90,bottom:130}}); if(cam) HOME={center:cam.center,zoom:cam.zoom+0.35,pitch:55,bearing:-15}; }catch(e){}
   map.easeTo({...HOME,duration:red?0:D});
@@ -554,20 +554,20 @@ function intro(){ introDone=true; $('#intro').style.opacity=0; setTimeout(()=>$(
 
 /* ---------- 우측 패널 ---------- */
 function renderRight(){
-  $('#oBm').innerHTML=Object.entries(BMS).map(([k,l])=>`<button class="opt ${S.bm===k?'on':''}" data-k="${k}"><span class="sq" style="border-radius:50%"></span>${l}</button>`).join('');
-  $('#oBm').querySelectorAll('.opt').forEach(b=>b.onclick=()=>setBM(b.dataset.k));
-  $('#oMet').innerHTML=Object.entries(METRICS).map(([k,m])=>`<button class="opt ${S.metric===k?'on':''}" data-k="${k}"><span class="sq"></span>${m.l}</button>`).join('');
-  $('#oMet').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{S.metric=b.dataset.k;S.grid=true;renderRight();refresh();applyView();renderLegend();});
-  $('#oRing').innerHTML=Object.entries(RINGS).map(([k,r])=>`<button class="opt ${S.cmode===k&&!HLIDS.size?'on':''}" data-k="${k}" style="--c:${r.c}"><span class="ci"></span>${r.l}<span class="ct">${r.f?SCHOOLS.filter(s=>pass(s)&&r.f(s)).length:''}</span></button>`).join('');
-  $('#oRing').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ S.cmode=b.dataset.k; HL=[]; HLIDS=new Set(); if(!S.col){S.col=true;S.grid=false;applyView();} renderRight(); refresh(); renderLegend(); });
+  Q('#oBm').innerHTML=Object.entries(BMS).map(([k,l])=>`<button class="opt ${S.bm===k?'on':''}" data-k="${k}"><span class="sq" style="border-radius:50%"></span>${l}</button>`).join('');
+  Q('#oBm').querySelectorAll('.opt').forEach(b=>b.onclick=()=>setBM(b.dataset.k));
+  Q('#oMet').innerHTML=Object.entries(METRICS).map(([k,m])=>`<button class="opt ${S.metric===k?'on':''}" data-k="${k}"><span class="sq"></span>${m.l}</button>`).join('');
+  Q('#oMet').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{S.metric=b.dataset.k;S.grid=true;renderRight();refresh();applyView();renderLegend();});
+  Q('#oRing').innerHTML=Object.entries(RINGS).map(([k,r])=>`<button class="opt ${S.cmode===k&&!HLIDS.size?'on':''}" data-k="${k}" style="--c:${r.c}"><span class="ci"></span>${r.l}<span class="ct">${r.f?SCHOOLS.filter(s=>pass(s)&&r.f(s)).length:''}</span></button>`).join('');
+  Q('#oRing').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ S.cmode=b.dataset.k; HL=[]; HLIDS=new Set(); if(!S.col){S.col=true;S.grid=false;applyView();} renderRight(); refresh(); renderLegend(); });
   const V=[['eng',ic('building'),E3.on?'브이월드 3D 실사 (켜짐)':'브이월드 3D 실사'],['is3d',ic('cube'),'입체 보기'],['rot',ic('rotate'),'자동 회전'],['drone',ic('drone'),'드론 비행'],['vwb',ic('building'),'전체 건물 3D'],['grid',ic('grid'),'격자 기둥'],['col',ic('column'),'학교 기둥']];
-  $('#oView').innerHTML=V.map(([k,i,l])=>`<button class="opt ${S[k]?'on':''}" data-k="${k}"><span class="ic">${i}</span>${l}</button>`).join('');
-  $('#oView').querySelectorAll('.opt').forEach(b=>b.onclick=()=>toggleView(b.dataset.k));
+  Q('#oView').innerHTML=V.map(([k,i,l])=>`<button class="opt ${S[k]?'on':''}" data-k="${k}"><span class="ic">${i}</span>${l}</button>`).join('');
+  Q('#oView').querySelectorAll('.opt').forEach(b=>b.onclick=()=>toggleView(b.dataset.k));
   const cnt=k=>SCHOOLS.filter(s=>s.lv===k&&(S.yr===null||s.yr===S.yr)).length;
   const FAC=[['초','초등학교','#0064FF'],['중','중학교','#4795FF'],['고','고등학교','#8B95A1']];
-  $('#oFac').innerHTML=FAC.map(([k,l,c])=>`<button class="opt ${S.fac.has(k)?'':'off'}" data-k="${k}" style="--c:${c}"><span class="dt"></span>${l}<span class="ct">${cnt(k)}</span></button>`).join('')+
+  Q('#oFac').innerHTML=FAC.map(([k,l,c])=>`<button class="opt ${S.fac.has(k)?'':'off'}" data-k="${k}" style="--c:${c}"><span class="dt"></span>${l}<span class="ct">${cnt(k)}</span></button>`).join('')+
     `<button class="opt" disabled style="--c:#b9b3a6"><span class="dt"></span>분교장<span class="ct">${SCHOOLS.filter(s=>s.bk).length}</span></button><button class="opt" disabled style="--c:#b9b3a6"><span class="dt"></span>섬 지역 학교<span class="ct">${SCHOOLS.filter(s=>s.isl).length}</span></button>`;
-  $('#oFac').querySelectorAll('.opt[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k;S.fac.has(k)?S.fac.delete(k):S.fac.add(k);onFilter();});
+  Q('#oFac').querySelectorAll('.opt[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k;S.fac.has(k)?S.fac.delete(k):S.fac.add(k);onFilter();});
 }
 function toggleView(k){ if(k==='eng'){ setEngine(E3.on?'ml':'vw'); return; }
   if(k==='drone'){ S.drone?stopDrone():startDrone(); return; }
@@ -581,14 +581,14 @@ function toggleView(k){ if(k==='eng'){ setEngine(E3.on?'ml':'vw'); return; }
 function spin(){ if(!S.rot||!map) return; map.setBearing(map.getBearing()+0.05); requestAnimationFrame(spin); }
 function renderLegend(){
   if(S.col){ const m=RINGS[S.cmode];
-    $('#legend').innerHTML = HLIDS.size ? `<b>학교 건물 · 선택 강조</b><div class="grad" style="background:linear-gradient(90deg,#0064FF 50%,${DIM} 50%)"></div><div class="lb"><span>해당 ${HLIDS.size}곳</span><span>그 외</span></div><p>질문에 해당하는 학교 건물만 파란색으로 표시합니다. 높이는 학생수입니다.</p><div class="lk"><button id="lkC">강조 해제</button><button id="lkT">상위 20개교 표</button></div>`
+    Q('#legend').innerHTML = HLIDS.size ? `<b>학교 건물 · 선택 강조</b><div class="grad" style="background:linear-gradient(90deg,#0064FF 50%,${DIM} 50%)"></div><div class="lb"><span>해당 ${HLIDS.size}곳</span><span>그 외</span></div><p>질문에 해당하는 학교 건물만 파란색으로 표시합니다. 높이는 학생수입니다.</p><div class="lk"><button id="lkC">강조 해제</button><button id="lkT">상위 20개교 표</button></div>`
     : m.f ? `<b>학교 건물 · ${m.l}</b><div class="grad" style="background:linear-gradient(90deg,${m.c} 50%,${DIM} 50%)"></div><div class="lb"><span>해당 ${SCHOOLS.filter(s=>pass(s)&&m.f(s)).length}곳</span><span>그 외</span></div><p>조건에 해당하는 학교 건물에 색을 넣었습니다. 높이는 학생수입니다.</p><div class="lk"><button id="lkT">상위 20개교 표</button></div>`
     : `<b>학교 건물 · 경과연수</b><div class="grad" style="background:linear-gradient(90deg,rgb(47,158,110) 0%,rgb(143,190,90) 25%,rgb(227,181,59) 41.7%,rgb(239,138,46) 58.3%,rgb(200,66,28) 75%,rgb(122,24,12) 100%)"></div><div class="lb"><span>0년</span><span>20</span><span>40</span><span>60년+</span></div><p>경과연수가 길수록 초록에서 적갈색으로 짙어집니다. 학교는 육각 기둥으로 표시하며 높이는 학생수입니다.</p><div class="lk"><button id="lkT">상위 20개교 표</button></div>`;
-    const lc=$('#lkC'); if(lc) lc.onclick=()=>{ highlight([]); renderRight(); }; }
+    const lc=Q('#lkC'); if(lc) lc.onclick=()=>{ highlight([]); renderRight(); }; }
   else { const M=METRICS[S.metric]; const vals=gridFC().features.map(f=>f.properties.v), mx=Math.max(...vals,1);
-    $('#legend').innerHTML=`<b>${M.l} · 격자</b><div class="grad"></div><div class="lb"><span>낮음</span><span>${fmt(mx/2)}</span><span>${fmt(mx)}${M.u}+</span></div><p>${M.desc}</p><div class="lk"><button id="lkM">자세한 설명</button><button id="lkT">상위 20개교 표</button></div>`;
-    $('#lkM').onclick=()=>setTab('src'); }
-  $('#lkT').onclick=()=>setTab('cand');
+    Q('#legend').innerHTML=`<b>${M.l} · 격자</b><div class="grad"></div><div class="lb"><span>낮음</span><span>${fmt(mx/2)}</span><span>${fmt(mx)}${M.u}+</span></div><p>${M.desc}</p><div class="lk"><button id="lkM">자세한 설명</button><button id="lkT">상위 20개교 표</button></div>`;
+    Q('#lkM').onclick=()=>setTab('src'); }
+  Q('#lkT').onclick=()=>setTab('cand');
 }
 
 /* ---------- 타임라인 ---------- */
@@ -599,16 +599,16 @@ function renderTL(){
   if(tlMode==='yr'){
     const y0=Math.min(...L.map(s=>s.yr),1962), ys=[]; for(let y=y0;y<=2025;y++) ys.push(y);
     const c=ys.map(y=>L.filter(s=>s.yr===y).length), mx=Math.max(...c,1), old=L.filter(s=>s.age>=40).length;
-    $('#tl').innerHTML=ys.map((y,i)=>`<button class="${NOW-y>=40?'o':''} ${S.yr===y?'sel':''}" style="height:${c[i]/mx*100}%" title="${y}년 준공 ${c[i]}곳" data-y="${y}" aria-label="${y}년 준공 ${c[i]}곳"></button>`).join('');
-    $('#tlx').innerHTML=[ys[0],1970,1980,1990,2000,2010,2020].map(y=>`<span>${y}</span>`).join('');
-    $('#tlInfo').innerHTML=S.yr?`<b>${S.yr}년 준공만 표시</b> · 다시 누르면 해제`:`<b>40년↑ ${old}곳</b> · 준공년도 기준 · 파랑 = ${NOW-40}년 이전`;
-    $('#tl').querySelectorAll('button').forEach(b=>b.onclick=()=>{const y=+b.dataset.y;S.yr=S.yr===y?null:y;onFilter();});
+    Q('#tl').innerHTML=ys.map((y,i)=>`<button class="${NOW-y>=40?'o':''} ${S.yr===y?'sel':''}" style="height:${c[i]/mx*100}%" title="${y}년 준공 ${c[i]}곳" data-y="${y}" aria-label="${y}년 준공 ${c[i]}곳"></button>`).join('');
+    Q('#tlx').innerHTML=[ys[0],1970,1980,1990,2000,2010,2020].map(y=>`<span>${y}</span>`).join('');
+    Q('#tlInfo').innerHTML=S.yr?`<b>${S.yr}년 준공만 표시</b> · 다시 누르면 해제`:`<b>40년↑ ${old}곳</b> · 준공년도 기준 · 파랑 = ${NOW-40}년 이전`;
+    Q('#tl').querySelectorAll('button').forEach(b=>b.onclick=()=>{const y=+b.dataset.y;S.yr=S.yr===y?null:y;onFilter();});
   } else {
     const ys=[]; for(let y=NOW;y<=NOW+15;y++) ys.push(y);
     const c=ys.map(y=>L.filter(s=>s.yr+40===y).length), mx=Math.max(...c,1), n5=c.slice(0,6).reduce((a,b)=>a+b,0);
-    $('#tl').innerHTML=ys.map((y,i)=>`<button class="${y<=NOW+5?'o':''}" style="height:${c[i]/mx*100}%" title="${y}년 40년 도래 ${c[i]}곳" aria-label="${y}년 ${c[i]}곳"></button>`).join('');
-    $('#tlx').innerHTML=ys.filter((y,i)=>i%3===0).map(y=>`<span>${y}</span>`).join('');
-    $('#tlInfo').innerHTML=`<b>${NOW}~${NOW+5}년 ${n5}곳</b> · 해마다 새로 40년이 되는 학교 수`;
+    Q('#tl').innerHTML=ys.map((y,i)=>`<button class="${y<=NOW+5?'o':''}" style="height:${c[i]/mx*100}%" title="${y}년 40년 도래 ${c[i]}곳" aria-label="${y}년 ${c[i]}곳"></button>`).join('');
+    Q('#tlx').innerHTML=ys.filter((y,i)=>i%3===0).map(y=>`<span>${y}</span>`).join('');
+    Q('#tlInfo').innerHTML=`<b>${NOW}~${NOW+5}년 ${n5}곳</b> · 해마다 새로 40년이 되는 학교 수`;
   }
 }
 function onFilter(){ updateKPI(); if(LAYOUT==='3'&&document.body.classList.contains('l3doc')&&L3V!=='src') (L3V==='sum'?l3Sum:l3Find)(); refresh(); renderRight(); renderTL(); renderLegend(); if(curTab!=='ask') setTab(curTab); }
@@ -655,37 +655,37 @@ const QA=[
 ];
 let curTab='ask', autoV=true;
 let VOICE=(LS.get('voice')!=='off');
-function applyVoice(){ const b=$('#voBtn'); b.innerHTML=ic(VOICE?'speaker':'mute')+(VOICE?' 음성 켬':' 음성 끔'); b.setAttribute('aria-pressed',VOICE?'true':'false'); b.style.opacity=VOICE?'1':'.6';
-  ['#autoV','#stopV'].forEach(s=>{ const e=$(s); if(e) e.style.display=VOICE?'':'none'; }); if(!VOICE&&window.speechSynthesis) speechSynthesis.cancel(); }
-$('#homeBtn').innerHTML=ic('home')+' 전남 전체';
-$('#homeBtn').onclick=()=>goHome();
+function applyVoice(){ const b=Q('#voBtn'); b.innerHTML=ic(VOICE?'speaker':'mute')+(VOICE?' 음성 켬':' 음성 끔'); b.setAttribute('aria-pressed',VOICE?'true':'false'); b.style.opacity=VOICE?'1':'.6';
+  ['#autoV','#stopV'].forEach(s=>{ const e=Q(s); if(e) e.style.display=VOICE?'':'none'; }); if(!VOICE&&window.speechSynthesis) speechSynthesis.cancel(); }
+Q('#homeBtn').innerHTML=ic('home')+' 전남 전체';
+Q('#homeBtn').onclick=()=>goHome();
 function goHome(){ if(DETAIL) closeSchool(); highlight([]); S.yr=null; if(REGION) setRegion(null); else if(E3.on) e3Home(); else if(map) map.flyTo({...HOME,duration:1800}); else drawCV(); onFilter(); speak('전남 전체 화면입니다.'); }
-$('#voBtn').onclick=()=>{ VOICE=!VOICE; LS.set('voice',VOICE?'on':'off'); applyVoice(); if(VOICE){ speak.force=true; speak('음성 안내를 켰습니다.'); } };
+Q('#voBtn').onclick=()=>{ VOICE=!VOICE; LS.set('voice',VOICE?'on':'off'); applyVoice(); if(VOICE){ speak.force=true; speak('음성 안내를 켰습니다.'); } };
 applyVoice();
 function speak(t){ if(!VOICE){ speak.force=false; return; } if(!autoV&&!speak.force) return; speak.force=false; if(!('speechSynthesis' in window)) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t.replace(/㎡/g,'제곱미터').replace(/↑/g,' 이상').replace(/↓/g,' 이하')); u.lang='ko-KR'; const mv=maleVoice(); if(mv){ u.voice=mv; u.pitch=mv._fake?0.35:0.95; } else u.pitch=0.35; u.rate=mv&&!mv._fake?1.0:0.95; speechSynthesis.speak(u); }
 function maleVoice(){ const vs=(speechSynthesis.getVoices&&speechSynthesis.getVoices())||[], ko=vs.filter(v=>/^ko/i.test(v.lang));
   const m=ko.find(v=>/InJoon|Hyunsu|BongJin|GookMin|Male|남성|남자/i.test(v.name)); if(m) return m; const f=ko[0]; if(f){ f._fake=true; return f; } return null; }
 if('speechSynthesis' in window) speechSynthesis.onvoiceschanged=()=>maleVoice();
-$('#autoV').onclick=()=>{autoV=!autoV;$('#autoV').classList.toggle('on',autoV);};
-$('#stopV').onclick=()=>speechSynthesis?.cancel();
+Q('#autoV').onclick=()=>{autoV=!autoV;Q('#autoV').classList.toggle('on',autoV);};
+Q('#stopV').onclick=()=>speechSynthesis?.cancel();
 function chartHTML(ch){ const mx=Math.max(...ch.rows.flatMap(r=>[r.a,r.b]),1);
   return `<div class="ch"><div class="hd">${ch.t}<button class="big">크게 보기 +</button></div><div class="lg"><span style="--c:var(--blue)">${ch.a}</span><span style="--c:var(--brown)">${ch.b}</span></div>
   <div class="bars">${ch.rows.map(r=>`<div class="g"><div class="a" style="height:${r.a/mx*82}%"><b>${fmt(r.a)}</b></div><div class="b" style="height:${r.b/mx*82}%"><b>${r.b%1?r.b:fmt(r.b)}</b></div></div>`).join('')}</div>
   <div class="xl">${ch.rows.map(r=>`<span title="${r.l}">${r.l}</span>`).join('')}</div></div>`; }
 function renderAsk(){
-  $('#lhead').innerHTML=`<h3><span>01</span>핵심 질의응답 · ${RN()} <span id="qn">0 / ${QA.length}</span></h3><p>준비된 질문을 누르거나, 조건을 직접 입력해 보십시오. 예: "신안군 40년 이상 초등학교", "감소율 상위 10곳"</p>`;
-  $('#lbody').innerHTML=QA.map((x,i)=>`<div class="qa" id="qa${i}"><button class="q" data-i="${i}" aria-expanded="false"><span class="ar">${ic('chev')}</span>${x.q}</button><div class="ans"></div></div>`).join('');
+  Q('#lhead').innerHTML=`<h3><span>01</span>핵심 질의응답 · ${RN()} <span id="qn">0 / ${QA.length}</span></h3><p>준비된 질문을 누르거나, 조건을 직접 입력해 보십시오. 예: "신안군 40년 이상 초등학교", "감소율 상위 10곳"</p>`;
+  Q('#lbody').innerHTML=QA.map((x,i)=>`<div class="qa" id="qa${i}"><button class="q" data-i="${i}" aria-expanded="false"><span class="ar">${ic('chev')}</span>${x.q}</button><div class="ans"></div></div>`).join('');
   document.querySelectorAll('.qa .q').forEach(b=>b.onclick=()=>openQA(+b.dataset.i));
 }
 function openQA(i,force){
-  const el=$('#qa'+i); if(!el) return; const was=el.classList.contains('open');
+  const el=Q('#qa'+i); if(!el) return; const was=el.classList.contains('open');
   document.querySelectorAll('.qa').forEach(q=>{q.classList.remove('open');q.querySelector('.q').setAttribute('aria-expanded','false');});
-  if(was&&!force){ highlight([]); $('#qn').textContent=`0 / ${QA.length}`; return; }
+  if(was&&!force){ highlight([]); Q('#qn').textContent=`0 / ${QA.length}`; return; }
   const r=QA[i].f();
   el.querySelector('.ans').innerHTML=`<div class="lis">${VOICE?`<button class="ls">${ic('speaker')} 듣기</button>`:''}</div><p class="conc">${r.c}</p><p class="desc">${r.d}</p>
    <div class="ev"><div class="h">근거 수치와 한계 · 자료 기준 2026-09-21${IS_SAMPLE?' · 준공년도·학생수·연면적은 예시값':''}</div>${r.ev.map(([c,l,t])=>`<div class="r"><i class="${c}">${l}</i>${t}</div>`).join('')}</div>
    ${chartHTML(r.ch)}<button class="mapgo"><b>지도에서 확인</b><small>${r.go}</small></button>`;
-  el.classList.add('open'); el.querySelector('.q').setAttribute('aria-expanded','true'); $('#qn').textContent=`${i+1} / ${QA.length}`;
+  el.classList.add('open'); el.querySelector('.q').setAttribute('aria-expanded','true'); Q('#qn').textContent=`${i+1} / ${QA.length}`;
   const ls=el.querySelector('.ls'); if(ls) ls.onclick=()=>{speak.force=true;speak(r.c+' '+r.d);};
   el.querySelector('.big').onclick=e=>{const c=e.target.closest('.ch');c.classList.toggle('big');e.target.textContent=c.classList.contains('big')?'작게 보기 −':'크게 보기 +';};
   el.querySelector('.mapgo').onclick=()=>{ if(r.drone) startDrone(); else {highlight(r.ids);fitTo(r.ids.length?r.ids:SCHOOLS);} };
@@ -693,7 +693,7 @@ function openQA(i,force){
   highlight(r.ids); if(!r.drone) fitTo(r.ids.length?r.ids:SCHOOLS); speak(r.c);
   return r;
 }
-function ask(){ const v=$('#q').value.trim(); if(!v) return; if(renderNL(v)) return; const tk=v.replace(/[?.,]/g,' ').split(/\s+/).filter(Boolean); let best=-1,bi=0;
+function ask(){ const v=Q('#q').value.trim(); if(!v) return; if(renderNL(v)) return; const tk=v.replace(/[?.,]/g,' ').split(/\s+/).filter(Boolean); let best=-1,bi=0;
   QA.forEach((x,i)=>{const h=x.q+' '+x.k;let sc=0;tk.forEach(t=>{if(h.includes(t))sc+=2;else for(const c of t)if(h.includes(c))sc+=.2;});if(sc>best){best=sc;bi=i;}});
   setTab('ask'); openQA(bi,true); }
 /* ---------- 학교 검색(자동완성) ---------- */
@@ -702,25 +702,25 @@ let SUG=[], SUGI=-1;
 function schoolFind(q){ const k=nz(q); if(!k) return []; const ab=k.replace(/(초등학교|중학교|고등학교|학교)$/,'');
   return ALL.map(s=>{ const n=nz(s.n); let sc=n===k?100:n.startsWith(k)?80:n.includes(k)?60:(ab.length>=2&&n.includes(ab))?50:nz(s.em).includes(k)?30:nz(s.sg).includes(k)?20:0; return {s,sc}; }).filter(x=>x.sc).sort((a,b)=>b.sc-a.sc||a.s.n.localeCompare(b.s.n,'ko')).slice(0,8).map(x=>x.s); }
 function hiName(n,q){ const k=q.trim(); if(!k) return n; const i=n.indexOf(k); return i<0?n:n.slice(0,i)+'<mark>'+n.slice(i,i+k.length)+'</mark>'+n.slice(i+k.length); }
-function renderSug(){ const q=$('#q').value, box=$('#sug'); if(!q.trim()){ box.hidden=true; $('#q').setAttribute('aria-expanded','false'); return; }
+function renderSug(){ const q=Q('#q').value, box=Q('#sug'); if(!q.trim()){ box.hidden=true; Q('#q').setAttribute('aria-expanded','false'); return; }
   const L=schoolFind(q); SUG=L.map(s=>({t:'s',s})); SUGI=L.length?0:-1;
   box.innerHTML=(L.length?`<div class="sh">학교 ${L.length}곳</div>`+L.map((s,i)=>`<div class="it${i===0?' on':''}" role="option" data-i="${i}"><i style="background:${GC(s.age)}"></i><div><b>${hiName(s.n,q)}</b><br><small>${s.sg} ${s.em||''} · ${s.lv}등학교${s.bk?' · 분교':''}</small></div><em>${s.age}년 · ${fmt(s.st)}명</em></div>`).join(''):'<div class="none">일치하는 학교가 없습니다. Enter를 누르면 질문으로 찾습니다.</div>')+
     `<div class="sh">질문으로 찾기</div><div class="it sq" data-i="qa"><span style="color:#0064FF;display:inline-flex">${ic('search')}</span><b>"${q.replace(/</g,'&lt;')}" 질의응답에서 찾기</b></div>`;
-  box.hidden=false; $('#q').setAttribute('aria-expanded','true');
+  box.hidden=false; Q('#q').setAttribute('aria-expanded','true');
   box.querySelectorAll('.it').forEach(el=>el.onmousedown=e=>{ e.preventDefault(); pickSug(el.dataset.i); }); }
-function pickSug(i){ $('#sug').hidden=true; if(i==='qa'||i===-1||i===undefined){ ask(); return; } const s=SUG[+i]&&SUG[+i].s; if(!s){ ask(); return; }
-  if(REGION&&s.sg!==REGION) setRegion(null); $('#q').value=s.n; if(!DETAIL) PREVTAB=curTab; openSchool(s.id); speak(s.n+', 경과 '+s.age+'년, 학생 '+s.st+'명'); }
-$('#q').addEventListener('input',renderSug);
-$('#q').addEventListener('focus',()=>{ if($('#q').value.trim()) renderSug(); });
-$('#q').addEventListener('blur',()=>setTimeout(()=>$('#sug').hidden=true,150));
-$('#q').onkeydown=e=>{ const box=$('#sug'), items=[...box.querySelectorAll('.it')];
+function pickSug(i){ Q('#sug').hidden=true; if(i==='qa'||i===-1||i===undefined){ ask(); return; } const s=SUG[+i]&&SUG[+i].s; if(!s){ ask(); return; }
+  if(REGION&&s.sg!==REGION) setRegion(null); Q('#q').value=s.n; if(!DETAIL) PREVTAB=curTab; openSchool(s.id); speak(s.n+', 경과 '+s.age+'년, 학생 '+s.st+'명'); }
+Q('#q').addEventListener('input',renderSug);
+Q('#q').addEventListener('focus',()=>{ if(Q('#q').value.trim()) renderSug(); });
+Q('#q').addEventListener('blur',()=>setTimeout(()=>Q('#sug').hidden=true,150));
+Q('#q').onkeydown=e=>{ const box=Q('#sug'), items=[...box.querySelectorAll('.it')];
   if(e.key==='ArrowDown'||e.key==='ArrowUp'){ if(box.hidden) renderSug(); e.preventDefault(); const n=items.length; let cur=items.findIndex(x=>x.classList.contains('on')); cur=(cur+(e.key==='ArrowDown'?1:-1)+n)%n; items.forEach((x,j)=>x.classList.toggle('on',j===cur)); items[cur]&&items[cur].scrollIntoView({block:'nearest'}); return; }
   if(e.key==='Escape'){ box.hidden=true; return; }
   if(e.key==='Enter'){ e.preventDefault(); const on=items.find(x=>x.classList.contains('on')); pickSug(on?on.dataset.i:'qa'); } };
-$('#qgo').onclick=()=>{ const L=schoolFind($('#q').value); if(L.length&&nz(L[0].n).includes(nz($('#q').value))){ SUG=[{t:'s',s:L[0]}]; pickSug(0); } else ask(); };
+Q('#qgo').onclick=()=>{ const L=schoolFind(Q('#q').value); if(L.length&&nz(L[0].n).includes(nz(Q('#q').value))){ SUG=[{t:'s',s:L[0]}]; pickSug(0); } else ask(); };
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-$('#mic').onclick=()=>{ if(!SR){alert('이 브라우저는 음성 인식을 지원하지 않습니다. 크롬이나 엣지에서 사용하십시오.');return;}
-  const r=new SR(); r.lang='ko-KR'; $('#mic').classList.add('rec'); r.onresult=e=>{$('#q').value=e.results[0][0].transcript;ask();}; r.onend=()=>$('#mic').classList.remove('rec'); r.start(); };
+Q('#mic').onclick=()=>{ if(!SR){alert('이 브라우저는 음성 인식을 지원하지 않습니다. 크롬이나 엣지에서 사용하십시오.');return;}
+  const r=new SR(); r.lang='ko-KR'; Q('#mic').classList.add('rec'); r.onresult=e=>{Q('#q').value=e.results[0][0].transcript;ask();}; r.onend=()=>Q('#mic').classList.remove('rec'); r.start(); };
 
 /* ---------- 인사이트 ---------- */
 const SIM={small:60,age:40,rad:3,unit:350};  /* 단가: 만원/㎡ */
@@ -750,7 +750,7 @@ let INS=null;
 function renderIns(){ INS=insCalc(); const I=INS, SM=SIM.small, A=SIM.age;
   head('인사이트',`${RN()} 재구조화 의사결정 인사이트`,`기준을 바꾸면 모든 카드와 지도가 즉시 다시 계산됩니다${IS_SAMPLE&&!SIAUTO?' · 현재 학생수·준공년도는 예시값':''}`);
   const card=(n,t,c,ev,body,go,gl)=>`<div class="qa open"><div class="q" style="cursor:default"><span class="ar" style="color:#0064FF;font-weight:800">${n}</span>${t}</div><div class="ans"><p class="conc">${c}</p><div class="ev">${ev.map(([k,l,x])=>`<div class="r"><i class="${k}">${l}</i>${x}</div>`).join('')}</div>${body||''}${go?`<button class="mapgo" data-go="${go}"><b>지도에서 확인</b><small>${gl}</small></button>`:''}</div></div>`;
-  $('#lbody').innerHTML=`
+  Q('#lbody').innerHTML=`
   <div class="qa open"><div class="q" style="cursor:default"><span class="ar" style="color:#0064FF;font-weight:800">⑧</span>기준 시뮬레이터</div><div class="ans">
    <div class="sim">
     <label>학생 기준 <b id="svS">${SM}명 이상</b><input type="range" id="siS" min="20" max="120" step="10" value="${SM}"></label>
@@ -773,10 +773,10 @@ function renderIns(){ INS=insCalc(); const I=INS, SM=SIM.small, A=SIM.age;
   ${card('⑦','대체 불가 학교',`반경 ${SIM.rad*2}km 안에 같은 학교급이 없는 ${SM}명 미만 학교 ${I.only.length}곳은 통합이 아닌 <b style="display:inline">존치·복합화</b> 대상입니다.`,
     [['t1','수치',`섬 지역 ${I.only.filter(s=>s.isl).length}곳 · 육지 ${I.only.filter(s=>!s.isl).length}곳`],['t2','근거',`학생 ${SM}명 미만 중 반경 ${SIM.rad*2}km(섬은 같은 읍면) 내 동일 학교급 없음`],['t3','한계','학교급 간 통합(초·중 통합운영)은 별도 검토']],
     `<p class="desc">마을 거점으로서 돌봄·평생교육 시설과의 <b style="display:inline">복합화</b>를 검토할 만한 학교입니다.</p>`,'only','대체 불가 학교')}`;
-  const bindR=(id,key,fmtv,lbl)=>{ const el=$('#'+id); el.oninput=()=>{ $('#'+lbl).textContent=fmtv(+el.value); }; el.onchange=()=>{ SIM[key]=+el.value; if(key==='small'){ window.SMALLV=SIM.small; } derive(); renderIns(); insMap('cand',true); speak(`${fmtv(+el.value)} 기준으로 다시 계산했습니다. 검토 대상 ${INS.cand.length}곳`); }; };
+  const bindR=(id,key,fmtv,lbl)=>{ const el=Q('#'+id); el.oninput=()=>{ Q('#'+lbl).textContent=fmtv(+el.value); }; el.onchange=()=>{ SIM[key]=+el.value; if(key==='small'){ window.SMALLV=SIM.small; } derive(); renderIns(); insMap('cand',true); speak(`${fmtv(+el.value)} 기준으로 다시 계산했습니다. 검토 대상 ${INS.cand.length}곳`); }; };
   bindR('siS','small',v=>v+'명 이상','svS'); bindR('siA','age',v=>v+'년 이상','svA'); bindR('siR','rad',v=>v+'km','svR'); bindR('siU','unit',v=>'㎡당 '+v+'만원','svU');
-  $('#lbody').querySelectorAll('.mapgo[data-go]').forEach(b=>b.onclick=()=>insMap(b.dataset.go));
-  $('#lbody').querySelectorAll('tr[data-pa]').forEach(tr=>tr.onclick=()=>{ const ids=tr.dataset.pa.split(',').map(Number), L=ALL.filter(s=>ids.includes(s.id)); highlight(L); fitTo(L); });
+  Q('#lbody').querySelectorAll('.mapgo[data-go]').forEach(b=>b.onclick=()=>insMap(b.dataset.go));
+  Q('#lbody').querySelectorAll('tr[data-pa]').forEach(tr=>tr.onclick=()=>{ const ids=tr.dataset.pa.split(',').map(Number), L=ALL.filter(s=>ids.includes(s.id)); highlight(L); fitTo(L); });
 }
 function insMap(k,quiet){ const I=INS||insCalc(); const L={cand:I.cand,fut:I.fut.map(f=>ALL.find(s=>s.id===f.id)),bl:I.backlog,pair:I.P.flatMap(p=>[p.keep,p.go]),only:I.only}[k]||[]; highlight(L); if(!quiet) fitTo(L.length?L:SCHOOLS); }
 /* ---------- 자연어 질문 자동 답변 ---------- */
@@ -845,7 +845,7 @@ function nlAnswer(q){
 function renderNL(q){
   const r=nlAnswer(q); if(!r) return false;
   setTab('ask');
-  const head=$('#lbody');
+  const head=Q('#lbody');
   if(r.empty){ head.insertAdjacentHTML('afterbegin',`<div class="qa open" id="qaNL"><div class="q" style="cursor:default"><span class="ar" style="color:#0064FF">Q</span>${q}</div><div class="ans"><p class="conc">${r.scope} 조건에 해당하는 학교가 없습니다.</p><p class="desc">조건을 넓혀 다시 물어보십시오. 예: "신안군 40년 이상 초등학교", "감소율 상위 10곳"</p></div></div>`); return true; }
   const M=r.M, fx=v=>v.toFixed(M.d);
   const rows=r.top.map((s,i)=>`<tr class="cl" data-id="${s.id}"><td>${i+1}. ${s.n}</td><td>${s.sg}</td><td>${s.lv}</td><td style="color:${GC(s.age)};font-weight:700">${s.age}년</td><td>${fmt(s.st)}명</td><td><b>${fx(M.f(s))}${M.u}</b></td></tr>`).join('');
@@ -856,40 +856,40 @@ function renderNL(q){
    <table style="margin-bottom:10px"><thead><tr><th>학교</th><th>시군</th><th>급</th><th>경과</th><th>학생</th><th>${M.l}</th></tr></thead><tbody>${rows}</tbody></table>
    ${chartHTML(ch)}
    <button class="mapgo" id="nlGo"><b>지도에서 확인</b><small>${r.scope} ${r.top.length}곳</small></button></div></div>`);
-  $('#qaNL').querySelectorAll('tr.cl').forEach(tr=>tr.onclick=()=>openSchool(+tr.dataset.id));
-  const bg=$('#qaNL').querySelector('.big'); if(bg) bg.onclick=e=>e.target.closest('.ch').classList.toggle('big');
-  $('#nlGo').onclick=()=>{ highlight(r.top); fitTo(r.top); };
+  Q('#qaNL').querySelectorAll('tr.cl').forEach(tr=>tr.onclick=()=>openSchool(+tr.dataset.id));
+  const bg=Q('#qaNL').querySelector('.big'); if(bg) bg.onclick=e=>e.target.closest('.ch').classList.toggle('big');
+  Q('#nlGo').onclick=()=>{ highlight(r.top); fitTo(r.top); };
   highlight(r.top); fitTo(r.top); speak(r.c.replace(/<[^>]+>/g,''));
-  $('#qaNL').scrollIntoView({block:'nearest'});
+  Q('#qaNL').scrollIntoView({block:'nearest'});
   return true;
 }
 /* ---------- 탭 ---------- */
 function setTab(t){ DETAIL=null; curTab=t; document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   ({ask:renderAsk,ins:renderIns,status:renderStatus,cand:renderCand,future:renderFuture,src:renderSrc})[t](); }
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.t));
-$('#srcBtn').onclick=()=>setTab('src');
-function head(n,t,p){$('#lhead').innerHTML=`<h3><span>${n}</span>${t}</h3><p>${p}</p>`;}
+Q('#srcBtn').onclick=()=>setTab('src');
+function head(n,t,p){Q('#lhead').innerHTML=`<h3><span>${n}</span>${t}</h3><p>${p}</p>`;}
 function renderStatus(){ const L=SCHOOLS.filter(pass),o=L.filter(s=>s.age>=40),sm=L.filter(s=>s.st<=60),b=L.filter(s=>s.age>=40&&s.st<=60),g=by(L,GK());
   head('02','발견','우측 시설 선택과 타임라인 선택이 적용된 결과입니다.');
-  $('#lbody').innerHTML=`<div class="kpis"><div class="kpi"><small>학교 수</small><b>${fmt(L.length)}<em>개교</em></b></div><div class="kpi"><small>평균 경과연수</small><b>${avg(L.map(s=>s.age)).toFixed(1)}<em>년</em></b></div>
+  Q('#lbody').innerHTML=`<div class="kpis"><div class="kpi"><small>학교 수</small><b>${fmt(L.length)}<em>개교</em></b></div><div class="kpi"><small>평균 경과연수</small><b>${avg(L.map(s=>s.age)).toFixed(1)}<em>년</em></b></div>
   <div class="kpi"><small>40년 이상</small><b>${o.length}<em>곳</em></b></div><div class="kpi"><small>60명 이하</small><b>${sm.length}<em>곳</em></b></div>
   <div class="kpi hot" style="grid-column:span 2"><small>노후 + 소규모 교차</small><b>${b.length}<em>곳 · 재구조화 1차 검토군</em></b></div></div>
   <table><thead><tr><th>${GL()}</th><th>학교</th><th>학생</th><th>평균경과</th><th>40년↑</th></tr></thead><tbody>${Object.entries(g).sort((a,b)=>b[1].length-a[1].length).map(([k,v])=>`<tr class="cl" data-sg="${k}"><td>${k}</td><td>${v.length}</td><td>${fmt(v.reduce((x,s)=>x+s.st,0))}</td><td>${avg(v.map(s=>s.age)).toFixed(1)}</td><td>${v.filter(s=>s.age>=40).length}</td></tr>`).join('')}</tbody></table>`;
   document.querySelectorAll('tr.cl').forEach(tr=>tr.onclick=()=>{ if(!REGION) setRegion(tr.dataset.sg); else { const L=SCHOOLS.filter(s=>s.em===tr.dataset.sg&&pass(s)); highlight(L); fitTo(L);} }); }
 function renderCand(){ const L=RANK.filter(pass).slice(0,20); head('03','재구조화 검토 대상 · 상위 20',`2026년 기준 경과 ${AGEC}년 이상 · 학생 ${SMALL}명 이상 ${RANK.filter(pass).length}개교 · 경과연수 긴 순 · 행을 누르면 상세`);
-  $('#lbody').innerHTML=`<table><thead><tr><th>학교</th><th>경과</th><th>학생</th><th>감소</th><th>점수</th></tr></thead><tbody>${L.map((s,i)=>`<tr class="cl" data-id="${s.id}"><td>${i+1}. ${s.n}<br><span style="color:var(--sub);font-size:11px">${s.sg}</span></td><td>${s.age}년</td><td>${s.st}</td><td>${(s.dec*100).toFixed(0)}%</td><td><b>${(s.score*100).toFixed(0)}</b></td></tr>`).join('')}</tbody></table>
+  Q('#lbody').innerHTML=`<table><thead><tr><th>학교</th><th>경과</th><th>학생</th><th>감소</th><th>점수</th></tr></thead><tbody>${L.map((s,i)=>`<tr class="cl" data-id="${s.id}"><td>${i+1}. ${s.n}<br><span style="color:var(--sub);font-size:11px">${s.sg}</span></td><td>${s.age}년</td><td>${s.st}</td><td>${(s.dec*100).toFixed(0)}%</td><td><b>${(s.score*100).toFixed(0)}</b></td></tr>`).join('')}</tbody></table>
   <div class="note" style="margin-top:10px"><b>제안 방향</b>1~5위는 통폐합·거점화 검토, 6~20위는 공간재구조화(유휴교실 전환·복합화) 검토 대상으로 분류하는 방안을 제안합니다.</div>
   <div class="btns"><button class="pri" id="cD">상위 5곳 드론 비행</button></div>`;
-  document.querySelectorAll('tr.cl').forEach(tr=>tr.onclick=()=>openSchool(+tr.dataset.id)); $('#cD').onclick=startDrone; }
+  document.querySelectorAll('tr.cl').forEach(tr=>tr.onclick=()=>openSchool(+tr.dataset.id)); Q('#cD').onclick=startDrone; }
 function renderFuture(){ const rows=[0,5,10].map(y=>({l:`${NOW+y}년`,a:SCHOOLS.filter(s=>s.age+y>=40).length,b:SCHOOLS.filter(s=>s.age+y>=40&&s.st<=60).length}));
   const T=SCHOOLS.reduce((x,s)=>x+s.st,0),T5=SCHOOLS.reduce((x,s)=>x+s.st5,0);
   head('04','운영·전망','현재 추세가 이어진다고 가정한 단순 전망입니다.');
-  $('#lbody').innerHTML=`<div class="note">${chartHTML({t:'40년↑ 학교 전망',a:'40년↑',b:'그중 60명↓',rows})}10년 뒤 전체의 ${(rows[2].a/SCHOOLS.length*100).toFixed(0)}%가 40년을 넘습니다.</div>
+  Q('#lbody').innerHTML=`<div class="note">${chartHTML({t:'40년↑ 학교 전망',a:'40년↑',b:'그중 60명↓',rows})}10년 뒤 전체의 ${(rows[2].a/SCHOOLS.length*100).toFixed(0)}%가 40년을 넘습니다.</div>
   <div class="note"><b>학생수</b>최근 2년 ${fmt(T5)} → ${fmt(T)}명. 같은 비율이면 ${NOW+2}년 약 ${fmt(T*T/T5)}명입니다.</div>
   <div class="note warn"><b>유의</b>출생아 수와 지역 개발계획을 반영하지 않은 추세 연장입니다. 공식 추계로 대체하십시오.</div>`;
-  $('#lbody').querySelector('.big').onclick=e=>{const c=e.target.closest('.ch');c.classList.toggle('big');}; }
+  Q('#lbody').querySelector('.big').onclick=e=>{const c=e.target.closest('.ch');c.classList.toggle('big');}; }
 function renderSrc(){ const miss=SCHOOLS.filter(s=>!s.yr||!s.x||!s.y).length; head('05','근거 그래프 · 데이터와 방법','출처, 계산식, 결측, 실자료 불러오기');
-  $('#lbody').innerHTML=`${IS_SAMPLE?`<div class="note warn"><b>일부 예시값이 포함되어 있습니다</b>학교명·위치·학교급·설립형태·본교/분교 842개교는 실자료(전국초중등학교위치표준데이터, 2026-03-20 기준)입니다. <b>준공년도·학생수·연면적은 화면 확인용 예시값</b>이므로 KEIIS 건물정보와 학교알리미 자료로 교체해야 합니다.</div>`:''}
+  Q('#lbody').innerHTML=`${IS_SAMPLE?`<div class="note warn"><b>일부 예시값이 포함되어 있습니다</b>학교명·위치·학교급·설립형태·본교/분교 842개교는 실자료(전국초중등학교위치표준데이터, 2026-03-20 기준)입니다. <b>준공년도·학생수·연면적은 화면 확인용 예시값</b>이므로 KEIIS 건물정보와 학교알리미 자료로 교체해야 합니다.</div>`:''}
   <div class="note"><b>실자료 불러오기</b>CSV(UTF-8) 열: 학교명, 학교급, 시군, 위도, 경도, 준공년도, 연면적, 학생수, 5년전학생수, 학급수, 분교여부(Y/N), 설립<div class="btns"><button id="tpl">양식 받기</button><button class="pri" id="up">CSV 불러오기</button></div><input type="file" id="upF" accept=".csv" hidden></div>
   <div class="note"><b>KEIIS 건물정보 불러오기 <span style="font-weight:400;color:var(--sub)">· 비공개 자료</span></b>
    <div style="font-size:11.5px;color:var(--sub);line-height:1.6">파일은 <b>이 PC의 브라우저 안에서만</b> 읽으며 외부로 전송되지 않습니다. 계산 결과는 <b>브라우저를 닫으면 지워지는 임시 저장소</b>에만 둡니다.</div>
@@ -904,12 +904,12 @@ function renderSrc(){ const miss=SCHOOLS.filter(s=>!s.yr||!s.x||!s.y).length; he
   <div class="note"><b>출처</b>준공년도·연면적 KEIIS 건물정보 / 학생·학급 학교알리미 / 위치 전국초중등학교위치표준데이터 / 시군 경계 통계청(southkorea-maps) / 배경지도 국토교통부 브이월드 / 3D 건물 OpenStreetMap</div>
   <div class="note"><b>계산식</b>경과연수 = ${NOW} − 대표 준공년도<br>대표 준공년도 = <b>교사동 계열(교사동·본관·별관·후관·신관·구관)</b> 건물의 사용승인일을 연면적으로 가중평균 (관사·기숙사·체육관·강당·급식실·창고 등 제외, 해당 동이 없으면 전체 건물로 계산)<br>격자: 확대 수준에 따라 5km·2km·600m·250m 정사각형으로 학교를 묶음<br>재구조화 점수 = 경과(정규화)×0.5 + (1−학생수 정규화)×0.3 + 2년 감소율(정규화)×0.2</div>
   <div class="note"><b>결측</b>좌표·준공년도 결측 ${miss}건${fallback?'<br>배경지도 서버에 연결하지 못해 시군 경계만 표시 중입니다.':''}</div>`;
-  $('#pnuGo').onclick=pnuCollect; $('#pnuStop').onclick=()=>{PNU.stop=true;};
-  $('#kBtn').onclick=()=>$('#kFile').click();
-  $('#kClr').onclick=()=>{ try{sessionStorage.removeItem('keiis');localStorage.removeItem('keiis')}catch(e){} ALL.forEach(s=>{ if(s.bsrc==='keiis'){ delete s.bl; delete s.bsrc; } }); KEIIS=null; toast('불러온 건물정보를 지웠습니다.'); renderSrc(); };
-  $('#kFile').onchange=async e=>{ const fs=[...e.target.files]; if(!fs.length) return; $('#kOut').textContent='읽는 중…'; try{ keiisLoad(await Promise.all(fs.map(f=>f.arrayBuffer())), fs.map(f=>f.name)); }catch(err){ $('#kOut').textContent='읽기 실패: '+err.message; } };
-  $('#tpl').onclick=()=>{const b=new Blob(['\ufeff학교명,학교급,시군,위도,경도,준공년도,연면적,학생수,5년전학생수,학급수,분교여부,설립\n목포○○초,초,목포시,34.8118,126.3922,1985,6200,420,480,18,N,공립\n'],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='학교시설_입력양식.csv';a.click();};
-  $('#up').onclick=()=>$('#upF').click(); $('#upF').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>loadCSV(rd.result);rd.readAsText(f,'utf-8');}; }
+  Q('#pnuGo').onclick=pnuCollect; Q('#pnuStop').onclick=()=>{PNU.stop=true;};
+  Q('#kBtn').onclick=()=>Q('#kFile').click();
+  Q('#kClr').onclick=()=>{ try{sessionStorage.removeItem('keiis');localStorage.removeItem('keiis')}catch(e){} ALL.forEach(s=>{ if(s.bsrc==='keiis'){ delete s.bl; delete s.bsrc; } }); KEIIS=null; toast('불러온 건물정보를 지웠습니다.'); renderSrc(); };
+  Q('#kFile').onchange=async e=>{ const fs=[...e.target.files]; if(!fs.length) return; Q('#kOut').textContent='읽는 중…'; try{ keiisLoad(await Promise.all(fs.map(f=>f.arrayBuffer())), fs.map(f=>f.name)); }catch(err){ Q('#kOut').textContent='읽기 실패: '+err.message; } };
+  Q('#tpl').onclick=()=>{const b=new Blob(['\ufeff학교명,학교급,시군,위도,경도,준공년도,연면적,학생수,5년전학생수,학급수,분교여부,설립\n목포○○초,초,목포시,34.8118,126.3922,1985,6200,420,480,18,N,공립\n'],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='학교시설_입력양식.csv';a.click();};
+  Q('#up').onclick=()=>Q('#upF').click(); Q('#upF').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>loadCSV(rd.result);rd.readAsText(f,'utf-8');}; }
 /* ---------- 학교 지번(PNU) 수집: 브라우저에서 브이월드 호출 ---------- */
 const PNU={stop:false,run:false,out:{}};
 function vwUrl(geom,attr){ return 'https://api.vworld.kr/req/data?service=data&version=2.0&request=GetFeature&data=LP_PA_CBND_BUBUN&format=json&errorformat=json&crs=EPSG:4326&size=100&geometry=false&geomFilter='+encodeURIComponent(geom)+(attr?'&attrFilter='+encodeURIComponent(attr):'')+'&key='+encodeURIComponent(VWKEY)+'&domain='+encodeURIComponent(location.origin); }
@@ -930,12 +930,12 @@ async function pnuCollect(){
     }catch(e){ er++; }
     n++;
     if(n%5===0||n===ALL.length){ const sec=Math.round((Date.now()-t0)/1000), left=Math.round(sec/n*(ALL.length-n));
-      $('#pnuOut').innerHTML=`수집 중 ${n}/${ALL.length} · 성공 ${ok} · 미확인 ${er} · 남은 시간 약 ${Math.max(1,Math.round(left/60))}분`; await new Promise(r=>setTimeout(r,0)); }
+      Q('#pnuOut').innerHTML=`수집 중 ${n}/${ALL.length} · 성공 ${ok} · 미확인 ${er} · 남은 시간 약 ${Math.max(1,Math.round(left/60))}분`; await new Promise(r=>setTimeout(r,0)); }
   }
   PNU.run=false;
   const blob=new Blob([JSON.stringify({updated:new Date().toISOString().slice(0,16).replace('T',' '),count:ok,schools:PNU.out},null,0)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='school_pnu.json'; a.click();
-  $('#pnuOut').innerHTML=`<b>완료 ${ok}개교</b> · 미확인 ${er}개교 · school_pnu.json 내려받음 → 깃허브 scripts 폴더에 올리십시오.`;
+  Q('#pnuOut').innerHTML=`<b>완료 ${ok}개교</b> · 미확인 ${er}개교 · school_pnu.json 내려받음 → 깃허브 scripts 폴더에 올리십시오.`;
   toast(`지번 수집 완료 ${ok}개교 · 파일을 깃허브 scripts 폴더에 올리십시오.`);
 }
 /* ---------- 준공년도 산정 대상 건물(교사동 계열) ---------- */
@@ -964,7 +964,7 @@ fetch('data/buildings.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then
   if(!hit) return; BLDAUTO={hit,updated:j.updated}; derive(); onFilter(); if(curTab==='ask') renderAsk(); else if(!DETAIL) setTab(curTab); else renderDetail(); stampAll();
   toast(`건축물대장 준공년도·연면적 ${hit}개교 자동 반영 (${j.updated} 갱신)`); }).catch(()=>{});
 function stampAll(){ const k=KEIIS?`준공년도 KEIIS ${KEIIS.n}개교`:BLDAUTO?`준공년도 건축물대장 ${BLDAUTO.hit}개교`:'준공년도 예시값', s=SIAUTO?`학생수 학교알리미 ${SIAUTO.hit}개교`:'학생수 예시값';
-  $('#stamp').textContent=`학교 위치 실자료 · ${s} · ${k}`; }
+  Q('#stamp').textContent=`학교 위치 실자료 · ${s} · ${k}`; }
 /* ---------- KEIIS 건물정보(비공개, 브라우저 내 처리) ---------- */
 let KEIIS=(()=>{try{return JSON.parse(sessionStorage.getItem('keiis')||'null')}catch(e){return null}})();
 const kNorm=s=>String(s||'').replace(/\s|\(.*?\)/g,'');
@@ -981,11 +981,11 @@ function keiisLoad(bufs,names){
       const k=kNorm(sn); (agg[k]??={w:0,a:0,n:0,b:[]}); agg[k].b.push({n:String(r[cN]||'건물'),y,d:String(r[cU]||''),a,fl:parseInt(r[cF])||0,u:String(r[cUse]||''),s:String(r[cSt]||'').replace('구조',''),g:String(r[cG]||'').trim().charAt(0)}); agg[k].w+=y*(a||1); agg[k].a+=(a||1); agg[k].n++; agg[k].ar=(agg[k].ar||0)+a; }); });
   const m={}, bl={}; Object.entries(agg).forEach(([k,v])=>{ const rows=v.b.slice().sort((a,b)=>a.y-b.y); const r=yrFromRows(rows); m[k]=r?[r.yr,r.ar,r.nb,r.basis,r.ne]:[Math.round(v.w/v.a),Math.round(v.ar),v.n,'전체',v.n]; bl[k]=rows; });
   const K={m,bl,n:Object.keys(m).length,date:new Date().toLocaleDateString('ko-KR')};
-  const hit=keiisApply(K); if(!K.n){ $('#kOut').textContent='건물 행을 찾지 못했습니다. KEIIS 건물정보 엑셀인지 확인하십시오.'; return; }
+  const hit=keiisApply(K); if(!K.n){ Q('#kOut').textContent='건물 행을 찾지 못했습니다. KEIIS 건물정보 엑셀인지 확인하십시오.'; return; }
   try{sessionStorage.setItem('keiis',JSON.stringify(K))}catch(e){} KEIIS=K;
   derive(); onFilter(); keiisStamp(hit); renderSrc();
   const miss=ALL.filter(s=>!m[kNorm(s.n)]).map(s=>s.n);
-  $('#kOut').innerHTML=`<b>${hit}개교 적용</b> (파일 ${names.length}개, 학교 ${K.n}곳)${miss.length?` · 미적용 ${miss.length}개교: ${miss.slice(0,12).join(', ')}${miss.length>12?' 외':''}`:''}`;
+  Q('#kOut').innerHTML=`<b>${hit}개교 적용</b> (파일 ${names.length}개, 학교 ${K.n}곳)${miss.length?` · 미적용 ${miss.length}개교: ${miss.slice(0,12).join(', ')}${miss.length>12?' 외':''}`:''}`;
   toast(`건물정보 ${hit}개교 반영 · 준공년도·연면적이 실자료로 바뀌었습니다.`);
 }
 function keiisStamp(hit){ stampAll(); }
@@ -998,23 +998,23 @@ function loadCSV(txt){ const rows=txt.replace(/^\ufeff/,'').split(/\r?\n/).filte
   rows.forEach((r,i)=>{const y=+r[ix('위도')],x=+r[ix('경도')],yr=+r[ix('준공년도')],st=+r[ix('학생수')]; if(!x||!y||!yr||isNaN(st)){bad++;return;}
     out.push({id:i+1,n:r[ix('학교명')],lv:(r[ix('학교급')]||'초')[0],sg:r[ix('시군')],x,y,yr,ar:+r[ix('연면적')]||0,st,st5:+r[ix('5년전학생수')]||st,cl:+r[ix('학급수')]||0,bk:(r[ix('분교여부')]||'').toUpperCase()==='Y',isl:['신안군','완도군','진도군'].includes(r[ix('시군')]),fd:r[ix('설립')]==='사립'?'사립':'공립'});});
   if(!out.length){alert('읽을 수 있는 행이 없습니다. 위도·경도·준공년도·학생수를 확인하십시오.');return;}
-  SCHOOLS=ALL=out; REGION=null; if($('#rgn')) $('#rgn').value=''; IS_SAMPLE=false; $('#stamp').style.display='none'; derive(); onFilter(); setTab('src');
+  SCHOOLS=ALL=out; REGION=null; if(Q('#rgn')) Q('#rgn').value=''; IS_SAMPLE=false; Q('#stamp').style.display='none'; derive(); onFilter(); setTab('src');
   alert(`${out.length}개교를 불러왔습니다.${bad?` 결측 제외 ${bad}건.`:''}`); }
 
 /* ---------- 드론·시연 ---------- */
 let dT=0;
 function startDrone(){ stopDrone(); S.drone=true; renderRight(); const L=RANK.filter(pass).slice(0,5); let i=0;
-  $('#bdgP').innerHTML=L.map(()=>'<i></i>').join(''); $('#badge').classList.remove('hide');
+  Q('#bdgP').innerHTML=L.map(()=>'<i></i>').join(''); Q('#badge').classList.remove('hide');
   const go=()=>{ if(!S.drone) return; if(i>=L.length){stopDrone();(E3.on?e3Home():map&&map.flyTo({...HOME,duration:2600}));return;}
-    const s=L[i]; $('#bdgT').textContent=`드론 비행 ${i+1} / ${L.length}`; $('#bdgN').textContent=`재구조화 후보 ${i+1}위 · ${s.n} · ${s.sg}`;
-    $('#bdgP').querySelectorAll('i').forEach((e,j)=>e.classList.toggle('on',j<=i)); highlight([s]);
+    const s=L[i]; Q('#bdgT').textContent=`드론 비행 ${i+1} / ${L.length}`; Q('#bdgN').textContent=`재구조화 후보 ${i+1}위 · ${s.n} · ${s.sg}`;
+    Q('#bdgP').querySelectorAll('i').forEach((e,j)=>e.classList.toggle('on',j<=i)); highlight([s]);
     if(E3.on) e3Fit([s]); else map&&map.flyTo({center:[s.x,s.y],zoom:14,pitch:62,bearing:(i*53)%360-70,duration:3200,essential:true});
     if(autoV) speak(`${i+1}위, ${short(s.n)}. 준공 ${s.age}년, 학생 ${s.st}명.`);
     i++; dT=setTimeout(go,5600); };
   go(); }
-function stopDrone(){ S.drone=false; clearTimeout(dT); $('#badge').classList.add('hide'); renderRight(); }
+function stopDrone(){ S.drone=false; clearTimeout(dT); Q('#badge').classList.add('hide'); renderRight(); }
 let demo=false, dq=[];
-$('#demoBtn').onclick=()=>{ const b=$('#demoBtn');
+Q('#demoBtn').onclick=()=>{ const b=Q('#demoBtn');
   if(demo){demo=false;dq.forEach(clearTimeout);stopDrone();speechSynthesis?.cancel();b.innerHTML=ic('play')+' 시연';b.classList.remove('run');return;}
   demo=true; b.innerHTML=ic('stop')+' 시연 중지'; b.classList.add('run'); setTab('ask'); (E3.on?e3Home():map&&map.flyTo({...HOME,duration:1500}));
   [0,2,QA.length-1].forEach((qi,k)=>dq.push(setTimeout(()=>{ if(!demo) return; openQA(qi,true); if(k===2) dq.push(setTimeout(()=>demo&&startDrone(),4500)); },1800+k*10000)));
@@ -1046,7 +1046,7 @@ function vwbSync(){ if(!map||!ready||!map.getSource('vwb')) return; map.getSourc
   ['vwp-fill','vwp-line'].forEach(l=>map.getLayer(l)&&map.setLayoutProperty(l,'visibility',S.vwb?'visible':'none'));
   map.setLayoutProperty('vwb3d','visibility',S.vwb?'visible':'none');
   if(map.getLayer('bld3d')) map.setLayoutProperty('bld3d','visibility',(S.vwb&&VWB.size&&!vwbFail)?'none':'visible');
-  if(DETAIL){ const sc=$('#lbody').scrollTop; renderDetail(); $('#lbody').scrollTop=sc; } }
+  if(DETAIL){ const sc=Q('#lbody').scrollTop; renderDetail(); Q('#lbody').scrollTop=sc; } }
 function vwbJsonp(url){ return new Promise((ok,no)=>{ const cb='__vwb'+(++vwbSeq), sc=document.createElement('script'); let done=false;
   window[cb]=d=>{ done=true; ok(d); cleanup(); }; const cleanup=()=>{ delete window[cb]; sc.remove(); };
   sc.onerror=()=>{ if(!done){ no(new Error('network')); cleanup(); } }; setTimeout(()=>{ if(!done){ no(new Error('timeout')); cleanup(); } },10000);
@@ -1080,49 +1080,49 @@ async function vwbLoad(){
 if(map){ map.on('moveend',()=>{ if(S.vwb) vwbQueue(); }); }
 /* ---------- 화면 구성(1안 상황실형 / 2안 지도 몰입형) ---------- */
 let LAYOUT='1', L3V='sum';  /* 1안(상황실형)으로 확정 — 다른 안은 laySel을 다시 보이게 하면 사용 가능 */
-function applyLayout(){ document.body.classList.toggle('l2',LAYOUT==='2'); document.body.classList.toggle('l3',LAYOUT==='3'); $('#laySel').value=LAYOUT; if(LAYOUT==='3') l3Show(L3V); else document.body.classList.remove('l3doc','l3det');
-  if(LAYOUT!=='2'){ $('.left').classList.remove('show'); $('#right').classList.remove('show'); } updateKPI(); }
-function updateKPI(){ if(!$('#k1')) return; const L=SCHOOLS.filter(pass); $('#k1').innerHTML=fmt(L.length)+'<em>개교</em>'; $('#k2').innerHTML=avg(L.map(s=>s.age)).toFixed(1)+'<em>년</em>';
-  $('#k3').innerHTML=fmt(L.filter(s=>s.age>=40).length)+'<em>곳</em>'; $('#k4').innerHTML=fmt(L.filter(s=>s.age>=40&&s.st<=60).length)+'<em>곳</em>'; }
-$('#laySel').onchange=e=>{ LAYOUT=e.target.value; LS.set('layout',LAYOUT); if(DETAIL){ DETAIL=null; highlight([]); setTab('ask'); } applyLayout(); map&&setTimeout(()=>map.resize(),50); speak({1:'상황실형 화면',2:'지도 몰입형 화면',3:'보고서형 화면'}[LAYOUT]); };
-$('#qaFab').onclick=()=>{ const l=$('.left'); if(l.classList.contains('show')&&!DETAIL){ l.classList.remove('show'); return; } if(DETAIL) closeSchool(); else setTab('ask'); l.classList.add('show'); };
-$('#layerFab').onclick=()=>$('#right').classList.toggle('show');
-const q2go=()=>{ const v=$('#q2').value.trim(); if(!v) return; $('#q').value=v; ask(); $('.left').classList.add('show'); };
-$('#q2go').onclick=q2go; $('#q2').onkeydown=e=>{ if(e.key==='Enter') q2go(); };
+function applyLayout(){ document.body.classList.toggle('l2',LAYOUT==='2'); document.body.classList.toggle('l3',LAYOUT==='3'); Q('#laySel').value=LAYOUT; if(LAYOUT==='3') l3Show(L3V); else document.body.classList.remove('l3doc','l3det');
+  if(LAYOUT!=='2'){ Q('.left').classList.remove('show'); Q('#right').classList.remove('show'); } updateKPI(); }
+function updateKPI(){ if(!Q('#k1')) return; const L=SCHOOLS.filter(pass); Q('#k1').innerHTML=fmt(L.length)+'<em>개교</em>'; Q('#k2').innerHTML=avg(L.map(s=>s.age)).toFixed(1)+'<em>년</em>';
+  Q('#k3').innerHTML=fmt(L.filter(s=>s.age>=40).length)+'<em>곳</em>'; Q('#k4').innerHTML=fmt(L.filter(s=>s.age>=40&&s.st<=60).length)+'<em>곳</em>'; }
+Q('#laySel').onchange=e=>{ LAYOUT=e.target.value; LS.set('layout',LAYOUT); if(DETAIL){ DETAIL=null; highlight([]); setTab('ask'); } applyLayout(); map&&setTimeout(()=>map.resize(),50); speak({1:'상황실형 화면',2:'지도 몰입형 화면',3:'보고서형 화면'}[LAYOUT]); };
+Q('#qaFab').onclick=()=>{ const l=Q('.left'); if(l.classList.contains('show')&&!DETAIL){ l.classList.remove('show'); return; } if(DETAIL) closeSchool(); else setTab('ask'); l.classList.add('show'); };
+Q('#layerFab').onclick=()=>Q('#right').classList.toggle('show');
+const q2go=()=>{ const v=Q('#q2').value.trim(); if(!v) return; Q('#q').value=v; ask(); Q('.left').classList.add('show'); };
+Q('#q2go').onclick=q2go; Q('#q2').onkeydown=e=>{ if(e.key==='Enter') q2go(); };
 document.querySelectorAll('#l3tabs button').forEach(b=>b.onclick=()=>l3Show(b.dataset.v));
 function l3Show(v){ L3V=v; document.querySelectorAll('#l3tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
   const doc=v!=='map'; document.body.classList.toggle('l3doc',doc); if(doc) document.body.classList.remove('l3det');
   if(v==='sum') l3Sum(); else if(v==='find') l3Find(); else if(v==='src') l3Src(); else { map&&setTimeout(()=>map.resize(),30); } }
 function l3Head(tt,p){ return `<div class="l3h"><div><h2>${tt}</h2><p>${p}</p></div><div class="sp btns" style="margin:0"><button id="l3print">${ic('grid')} 인쇄·PDF</button></div></div>`; }
-function l3Bind(){ const p=$('#l3print'); if(p) p.onclick=()=>window.print(); }
+function l3Bind(){ const p=Q('#l3print'); if(p) p.onclick=()=>window.print(); }
 function hbars(rows,unit,max){ const mx=max||Math.max(...rows.map(r=>r.v),1); return rows.map(r=>`<div class="hb" data-k="${r.l}"><span>${r.l}</span><span class="tr"><i style="width:${r.v/mx*100}%;background:${r.c||'#0064FF'}"></i></span><b>${r.f||fmt(r.v)}${unit}</b></div>`).join(''); }
 function l3Sum(){ const L=SCHOOLS.filter(pass), g=by(L,GK()), T=L.reduce((x,s)=>x+s.st,0), T5=L.reduce((x,s)=>x+s.st5,0);
   const ageRows=Object.entries(g).map(([k,v])=>({l:k,v:+avg(v.map(s=>s.age)).toFixed(1)})).sort((a,b)=>b.v-a.v); ageRows.forEach(r=>{r.c=GC(r.v);r.f=r.v.toFixed(1);});
   const decRows=Object.entries(g).map(([k,v])=>{const a=v.reduce((x,s)=>x+s.st,0),b=v.reduce((x,s)=>x+s.st5,0);return {l:k,v:b?Math.max(0,(b-a)/b*100):0};}).sort((a,b)=>b.v-a.v); decRows.forEach(r=>r.f=r.v.toFixed(1));
   const decs=[1960,1970,1980,1990,2000,2010,2020], dc=decs.map(d=>L.filter(s=>Math.floor(s.yr/10)*10===d||(d===1960&&s.yr<1960)).length), dm=Math.max(...dc,1);
   const top=RANK.filter(pass).slice(0,10);
-  $('#l3body').innerHTML=l3Head(`${RN()} 학교시설 한눈에`,`기준일 2026-09-21 · ${L.length}개교 · 학생수 ${SIAUTO?'학교알리미':'예시값'} · 준공년도 ${KEIIS?'KEIIS':'예시값'}`)+
+  Q('#l3body').innerHTML=l3Head(`${RN()} 학교시설 한눈에`,`기준일 2026-09-21 · ${L.length}개교 · 학생수 ${SIAUTO?'학교알리미':'예시값'} · 준공년도 ${KEIIS?'KEIIS':'예시값'}`)+
   `<div class="l3k"><div><small>학교 수</small><b>${fmt(L.length)}<em>개교</em></b></div><div><small>학생 수</small><b>${fmt(T)}<em>명</em></b></div><div><small>평균 경과연수</small><b>${avg(L.map(s=>s.age)).toFixed(1)}<em>년</em></b></div><div><small>40년 이상</small><b>${fmt(L.filter(s=>s.age>=40).length)}<em>곳</em></b></div><div class="hot"><small>노후 + 소규모</small><b>${fmt(L.filter(s=>s.age>=40&&s.st<=60).length)}<em>곳</em></b></div></div>
   <div class="l3g"><div class="l3c"><h3>${GL()}별 평균 경과연수<small>막대 색 = 노후도${REGION?'':' · 누르면 해당 시군으로'}</small></h3>${hbars(ageRows,'년')}</div>
   <div class="l3c"><h3>${GL()}별 최근 2년 학생 감소율<small>${fmt(T5)} → ${fmt(T)}명</small></h3>${hbars(decRows,'%')}</div>
   <div class="l3c"><h3>준공 연대별 학교 수<small>파랑 = 40년 이상</small></h3><div class="vb">${decs.map((d,i)=>`<div><b>${dc[i]}</b><i class="${NOW-d-9>=40?'o':''}" style="height:${dc[i]/dm*82}%"></i></div>`).join('')}</div><div class="vbl">${decs.map(d=>`<span>${d}년대</span>`).join('')}</div></div>
   <div class="l3c"><h3>재구조화 검토 대상 상위 10<small>경과 40년 이상 · 학생 60명 이상 · 경과 긴 순</small></h3><table class="l3t"><thead><tr><th>학교</th><th>${GL()}</th><th>경과</th><th>학생</th><th>점수</th></tr></thead><tbody>${top.map((s,i)=>`<tr data-id="${s.id}"><td>${i+1}. ${s.n}</td><td>${s[GK()]}</td><td style="color:${GC(s.age)};font-weight:700">${s.age}년</td><td>${s.st}</td><td><b>${(s.score*100).toFixed(0)}</b></td></tr>`).join('')}</tbody></table></div></div>`;
-  l3Bind(); $('#l3body').querySelectorAll('.hb').forEach(h=>h.onclick=()=>{ if(!REGION) setRegion(h.dataset.k); });
-  $('#l3body').querySelectorAll('tr[data-id]').forEach(tr=>tr.onclick=()=>l3Open(+tr.dataset.id)); }
+  l3Bind(); Q('#l3body').querySelectorAll('.hb').forEach(h=>h.onclick=()=>{ if(!REGION) setRegion(h.dataset.k); });
+  Q('#l3body').querySelectorAll('tr[data-id]').forEach(tr=>tr.onclick=()=>l3Open(+tr.dataset.id)); }
 let L3F={q:'',lv:'',sort:'score',dir:-1};
-function l3Find(){ $('#l3body').innerHTML=l3Head('학교 찾기',`${RN()} ${SCHOOLS.length}개교 · 열 제목을 누르면 정렬, 행을 누르면 지도와 상세 현황으로 이동`)+
+function l3Find(){ Q('#l3body').innerHTML=l3Head('학교 찾기',`${RN()} ${SCHOOLS.length}개교 · 열 제목을 누르면 정렬, 행을 누르면 지도와 상세 현황으로 이동`)+
   `<div class="l3f"><input id="l3q" placeholder="학교명·읍면동 검색" value="${L3F.q}"><select id="l3lv"><option value="">전체 학교급</option><option>초</option><option>중</option><option>고</option></select></div><div id="l3tbl"></div>`;
-  $('#l3lv').value=L3F.lv; $('#l3q').oninput=e=>{L3F.q=e.target.value;l3Tbl();}; $('#l3lv').onchange=e=>{L3F.lv=e.target.value;l3Tbl();}; l3Bind(); l3Tbl(); }
+  Q('#l3lv').value=L3F.lv; Q('#l3q').oninput=e=>{L3F.q=e.target.value;l3Tbl();}; Q('#l3lv').onchange=e=>{L3F.lv=e.target.value;l3Tbl();}; l3Bind(); l3Tbl(); }
 function l3Tbl(){ const C=[['n','학교명'],['sg','시군'],['em','읍면동'],['lv','학교급'],['st','학생'],['cl','학급'],['yr','준공'],['age','경과'],['ar','연면적'],['score','점수']];
   let L=SCHOOLS.filter(s=>(!L3F.lv||s.lv===L3F.lv)&&(!L3F.q||(s.n+(s.em||'')+s.sg).includes(L3F.q)));
   L.sort((a,b)=>{const x=a[L3F.sort],y=b[L3F.sort]; return (typeof x==='string'?String(x).localeCompare(String(y),'ko'):((x||0)-(y||0)))*L3F.dir;});
-  $('#l3tbl').innerHTML=`<table class="l3t"><thead><tr>${C.map(([k,l])=>`<th data-k="${k}">${l}${L3F.sort===k?(L3F.dir<0?' ▾':' ▴'):''}</th>`).join('')}</tr></thead><tbody>${L.slice(0,300).map(s=>`<tr data-id="${s.id}"><td>${s.n}</td><td>${s.sg}</td><td>${s.em||''}</td><td>${s.lv}</td><td>${fmt(s.st)}</td><td>${s.cl||'-'}</td><td>${s.yr}</td><td style="color:${GC(s.age)};font-weight:700">${s.age}년</td><td>${fmt(s.ar)}㎡</td><td><b>${(s.score*100).toFixed(0)}</b></td></tr>`).join('')}</tbody></table>${L.length>300?`<p style="color:#8B95A1;font-size:12px">300개교까지 표시 · 검색으로 좁혀 보십시오 (전체 ${L.length}개교)</p>`:''}`;
-  $('#l3tbl').querySelectorAll('th').forEach(th=>th.onclick=()=>{ const k=th.dataset.k; L3F.dir=L3F.sort===k?-L3F.dir:(typeof SCHOOLS[0][k]==='string'?1:-1); L3F.sort=k; l3Tbl(); });
-  $('#l3tbl').querySelectorAll('tr[data-id]').forEach(tr=>tr.onclick=()=>l3Open(+tr.dataset.id)); }
-function l3Src(){ renderSrc(); $('#l3body').innerHTML=l3Head('근거자료','자료 출처 · 계산식 · 실자료 불러오기'); const box=document.createElement('div'); box.style.maxWidth='760px'; while($('#lbody').firstChild) box.appendChild($('#lbody').firstChild); $('#l3body').appendChild(box); l3Bind(); }
+  Q('#l3tbl').innerHTML=`<table class="l3t"><thead><tr>${C.map(([k,l])=>`<th data-k="${k}">${l}${L3F.sort===k?(L3F.dir<0?' ▾':' ▴'):''}</th>`).join('')}</tr></thead><tbody>${L.slice(0,300).map(s=>`<tr data-id="${s.id}"><td>${s.n}</td><td>${s.sg}</td><td>${s.em||''}</td><td>${s.lv}</td><td>${fmt(s.st)}</td><td>${s.cl||'-'}</td><td>${s.yr}</td><td style="color:${GC(s.age)};font-weight:700">${s.age}년</td><td>${fmt(s.ar)}㎡</td><td><b>${(s.score*100).toFixed(0)}</b></td></tr>`).join('')}</tbody></table>${L.length>300?`<p style="color:#8B95A1;font-size:12px">300개교까지 표시 · 검색으로 좁혀 보십시오 (전체 ${L.length}개교)</p>`:''}`;
+  Q('#l3tbl').querySelectorAll('th').forEach(th=>th.onclick=()=>{ const k=th.dataset.k; L3F.dir=L3F.sort===k?-L3F.dir:(typeof SCHOOLS[0][k]==='string'?1:-1); L3F.sort=k; l3Tbl(); });
+  Q('#l3tbl').querySelectorAll('tr[data-id]').forEach(tr=>tr.onclick=()=>l3Open(+tr.dataset.id)); }
+function l3Src(){ renderSrc(); Q('#l3body').innerHTML=l3Head('근거자료','자료 출처 · 계산식 · 실자료 불러오기'); const box=document.createElement('div'); box.style.maxWidth='760px'; while(Q('#lbody').firstChild) box.appendChild(Q('#lbody').firstChild); Q('#l3body').appendChild(box); l3Bind(); }
 function l3Open(id){ l3Show('map'); document.body.classList.add('l3det'); openSchool(id); }
 /* ---------- 우측 패널 음성 안내 ---------- */
-$('#right').addEventListener('click',e=>{ const b=e.target.closest('.opt'); if(!b||b.disabled) return;
+Q('#right').addEventListener('click',e=>{ const b=e.target.closest('.opt'); if(!b||b.disabled) return;
   const sec=b.parentElement.id, k=b.dataset.k, raw=(b.querySelector('.ct')?b.textContent.replace(b.querySelector('.ct').textContent,''):b.textContent).trim();
   setTimeout(()=>{ const nb=document.querySelector(`#${sec} .opt[data-k="${k}"]`), cnt=nb&&nb.querySelector('.ct')?nb.querySelector('.ct').textContent.trim():'';
     const on=nb?nb.classList.contains('on'):false, off=nb?nb.classList.contains('off'):false;
@@ -1143,7 +1143,7 @@ if(map) map.on('moveend',()=>labelsSync());
 let DETAIL=null, PREVTAB='ask';
 function polyArea(g){ const P=g.type==='MultiPolygon'?g.coordinates:[g.coordinates]; let A=0;
   P.forEach(poly=>poly.forEach((r,ri)=>{ const lat=r[0][1]*Math.PI/180, kx=111320*Math.cos(lat), ky=110570; let a=0; for(let i=0,j=r.length-1;i<r.length;j=i++) a+=(r[j][0]*kx)*(r[i][1]*ky)-(r[i][0]*kx)*(r[j][1]*ky); A+=(ri?-1:1)*Math.abs(a/2); })); return A; }
-function openSchool(id){ const s=ALL.find(v=>v.id===id); if(!s) return; if(LAYOUT==='2') $('.left').classList.add('show'); if(!DETAIL) PREVTAB=curTab; DETAIL=s;
+function openSchool(id){ const s=ALL.find(v=>v.id===id); if(!s) return; if(LAYOUT==='2') Q('.left').classList.add('show'); if(!DETAIL) PREVTAB=curTab; DETAIL=s;
   document.querySelectorAll('#tabs button').forEach(b=>b.classList.remove('on'));
   highlight([s]); if(E3.on) e3Fit([s]); else if(map) map.flyTo({center:[s.x,s.y],zoom:16.2,pitch:62,bearing:map.getBearing(),duration:2000,essential:true}); renderDetail(); }
 function closeSchool(){ DETAIL=null; highlight([]); document.body.classList.remove('l3det'); setTab(PREVTAB||'ask'); }
@@ -1152,7 +1152,7 @@ function renderDetail(){ const s=DETAIL; if(!s) return;
   const B=[...VWB.values()].filter(v=>v._sid===s.id).map(v=>{ const p=v.properties||{}, fa=polyArea(v.geometry), fl=vwbFloors(p); return {n:p.buld_nm||'교내 건물',fl,fa,ga:fa*fl}; }).sort((a,b)=>b.ga-a.ga);
   const src=(k)=>`<span style="font-size:10.5px;color:var(--sub);font-weight:400"> · ${k}</span>`;
   head(ic('school'), s.n, `${s.lv}등학교 · ${s.fd}${s.bk?' · 분교장':''}${s.isl?' · 섬 지역':''} · ${s.sg}${s.of?' · '+s.of:''}`);
-  $('#lbody').innerHTML=`<div class="btns" style="margin:0 0 10px"><button id="dBack">${ic('back')} 목록으로</button></div>
+  Q('#lbody').innerHTML=`<div class="btns" style="margin:0 0 10px"><button id="dBack">${ic('back')} 목록으로</button></div>
   <div class="note" style="padding:10px 12px"><b style="margin:0">${s.ad||s.sg}</b></div>
   <h3 style="font-size:13.5px;margin:12px 0 6px">학생·학급 현황${src(SIAUTO?'학교알리미 '+(s.sy||'')+' 공시':'예시값')}</h3>
   <div class="kpis"><div class="kpi"><small>학생수</small><b>${fmt(s.st)}<em>명</em></b></div>
@@ -1171,8 +1171,8 @@ function renderDetail(){ const s=DETAIL; if(!s) return;
    ${B.length?`<table style="margin-top:6px"><thead><tr><th>건물</th><th>지상층</th><th>바닥면적</th><th>연면적(추정)</th></tr></thead><tbody>${B.map(b=>`<tr><td>${b.n}</td><td>${b.fl}층</td><td>${fmt(b.fa)}㎡</td><td>${fmt(b.ga)}㎡</td></tr>`).join('')}</tbody></table>`
    :`<div style="color:var(--sub);font-size:11.5px;margin-top:4px">${VWKEY?'학교로 확대되면 브이월드 건물 정보를 불러와 여기에 표시합니다. 정확한 동별 목록은 [데이터·방법] → KEIIS 건물정보 불러오기로 반영됩니다.':'브이월드 키가 등록된 주소(깃허브 페이지)에서 건물 목록이 표시됩니다.'}</div>`}</div>
   <div class="note"><b>재구조화 검토</b>${(s.age>=AGEC&&s.st>=SMALL)?`${RN()} 검토 대상 ${RANK.length}개교 중 <b style="display:inline;color:#0064FF">${rank}위</b>`:`검토 대상 아님 (경과 ${s.age}년 · 학생 ${fmt(s.st)}명 / 기준: 경과 ${AGEC}년 이상 · 학생 ${SMALL}명 이상)`}<br><span style="color:var(--sub);font-size:11.5px">기준: 2026년 기준 건물 경과 40년 이상 + 학생 60명 이상 · 경과연수 긴 순</span></div>`;
-  $('#dBack').onclick=closeSchool;
-  const bg=$('#lbody').querySelector('.big'); if(bg) bg.onclick=e=>e.target.closest('.ch').classList.toggle('big');
+  Q('#dBack').onclick=closeSchool;
+  const bg=Q('#lbody').querySelector('.big'); if(bg) bg.onclick=e=>e.target.closest('.ch').classList.toggle('big');
 }
 if(map){ map.on('click','col',e=>openSchool(e.features[0].properties.id)); map.on('click','vwb3d',e=>{ const sid=e.features[0].properties.sid; if(sid) openSchool(sid); });
   map.on('mouseenter','col',()=>map.getCanvas().style.cursor='pointer'); }
@@ -1199,12 +1199,12 @@ function e3Ready(v){ E3.viewer=v; E3.on=true; const C=Cesium;
   h.setInputAction(e=>{ const p=v.scene.pick(e.position); const id=p&&p.id&&p.id.id; if(id&&/^[fnm]\d+$/.test(id)) openSchool(+id.slice(1)); },C.ScreenSpaceEventType.LEFT_CLICK);
   h.setInputAction(e=>{ const p=v.scene.pick(e.endPosition); const id=p&&p.id&&p.id.id; v.scene.canvas.style.cursor=(id&&/^[fnm]\d+$/.test(id))?'pointer':''; },C.ScreenSpaceEventType.MOUSE_MOVE);
   document.body.classList.add('e3'); e3Sync(); e3Home(); renderRight(); renderLegend();
-  $('#sub').textContent='전라남도 · 브이월드 3D 실사 · 학교 842개교 · 2026-09-21 기준';
+  Q('#sub').textContent='전라남도 · 브이월드 3D 실사 · 학교 842개교 · 2026-09-21 기준';
   toast('브이월드 3D 실사 지도로 표시합니다.'); }
-function e3Fail(msg){ $('#vmap').style.display='none'; $('#map').style.display=''; if(map) setTimeout(()=>map.resize(),50); if(msg) toast('브이월드 3D를 열지 못해 기본 3D 지도로 표시합니다('+msg+').'); }
+function e3Fail(msg){ Q('#vmap').style.display='none'; Q('#map').style.display=''; if(map) setTimeout(()=>map.resize(),50); if(msg) toast('브이월드 3D를 열지 못해 기본 3D 지도로 표시합니다('+msg+').'); }
 function e3Init(){ if(!window.__VW3D_TRY) return; if(typeof window.jQuery==='undefined'){ e3Fail('jQuery 로드 실패(사내망 차단 가능)'); return; }
   if(typeof vw==='undefined'){ e3Fail('인증키·도메인 또는 WebGL 3D API 권한 확인'); return; }
-  try{ $('#vmap').style.display='block'; $('#map').style.display='none';
+  try{ Q('#vmap').style.display='block'; Q('#map').style.display='none';
     const cam=new vw.CameraPosition(new vw.CoordZ(126.95,33.62,210000),new vw.Direction(0,-48,0));
     let m=null;
     try{ m=new vw.Map(); }catch(e){ m=null; }
@@ -1226,7 +1226,7 @@ function e3Init(){ if(!window.__VW3D_TRY) return; if(typeof window.jQuery==='und
 function setEngine(e){ try{ localStorage.setItem('engine',e); }catch(x){} location.reload(); }
 /* ---------- 방위표 ---------- */
 function compassSet(deg){ const g=document.getElementById('cpRot'); if(g) g.setAttribute('transform',`rotate(${-deg} 24 24)`); }
-$('#compass').onclick=()=>{ if(E3.on){ const c=E3.viewer.camera; c.flyTo({destination:c.positionWC.clone(),orientation:{heading:0,pitch:c.pitch,roll:0},duration:.8}); }
+Q('#compass').onclick=()=>{ if(E3.on){ const c=E3.viewer.camera; c.flyTo({destination:c.positionWC.clone(),orientation:{heading:0,pitch:c.pitch,roll:0},duration:.8}); }
   else if(map) map.easeTo({bearing:0,duration:600}); compassSet(0); speak('북쪽을 위로 맞췄습니다.'); };
 if(map) map.on('rotate',()=>compassSet(map.getBearing()));
 (function tick(){ if(E3.on&&E3.viewer) compassSet(Cesium.Math.toDegrees(E3.viewer.camera.heading)); requestAnimationFrame(tick); })();
@@ -1238,7 +1238,7 @@ function regionStyle(){ if(!map||!ready) return;
   map.setPaintProperty('sg-fill','fill-opacity', REGION?['case',['==',['get','name'],REGION],Math.max(.35,+regionStyle.base||.35),.06]:regionStyle.base); }
 function setRegion(r){
   REGION=r||null; SCHOOLS=REGION?ALL.filter(s=>s.sg===REGION):ALL; HL=[]; HLIDS=new Set(); S.yr=null;
-  $('#rgn').value=REGION||''; derive(); onFilter(); regionStyle(); if(curTab==='ask') renderAsk();
+  Q('#rgn').value=REGION||''; derive(); onFilter(); regionStyle(); if(curTab==='ask') renderAsk();
   if(REGION) fitTo(SCHOOLS); else if(E3.on) e3Home(); else if(map) map.flyTo({...HOME,duration:1800});
   toast(REGION?`${REGION} ${SCHOOLS.length}개교만 표시합니다. 질의응답·표·순위도 ${REGION} 기준으로 바뀝니다.`:'전남 전체로 돌아왔습니다.');
 }
@@ -1252,11 +1252,11 @@ if(map) map.on('click',e=>{ if(!S.sg||!map.getLayer('sg-fill')) return;
   const sg=map.queryRenderedFeatures(e.point,{layers:['sg-fill']}), n=sg.length?sg[0].properties.name:null;
   if(REGION){ if(n!==REGION) goHome(); return; }        /* 선택 시군 밖을 누르면 전남 전체 */
   if(n) setRegion(n); });
-(function(){ const c=by(ALL,'sg'); $('#rgn').innerHTML='<option value="">전남 전체 ▾</option>'+Object.keys(c).sort((a,b)=>a.localeCompare(b,'ko')).map(k=>`<option value="${k}">${k} (${c[k].length})</option>`).join(''); $('#rgn').onchange=e=>setRegion(e.target.value); })();
+(function(){ const c=by(ALL,'sg'); Q('#rgn').innerHTML='<option value="">전남 전체 ▾</option>'+Object.keys(c).sort((a,b)=>a.localeCompare(b,'ko')).map(k=>`<option value="${k}">${k} (${c[k].length})</option>`).join(''); Q('#rgn').onchange=e=>setRegion(e.target.value); })();
 /* ---------- 시작 ---------- */
 /* ---------- 간이 입체 지도(WebGL·외부망 불가 시) ---------- */
 function drawCV(){
-  const cv=$('#cv'); cv.style.display='block'; const W=cv.clientWidth,H=cv.clientHeight,dpr=devicePixelRatio||1;
+  const cv=Q('#cv'); cv.style.display='block'; const W=cv.clientWidth,H=cv.clientHeight,dpr=devicePixelRatio||1;
   cv.width=W*dpr; cv.height=H*dpr; const c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0);
   c.fillStyle='#F2F4F6'; c.fillRect(0,0,W,H); c.setTransform(dpr*CVV.k,0,0,dpr*CVV.k,dpr*CVV.tx,dpr*CVV.ty);
   const L0=innerWidth>980?Math.min(W*.31,430)+40:20, R0=innerWidth>980?250:20, T0=90, B0=140;
@@ -1281,7 +1281,7 @@ function drawCV(){
 }
 const by2=by; let hK2=1;
 const CVV={k:1,tx:0,ty:0}; let CVP=null;
-(function(){ const cv=$('#cv'); let drag=null;
+(function(){ const cv=Q('#cv'); let drag=null;
   cv.addEventListener('wheel',e=>{ e.preventDefault(); const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
     const nk=Math.min(14,Math.max(1,CVV.k*(e.deltaY<0?1.18:1/1.18))), f=nk/CVV.k; CVV.tx=mx-(mx-CVV.tx)*f; CVV.ty=my-(my-CVV.ty)*f; CVV.k=nk;
     if(nk===1){CVV.tx=0;CVV.ty=0;} drawCV(); },{passive:false});
@@ -1293,7 +1293,7 @@ const CVV={k:1,tx:0,ty:0}; let CVP=null;
   cv.addEventListener('dblclick',()=>{ CVV.k=1;CVV.tx=0;CVV.ty=0; drawCV(); });
   cv.style.cursor='grab'; cv.style.touchAction='none'; })();
 if(!map){ addEventListener('resize',drawCV); hK2=0; const t0=performance.now(); (function st(t){hK2=Math.min(1,(t-t0)/2500); drawCV(); if(hK2<1) requestAnimationFrame(st);})(t0);
-  $('#sub').textContent='전라남도 · 간이 입체 지도(3D 엔진 사용 불가 환경) · 2026-09-21 기준'; }
+  Q('#sub').textContent='전라남도 · 간이 입체 지도(3D 엔진 사용 불가 환경) · 2026-09-21 기준'; }
 derive(); renderRight(); renderTL(); renderLegend(); setTab('ask'); applyLayout();
 if(map) setTimeout(()=>{ if(!introDone&&map.isStyleLoaded()) intro(); },9000);
 if(window.__VW3D_TRY) setTimeout(e3Init,300);
