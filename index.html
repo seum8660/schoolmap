@@ -9,7 +9,7 @@
 <script>
 const VW_KEY_DEFAULT = '';
 (function(){ var k=VW_KEY_DEFAULT; var eng=null; try{ eng=localStorage.getItem('engine'); }catch(e){}
-  window.__VW3D_TRY=!!k && eng!=='ml' && /^https?:$/.test(location.protocol);
+  window.__VW3D_TRY=!!k && eng==='vw' && /^https?:$/.test(location.protocol);  /* 기본은 기본 3D 지도(백지도), 3D 실사는 선택 시에만 */
   if(window.__VW3D_TRY){
     document.write('<script src="https://code.jquery.com/jquery-3.7.1.min.js"><\/script>');   /* 브이월드 3D 엔진이 jQuery를 사용합니다 */
     document.write('<script src="https://map.vworld.kr/js/webglMapInit.js.do?version=3.0&apiKey='+encodeURIComponent(k)+'&domain='+encodeURIComponent(location.origin)+'"><\/script>');
@@ -267,7 +267,6 @@ body.l3.l3det .timeline{left:calc(min(31%,430px) + 28px)}
 .l3t{width:100%;font-size:13px}.l3t th{position:sticky;top:0;background:#fff;cursor:pointer;white-space:nowrap}.l3t td,.l3t th{padding:10px 8px}.l3t tbody tr{cursor:pointer}.l3t tbody tr:hover{background:#F9FAFB}
 .l3t td:first-child{font-weight:700}
 @media print{ body.l3 .top,body.l3 #map,body.l3 #cv{display:none!important} body.l3 #l3page{position:static;box-shadow:none} html,body{overflow:visible;height:auto} .l3f,.l3h .sp{display:none} @page{size:A4 landscape;margin:12mm} }
-body.e3 #oBm,body.e3 #oBm+h4,body.e3 .right h4:first-child{display:none}
 body.e3 #oView .opt[data-k="grid"],body.e3 #oView .opt[data-k="vwb"],body.e3 #oView .opt[data-k="is3d"]{display:none}
 body.e3 #oView .opt[data-k="eng"]{background:#E8F2FF;color:#0064FF}
 [hidden]{display:none!important}
@@ -426,7 +425,9 @@ function styleFor(k){
 }
 function setBM(k){
   if(!VWKEY){ toast('브이월드 지도는 인증키가 적용된 주소(깃허브 페이지)에서 표시됩니다.'); return; }
-  S.bm=k; LS.set('bm2',k); vwErr=0; fallback=false; ready=false; renderRight();
+  S.bm=k; LS.set('bm2',k); vwErr=0; renderRight();
+  if(E3.on){ e3SetBase(k); return; }
+  fallback=false; ready=false;
   if(map) map.setStyle(styleFor(k),{diff:false});
 }
 function toast(m){ let el=Q('#toast'); if(!el){el=document.createElement('div');el.id='toast';el.style.cssText='position:absolute;left:50%;bottom:130px;transform:translateX(-50%);background:#23282b;color:#fff;padding:10px 16px;border-radius:10px;font-size:12.5px;z-index:20;max-width:560px;line-height:1.5';document.body.appendChild(el);} el.textContent=m; el.style.display='block'; clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display='none',7000); }
@@ -1193,12 +1194,21 @@ function e3Sync(){ if(!E3.on) return; const C=Cesium, v=E3.viewer;
     E3.far.entities.add({id:'f'+s.id,position:C.Cartesian3.fromDegrees(s.x,s.y,hf/2),cylinder:{length:hf,topRadius:hl?700:450,bottomRadius:hl?700:450,material:col,slices:6},distanceDisplayCondition:new C.DistanceDisplayCondition(9000,1e9),properties:{sid:s.id}});
     E3.near.entities.add({id:'n'+s.id,position:C.Cartesian3.fromDegrees(s.x,s.y,hn*2+2),cylinder:{length:hn*4,topRadius:hl?60:40,bottomRadius:hl?60:40,material:col,slices:6},distanceDisplayCondition:new C.DistanceDisplayCondition(0,9000),properties:{sid:s.id}}); });
   E3.far.entities.resumeEvents(); E3.near.entities.resumeEvents(); v.scene.requestRender&&v.scene.requestRender(); }
+function e3SetBase(k){ if(!E3.on) return; const C=Cesium, L=E3.viewer.imageryLayers; L.removeAll();
+  const add=(lyr,ext)=>L.addImageryProvider(new C.UrlTemplateImageryProvider({
+    url:`https://api.vworld.kr/req/wmts/1.0.0/${VWKEY}/${lyr}/{z}/{y}/{x}.${ext}`, maximumLevel:19, credit:'국토교통부 브이월드' }));
+  if(k==='sat'||k==='hyb') add('Satellite','jpeg');
+  if(k==='hyb') add('Hybrid','png');
+  if(k==='base') add('Base','png');
+  if(k==='white') add('white','png');
+  if(k==='midnight') add('midnight','png');
+  E3.viewer.scene.requestRender&&E3.viewer.scene.requestRender(); }
 function e3Ready(v){ E3.viewer=v; E3.on=true; const C=Cesium;
   try{ v.scene.globe.depthTestAgainstTerrain=false; }catch(e){}
   const h=new C.ScreenSpaceEventHandler(v.scene.canvas);
   h.setInputAction(e=>{ const p=v.scene.pick(e.position); const id=p&&p.id&&p.id.id; if(id&&/^[fnm]\d+$/.test(id)) openSchool(+id.slice(1)); },C.ScreenSpaceEventType.LEFT_CLICK);
   h.setInputAction(e=>{ const p=v.scene.pick(e.endPosition); const id=p&&p.id&&p.id.id; v.scene.canvas.style.cursor=(id&&/^[fnm]\d+$/.test(id))?'pointer':''; },C.ScreenSpaceEventType.MOUSE_MOVE);
-  document.body.classList.add('e3'); e3Sync(); e3Home(); renderRight(); renderLegend();
+  document.body.classList.add('e3'); e3SetBase(S.bm); e3Sync(); e3Home(); renderRight(); renderLegend();
   Q('#sub').textContent='전라남도 · 브이월드 3D 실사 · 학교 842개교 · 2026-09-21 기준';
   toast('브이월드 3D 실사 지도로 표시합니다.'); }
 function e3Fail(msg){ Q('#vmap').style.display='none'; Q('#map').style.display=''; if(map) setTimeout(()=>map.resize(),50); if(msg) toast('브이월드 3D를 열지 못해 기본 3D 지도로 표시합니다('+msg+').'); }
