@@ -658,7 +658,7 @@ function chartHTML(ch){ const mx=Math.max(...ch.rows.flatMap(r=>[r.a,r.b]),1);
   <div class="bars">${ch.rows.map(r=>`<div class="g"><div class="a" style="height:${r.a/mx*82}%"><b>${fmt(r.a)}</b></div><div class="b" style="height:${r.b/mx*82}%"><b>${r.b%1?r.b:fmt(r.b)}</b></div></div>`).join('')}</div>
   <div class="xl">${ch.rows.map(r=>`<span title="${r.l}">${r.l}</span>`).join('')}</div></div>`; }
 function renderAsk(){
-  $('#lhead').innerHTML=`<h3><span>01</span>핵심 질의응답 · ${RN()} <span id="qn">0 / ${QA.length}</span></h3><p>누르면 열립니다. 수치는 내장 자료로 즉시 계산합니다.</p>`;
+  $('#lhead').innerHTML=`<h3><span>01</span>핵심 질의응답 · ${RN()} <span id="qn">0 / ${QA.length}</span></h3><p>준비된 질문을 누르거나, 조건을 직접 입력해 보십시오. 예: "신안군 40년 이상 초등학교", "감소율 상위 10곳"</p>`;
   $('#lbody').innerHTML=QA.map((x,i)=>`<div class="qa" id="qa${i}"><button class="q" data-i="${i}" aria-expanded="false"><span class="ar">${ic('chev')}</span>${x.q}</button><div class="ans"></div></div>`).join('');
   document.querySelectorAll('.qa .q').forEach(b=>b.onclick=()=>openQA(+b.dataset.i));
 }
@@ -678,7 +678,7 @@ function openQA(i,force){
   highlight(r.ids); if(!r.drone) fitTo(r.ids.length?r.ids:SCHOOLS); speak(r.c);
   return r;
 }
-function ask(){ const v=$('#q').value.trim(); if(!v) return; const tk=v.replace(/[?.,]/g,' ').split(/\s+/).filter(Boolean); let best=-1,bi=0;
+function ask(){ const v=$('#q').value.trim(); if(!v) return; if(renderNL(v)) return; const tk=v.replace(/[?.,]/g,' ').split(/\s+/).filter(Boolean); let best=-1,bi=0;
   QA.forEach((x,i)=>{const h=x.q+' '+x.k;let sc=0;tk.forEach(t=>{if(h.includes(t))sc+=2;else for(const c of t)if(h.includes(c))sc+=.2;});if(sc>best){best=sc;bi=i;}});
   setTab('ask'); openQA(bi,true); }
 /* ---------- 학교 검색(자동완성) ---------- */
@@ -764,6 +764,90 @@ function renderIns(){ INS=insCalc(); const I=INS, SM=SIM.small, A=SIM.age;
   $('#lbody').querySelectorAll('tr[data-pa]').forEach(tr=>tr.onclick=()=>{ const ids=tr.dataset.pa.split(',').map(Number), L=ALL.filter(s=>ids.includes(s.id)); highlight(L); fitTo(L); });
 }
 function insMap(k,quiet){ const I=INS||insCalc(); const L={cand:I.cand,fut:I.fut.map(f=>ALL.find(s=>s.id===f.id)),bl:I.backlog,pair:I.P.flatMap(p=>[p.keep,p.go]),only:I.only}[k]||[]; highlight(L); if(!quiet) fitTo(L.length?L:SCHOOLS); }
+/* ---------- 자연어 질문 자동 답변 ---------- */
+const jo=w=>{const c=String(w).slice(-1).charCodeAt(0); return (c>=0xAC00&&c<=0xD7A3)?((c-0xAC00)%28?'이':'가'):'가';};
+const MET={dec:{l:'최근 2년 감소율',f:s=>s.dec*100,u:'%',d:1},age:{l:'경과연수',f:s=>s.age,u:'년',d:0},
+ st:{l:'학생수',f:s=>s.st,u:'명',d:0},cl:{l:'학급수',f:s=>s.cl||0,u:'학급',d:0},
+ ar:{l:'연면적',f:s=>s.ar,u:'㎡',d:0},pa:{l:'학생 1인당 연면적',f:s=>s.pa,u:'㎡',d:1},
+ score:{l:'재구조화 점수',f:s=>s.score*100,u:'점',d:0}};
+function nlParse(q){
+  const t=q.replace(/,/g,' '), R={}, has=(...w)=>w.some(x=>t.includes(x));
+  if(has('감소','급감','줄','줄어','이탈')) R.m='dec';
+  else if(has('노후','오래','경과','낡','준공')) R.m='age';
+  else if(has('1인당','인당')) R.m='pa';
+  else if(has('연면적','면적')) R.m='ar';
+  else if(has('학급')) R.m='cl';
+  else if(has('재구조화 점수','점수')) R.m='score';
+  else if(has('학생')) R.m='st';
+  const n=t.match(/상위\s*(\d+)|(\d+)\s*(?:개교|곳|개)\s*(?:만|)/); if(n) R.n=+(n[1]||n[2]);
+  R.asc=has('적은','낮은','작은','신축','새','최근에 지은');
+  const a=t.match(/(\d+)\s*년\s*(이상|넘|초과|이하|미만|미만인|넘는)/);
+  if(a) R.age=[+a[1], /이상|넘|초과/.test(a[2])?'ge':'le'];
+  const st=t.match(/(\d+)\s*명\s*(이상|초과|이하|미만)/);
+  if(st) R.st=[+st[1], /이상|초과/.test(st[2])?'ge':'le'];
+  const lv=t.match(/초등|중학|고등|초교|(?:^|\s)(초|중|고)(?:등|학)?교/); if(lv) R.lv=(lv[0][0]==='초'?'초':lv[0][0]==='중'?'중':'고');
+  if(has('분교')) R.bk=true;
+  if(has('섬','도서')) R.isl=true;
+  const sgs=[...new Set(ALL.map(s=>s.sg))]; R.sg=sgs.find(g=>t.includes(g)||t.includes(g.slice(0,-1)));
+  const ems=[...new Set(ALL.map(s=>s.em).filter(Boolean))]; if(!R.sg) R.em=ems.find(e=>e.length>1&&t.includes(e));
+  R.count=has('몇','개수','수는','몇곳','얼마나 되');
+  R.avg=has('평균');
+  R.sum=has('합계','총','전체 학생');
+  R.rank=has('상위','가장','높은','많은','큰','적은','낮은','작은','순','급감','top','TOP')||!!R.n;
+  return R;
+}
+function nlFilter(P){ return ALL.filter(s=>{
+  if(P.lv&&s.lv!==P.lv) return false;
+  if(P.bk&&!s.bk) return false;
+  if(P.isl&&!s.isl) return false;
+  if(P.sg&&s.sg!==P.sg) return false;
+  if(P.em&&s.em!==P.em) return false;
+  if(P.age&&(P.age[1]==='ge'?s.age<P.age[0]:s.age>P.age[0])) return false;
+  if(P.st&&(P.st[1]==='ge'?s.st<P.st[0]:s.st>P.st[0])) return false;
+  return true; }); }
+function nlScope(P){ const p=[]; if(P.sg) p.push(P.sg); if(P.em) p.push(P.em); if(P.isl) p.push('섬 지역');
+  if(P.lv) p.push(P.lv+'등학교'); if(P.bk) p.push('분교장');
+  if(P.age) p.push(`경과 ${P.age[0]}년 ${P.age[1]==='ge'?'이상':'이하'}`);
+  if(P.st) p.push(`학생 ${P.st[0]}명 ${P.st[1]==='ge'?'이상':'이하'}`);
+  return p.length?p.join(' · '):'전남 전체'; }
+function nlAnswer(q){
+  const P=nlParse(q); if(!P.m&&!P.age&&!P.st&&!P.sg&&!P.em&&!P.lv&&!P.isl&&!P.bk) return null;
+  const L=nlFilter(P); if(!L.length) return {P,empty:true,scope:nlScope(P)};
+  const m=P.m||'age', M=MET[m], N=Math.min(P.n||10,50);
+  const val=s=>M.f(s), fx=v=>v.toFixed(M.d);
+  const avg=L.reduce((x,s)=>x+val(s),0)/L.length;
+  const sorted=[...L].sort((a,b)=>P.asc?val(a)-val(b):val(b)-val(a));
+  const top=sorted.slice(0,N);
+  let c;
+  if(P.count&&!P.rank) c=`${nlScope(P)} 조건에 해당하는 학교는 <b style="display:inline">${fmt(L.length)}곳</b>입니다.`;
+  else if(P.avg) c=`${nlScope(P)} ${fmt(L.length)}개교의 평균 ${M.l}는 <b style="display:inline">${fx(avg)}${M.u}</b>입니다.`;
+  else c=`${nlScope(P)} 중 ${M.l}${jo(M.l)} ${P.asc?'낮은':'높은'} 상위 ${top.length}곳입니다. 1위는 <b style="display:inline">${top[0].n}(${fx(val(top[0]))}${M.u})</b>입니다.`;
+  return {P,L,top,m,M,avg,scope:nlScope(P),c,
+    ev:[['t1','수치',`대상 ${fmt(L.length)}개교 · 평균 ${M.l} ${fx(avg)}${M.u} · 전남 평균 ${fx(ALL.reduce((x,s)=>x+val(s),0)/ALL.length)}${M.u}`],
+        ['t2','근거',`학생수 ${SIAUTO?'학교알리미 공시':'예시값'} · 준공년도 ${KEIIS?'KEIIS':BLDAUTO?'건축물대장':'예시값'} · 기준일 2026-09-21`],
+        ['t3','한계','입력한 조건만으로 계산한 결과이며 통학여건·지역 의견은 반영되지 않았습니다.']]};
+}
+function renderNL(q){
+  const r=nlAnswer(q); if(!r) return false;
+  setTab('ask');
+  const head=$('#lbody');
+  if(r.empty){ head.insertAdjacentHTML('afterbegin',`<div class="qa open" id="qaNL"><div class="q" style="cursor:default"><span class="ar" style="color:#0064FF">Q</span>${q}</div><div class="ans"><p class="conc">${r.scope} 조건에 해당하는 학교가 없습니다.</p><p class="desc">조건을 넓혀 다시 물어보십시오. 예: "신안군 40년 이상 초등학교", "감소율 상위 10곳"</p></div></div>`); return true; }
+  const M=r.M, fx=v=>v.toFixed(M.d);
+  const rows=r.top.map((s,i)=>`<tr class="cl" data-id="${s.id}"><td>${i+1}. ${s.n}</td><td>${s.sg}</td><td>${s.lv}</td><td style="color:${GC(s.age)};font-weight:700">${s.age}년</td><td>${fmt(s.st)}명</td><td><b>${fx(M.f(s))}${M.u}</b></td></tr>`).join('');
+  const ch={t:`${M.l} 상위 ${Math.min(6,r.top.length)}곳`,a:'학생수',b:M.l,rows:r.top.slice(0,6).map(s=>({l:short(s.n),a:s.st,b:+fx(M.f(s))}))};
+  head.insertAdjacentHTML('afterbegin',`<div class="qa open" id="qaNL"><div class="q" style="cursor:default"><span class="ar" style="color:#0064FF">Q</span>${q}</div><div class="ans">
+   <p class="conc">${r.c}</p>
+   <div class="ev">${r.ev.map(([k,l,x])=>`<div class="r"><i class="${k}">${l}</i>${x}</div>`).join('')}</div>
+   <table style="margin-bottom:10px"><thead><tr><th>학교</th><th>시군</th><th>급</th><th>경과</th><th>학생</th><th>${M.l}</th></tr></thead><tbody>${rows}</tbody></table>
+   ${chartHTML(ch)}
+   <button class="mapgo" id="nlGo"><b>지도에서 확인</b><small>${r.scope} ${r.top.length}곳</small></button></div></div>`);
+  $('#qaNL').querySelectorAll('tr.cl').forEach(tr=>tr.onclick=()=>openSchool(+tr.dataset.id));
+  const bg=$('#qaNL').querySelector('.big'); if(bg) bg.onclick=e=>e.target.closest('.ch').classList.toggle('big');
+  $('#nlGo').onclick=()=>{ highlight(r.top); fitTo(r.top); };
+  highlight(r.top); fitTo(r.top); speak(r.c.replace(/<[^>]+>/g,''));
+  $('#qaNL').scrollIntoView({block:'nearest'});
+  return true;
+}
 /* ---------- 탭 ---------- */
 function setTab(t){ DETAIL=null; curTab=t; document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   ({ask:renderAsk,ins:renderIns,status:renderStatus,cand:renderCand,future:renderFuture,src:renderSrc})[t](); }
@@ -893,21 +977,6 @@ function keiisStamp(hit){ stampAll(); }
 if(KEIIS){ const h=keiisApply(KEIIS); setTimeout(()=>keiisStamp(h),0); }
 /* ---------- 학교알리미 연동 ---------- */
 const siNorm=s=>String(s||'').replace(/\s|\(.*?\)|전라남도|학교$/g,'').replace(/등학교$|학교$/,'');
-function siRows(j){ if(Array.isArray(j)) return j; for(const k of ['list','data','row','items','result']) if(j&&Array.isArray(j[k])) return j[k];
-  for(const v of Object.values(j||{})) if(v&&typeof v==='object'){ const r=siRows(v); if(r.length) return r; } return []; }
-function siReady(rows){
-  const out=$('#siOut'); if(!rows.length){ out.textContent='받은 자료가 없습니다. 서비스코드·공시연도·인증키를 확인하십시오.'; return; }
-  SIROWS=rows; const keys=Object.keys(rows[0]);
-  const nameK=keys.find(k=>/SCHUL_NM|학교명/i.test(k))||keys[0];
-  const num=keys.filter(k=>rows.slice(0,20).every(r=>r[k]===''||r[k]==null||!isNaN(+String(r[k]).replace(/,/g,''))));
-  const guess=num.find(k=>/SUM|TOT|합계|총/i.test(k))||num[num.length-1];
-  out.innerHTML=`${rows.length}건 수신 · 학교명 열 <b>${nameK}</b><div class="btns"><select id="siCol" class="fi" style="flex:2">${num.map(k=>`<option ${k===guess?'selected':''}>${k}</option>`).join('')}</select><button class="pri" id="siApply">학생수 반영</button></div><div style="margin-top:4px">예시값 ${rows.slice(0,2).map(r=>`${r[nameK]}: ${r[guess]}`).join(' / ')}</div>`;
-  $('#siApply').onclick=()=>{ const col=$('#siCol').value, m={}; SIROWS.forEach(r=>{ const v=+String(r[col]).replace(/,/g,''); if(!isNaN(v)) m[siNorm(r[nameK])]=v; });
-    let hit=0; const miss=[]; ALL.forEach(s=>{ const v=m[siNorm(s.n)]; if(v!=null){ s.st5=s.st5||s.st; s.st=v; hit++; } else miss.push(s.n); });
-    if(!hit){ out.innerHTML+=`<div style="color:#F04452;margin-top:6px">일치하는 학교가 없습니다. 선택한 열이 학생수가 맞는지, 학교명 열이 맞는지 확인하십시오.</div>`; return; }
-    derive(); onFilter(); $('#stamp').textContent='학교 위치 실자료 · 학생수 학교알리미 반영('+hit+'개교) · 준공년도는 예시값'; toast(`학생수 ${hit}개교 반영 · 미일치 ${miss.length}개교`);
-    $('#siOut').innerHTML=`<div style="margin-top:6px"><b>${hit}개교 반영</b>${miss.length?` · 미일치 ${miss.length}개교: ${miss.slice(0,15).join(', ')}${miss.length>15?' 외':''}`:''}</div>`; };
-}
 function loadCSV(txt){ const rows=txt.replace(/^\ufeff/,'').split(/\r?\n/).filter(r=>r.trim()).map(r=>r.split(',').map(c=>c.trim())), h=rows.shift(), ix=n=>h.indexOf(n);
   const lack=['학교명','학교급','시군','위도','경도','준공년도','학생수'].filter(n=>ix(n)<0); if(lack.length){alert('다음 열이 없습니다: '+lack.join(', '));return;}
   const out=[]; let bad=0;

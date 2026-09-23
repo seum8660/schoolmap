@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 """
 학교알리미 Open API → data/schoolinfo.json (전남광주 시도코드 12)
