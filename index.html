@@ -87,8 +87,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
 }});if(w&&w.length)es(p,w,true,o.people||[])}catch(y){if(o.WTF)throw y}}function _o(e){return e.charAt(0)=="/"?e.slice(1):e}function Ao(e,r){Ue();r=r||{};yo(r);if(Ar(e,"META-INF/manifest.xml"))return po(e,r);if(Ar(e,"objectdata.xml"))return po(e,r);if(Ar(e,"Index/Document.iwa")){if(typeof Uint8Array=="undefined")throw new Error("NUMBERS file parsing requires Uint8Array support");if(typeof parse_numbers_iwa!="undefined"){if(e.FileIndex)return parse_numbers_iwa(e);var t=Ye.utils.cfb_new();Or(e).forEach(function(r){Mr(t,r,Dr(e,r))});return parse_numbers_iwa(t)}throw new Error("Unsupported NUMBERS file")}if(!Ar(e,"[Content_Types].xml")){if(Ar(e,"index.xml.gz"))throw new Error("Unsupported NUMBERS 08 file");if(Ar(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Error("Unsupported ZIP file")}var a=Or(e);var n=hn(Fr(e,"[Content_Types].xml"));var i=false;var s,l;if(n.workbooks.length===0){l="xl/workbook.xml";if(Er(e,l,true))n.workbooks.push(l)}if(n.workbooks.length===0){l="xl/workbook.bin";if(!Er(e,l,true))throw new Error("Could not find workbook");n.workbooks.push(l);i=true}if(n.workbooks[0].slice(-3)=="bin")i=true;var o={};var c={};if(!r.bookSheets&&!r.bookProps){As=[];if(n.sst)try{As=zl(Er(e,_o(n.sst)),n.sst,r)}catch(f){if(r.WTF)throw f}if(r.cellStyles&&n.themes.length)o=$l(Fr(e,n.themes[0].replace(/^\//,""),true)||"",n.themes[0],r);if(n.style)c=Bl(Er(e,_o(n.style)),n.style,o,r)}n.links.map(function(t){try{var a=vn(Fr(e,mn(_o(t))),t);return jl(Er(e,_o(t)),a,t,r)}catch(n){}});var u=Nl(Er(e,_o(n.workbooks[0])),n.workbooks[0],r);var h={},p="";if(n.coreprops.length){p=Er(e,_o(n.coreprops[0]),true);if(p)h=En(p);if(n.extprops.length!==0){p=Er(e,_o(n.extprops[0]),true);if(p)Pn(p,h,r)}}var d={};if(!r.bookSheets||r.bookProps){if(n.custprops.length!==0){p=Fr(e,_o(n.custprops[0]),true);if(p)d=Ln(p,r)}}var m={};if(r.bookSheets||r.bookProps){if(u.Sheets)s=u.Sheets.map(function O(e){return e.name});else if(h.Worksheets&&h.SheetNames.length>0)s=h.SheetNames;if(r.bookProps){m.Props=h;m.Custprops=d}if(r.bookSheets&&typeof s!=="undefined")m.SheetNames=s;if(r.bookSheets?m.SheetNames:r.bookProps)return m}s={};var v={};if(r.bookDeps&&n.calcchain)v=Wl(Er(e,_o(n.calcchain)),n.calcchain,r);var g=0;var b={};var w,y;{var k=u.Sheets;h.Worksheets=k.length;h.SheetNames=[];for(var x=0;x!=k.length;++x){h.SheetNames[x]=k[x].name}}var S=i?"bin":"xml";var C=n.workbooks[0].lastIndexOf("/");var _=(n.workbooks[0].slice(0,C+1)+"_rels/"+n.workbooks[0].slice(C+1)+".rels").replace(/^\//,"");if(!Ar(e,_))_="xl/_rels/workbook."+S+".rels";var A=vn(Fr(e,_,true),_.replace(/_rels.*/,"s5s"));if((n.metadata||[]).length>=1){r.xlmeta=Hl(Er(e,_o(n.metadata[0])),n.metadata[0],r)}if((n.people||[]).length>=1){r.people=is(Er(e,_o(n.people[0])),r)}if(A)A=So(A,u.Sheets);var T=Er(e,"xl/worksheets/sheet.xml",true)?1:0;e:for(g=0;g!=h.Worksheets;++g){var E="sheet";if(A&&A[g]){w="xl/"+A[g][1].replace(/[\/]?xl\//,"");if(!Ar(e,w))w=A[g][1];if(!Ar(e,w))w=_.replace(/_rels\/.*$/,"")+A[g][1];E=A[g][2]}else{w="xl/worksheets/sheet"+(g+1-T)+"."+S;w=w.replace(/sheet0\./,"sheet.")}y=w.replace(/^(.*)(\/)([^\/]*)$/,"$1/_rels/$3.rels");if(r&&r.sheets!=null)switch(typeof r.sheets){case"number":if(g!=r.sheets)continue e;break;case"string":if(h.SheetNames[g].toLowerCase()!=r.sheets.toLowerCase())continue e;break;default:if(Array.isArray&&Array.isArray(r.sheets)){var F=false;for(var D=0;D!=r.sheets.length;++D){if(typeof r.sheets[D]=="number"&&r.sheets[D]==g)F=1;if(typeof r.sheets[D]=="string"&&r.sheets[D].toLowerCase()==h.SheetNames[g].toLowerCase())F=1}if(!F)continue e};}Co(e,w,y,h.SheetNames[g],g,b,s,E,r,u,o,c)}m={Directory:n,Workbook:u,Props:h,Custprops:d,Deps:v,Sheets:s,SheetNames:h.SheetNames,Strings:As,Styles:c,Themes:o,SSF:gr(X)};if(r&&r.bookFiles){if(e.files){m.keys=a;m.files=e.files}else{m.keys=[];m.files={};e.FullPaths.forEach(function(r,t){r=r.replace(/^Root Entry[\/]/,"");m.keys.push(r);m.files[r]=e.FileIndex[t]})}}if(r&&r.bookVBA){if(n.vba.length>0)m.vbaraw=Er(e,_o(n.vba[0]),true);else if(n.defaults&&n.defaults.bin===ls)m.vbaraw=Er(e,"xl/vbaProject.bin",true)}return m}function To(e,r){var t=r||{};var a="Workbook",n=Ye.find(e,a);try{a="/!DataSpaces/Version";n=Ye.find(e,a);if(!n||!n.content)throw new Error("ECMA-376 Encrypted file missing "+a);parse_DataSpaceVersionInfo(n.content);a="/!DataSpaces/DataSpaceMap";n=Ye.find(e,a);if(!n||!n.content)throw new Error("ECMA-376 Encrypted file missing "+a);var i=parse_DataSpaceMap(n.content);if(i.length!==1||i[0].comps.length!==1||i[0].comps[0].t!==0||i[0].name!=="StrongEncryptionDataSpace"||i[0].comps[0].v!=="EncryptedPackage")throw new Error("ECMA-376 Encrypted file bad "+a);a="/!DataSpaces/DataSpaceInfo/StrongEncryptionDataSpace";n=Ye.find(e,a);if(!n||!n.content)throw new Error("ECMA-376 Encrypted file missing "+a);var s=parse_DataSpaceDefinition(n.content);if(s.length!=1||s[0]!="StrongEncryptionTransform")throw new Error("ECMA-376 Encrypted file bad "+a);a="/!DataSpaces/TransformInfo/StrongEncryptionTransform/!Primary";n=Ye.find(e,a);if(!n||!n.content)throw new Error("ECMA-376 Encrypted file missing "+a);parse_Primary(n.content)}catch(l){}a="/EncryptionInfo";n=Ye.find(e,a);if(!n||!n.content)throw new Error("ECMA-376 Encrypted file missing "+a);var o=parse_EncryptionInfo(n.content);a="/EncryptedPackage";n=Ye.find(e,a);if(!n||!n.content)throw new Error("ECMA-376 Encrypted file missing "+a);if(o[0]==4&&typeof decrypt_agile!=="undefined")return decrypt_agile(o[1],n.content,t.password||"",t);if(o[0]==2&&typeof decrypt_std76!=="undefined")return decrypt_std76(o[1],n.content,t.password||"",t);throw new Error("File is password-protected")}function Eo(e,r){if(r.bookType=="ods")return bo(e,r);if(r.bookType=="numbers")return write_numbers_iwa(e,r);if(r.bookType=="xlsb")return Fo(e,r);return Do(e,r)}function Fo(e,r){Zi=1024;if(e&&!e.SSF){e.SSF=gr(X)}if(e&&e.SSF){Ue();ze(e.SSF);r.revssf=ar(e.SSF);r.revssf[e.SSF[65535]]=0;r.ssf=e.SSF}r.rels={};r.wbrels={};r.Strings=[];r.Strings.Count=0;r.Strings.Unique=0;if(Es)r.revStrings=new Map;else{r.revStrings={};r.revStrings.foo=[];delete r.revStrings.foo}var t=r.bookType=="xlsb"?"bin":"xml";var a=fs.indexOf(r.bookType)>-1;var n=un();ko(r=r||{});var i=Nr();var s="",l=0;r.cellXfs=[];Ms(r.cellXfs,{},{revssf:{General:0}});if(!e.Props)e.Props={};s="docProps/core.xml";Mr(i,s,Dn(e.Props,r));n.coreprops.push(s);bn(r.rels,2,s,dn.CORE_PROPS);s="docProps/app.xml";if(e.Props&&e.Props.SheetNames){}else if(!e.Workbook||!e.Workbook.Sheets)e.Props.SheetNames=e.SheetNames;else{var o=[];for(var c=0;c<e.SheetNames.length;++c)if((e.Workbook.Sheets[c]||{}).Hidden!=2)o.push(e.SheetNames[c]);e.Props.SheetNames=o}e.Props.Worksheets=e.Props.SheetNames.length;Mr(i,s,In(e.Props,r));n.extprops.push(s);bn(r.rels,3,s,dn.EXT_PROPS);if(e.Custprops!==e.Props&&er(e.Custprops||{}).length>0){s="docProps/custom.xml";Mr(i,s,Bn(e.Custprops,r));n.custprops.push(s);bn(r.rels,4,s,dn.CUST_PROPS)}for(l=1;l<=e.SheetNames.length;++l){var f={"!id":{}};var u=e.Sheets[e.SheetNames[l-1]];var h=(u||{})["!type"]||"sheet";switch(h){case"chart":;default:s="xl/worksheets/sheet"+l+"."+t;Mr(i,s,Xl(l-1,s,r,e,f));n.sheets.push(s);bn(r.wbrels,-1,"worksheets/sheet"+l+"."+t,dn.WS[0]);}if(u){var p=u["!comments"];var d=false;var m="";if(p&&p.length>0){m="xl/comments"+l+"."+t;Mr(i,m,Kl(p,m,r));n.comments.push(m);bn(f,-1,"../comments"+l+"."+t,dn.CMNT);d=true}if(u["!legacy"]){if(d)Mr(i,"xl/drawings/vmlDrawing"+l+".vml",Qi(l,u["!comments"]))}delete u["!comments"];delete u["!legacy"]}if(f["!id"].rId1)Mr(i,mn(s),gn(f))}if(r.Strings!=null&&r.Strings.length>0){s="xl/sharedStrings."+t;Mr(i,s,Jl(r.Strings,s,r));n.strs.push(s);bn(r.wbrels,-1,"sharedStrings."+t,dn.SST)}s="xl/workbook."+t;Mr(i,s,Vl(e,s,r));n.workbooks.push(s);bn(r.rels,1,s,dn.WB);s="xl/theme/theme1.xml";Mr(i,s,Xi(e.Themes,r));n.themes.push(s);bn(r.wbrels,-1,"theme/theme1.xml",dn.THEME);s="xl/styles."+t;Mr(i,s,Yl(e,s,r));n.styles.push(s);bn(r.wbrels,-1,"styles."+t,dn.STY);if(e.vbaraw&&a){s="xl/vbaProject.bin";Mr(i,s,e.vbaraw);n.vba.push(s);bn(r.wbrels,-1,"vbaProject.bin",dn.VBA)}s="xl/metadata."+t;Mr(i,s,ql(s));n.metadata.push(s);bn(r.wbrels,-1,"metadata."+t,dn.XLMETA);Mr(i,"[Content_Types].xml",pn(n,r));Mr(i,"_rels/.rels",gn(r.rels));Mr(i,"xl/_rels/workbook."+t+".rels",gn(r.wbrels));delete r.revssf;delete r.ssf;return i}function Do(e,r){Zi=1024;if(e&&!e.SSF){e.SSF=gr(X)}if(e&&e.SSF){Ue();ze(e.SSF);r.revssf=ar(e.SSF);r.revssf[e.SSF[65535]]=0;r.ssf=e.SSF}r.rels={};r.wbrels={};r.Strings=[];r.Strings.Count=0;r.Strings.Unique=0;if(Es)r.revStrings=new Map;else{r.revStrings={};r.revStrings.foo=[];delete r.revStrings.foo}var t="xml";var a=fs.indexOf(r.bookType)>-1;var n=un();ko(r=r||{});var i=Nr();var s="",l=0;r.cellXfs=[];Ms(r.cellXfs,{},{revssf:{General:0}});if(!e.Props)e.Props={};s="docProps/core.xml";Mr(i,s,Dn(e.Props,r));n.coreprops.push(s);bn(r.rels,2,s,dn.CORE_PROPS);s="docProps/app.xml";if(e.Props&&e.Props.SheetNames){}else if(!e.Workbook||!e.Workbook.Sheets)e.Props.SheetNames=e.SheetNames;else{var o=[];for(var c=0;c<e.SheetNames.length;++c)if((e.Workbook.Sheets[c]||{}).Hidden!=2)o.push(e.SheetNames[c]);e.Props.SheetNames=o}e.Props.Worksheets=e.Props.SheetNames.length;Mr(i,s,In(e.Props,r));n.extprops.push(s);bn(r.rels,3,s,dn.EXT_PROPS);if(e.Custprops!==e.Props&&er(e.Custprops||{}).length>0){s="docProps/custom.xml";Mr(i,s,Bn(e.Custprops,r));n.custprops.push(s);bn(r.rels,4,s,dn.CUST_PROPS)}var f=["SheetJ5"];r.tcid=0;for(l=1;l<=e.SheetNames.length;++l){var u={"!id":{}};var h=e.Sheets[e.SheetNames[l-1]];var p=(h||{})["!type"]||"sheet";switch(p){case"chart":;default:s="xl/worksheets/sheet"+l+"."+t;Mr(i,s,pl(l-1,r,e,u));n.sheets.push(s);bn(r.wbrels,-1,"worksheets/sheet"+l+"."+t,dn.WS[0]);}if(h){var d=h["!comments"];var m=false;var v="";if(d&&d.length>0){var g=false;d.forEach(function(e){e[1].forEach(function(e){if(e.T==true)g=true})});if(g){v="xl/threadedComments/threadedComment"+l+"."+t;Mr(i,v,ns(d,f,r));n.threadedcomments.push(v);bn(u,-1,"../threadedComments/threadedComment"+l+"."+t,dn.TCMNT)}v="xl/comments"+l+"."+t;Mr(i,v,ts(d,r));n.comments.push(v);bn(u,-1,"../comments"+l+"."+t,dn.CMNT);m=true}if(h["!legacy"]){if(m)Mr(i,"xl/drawings/vmlDrawing"+l+".vml",Qi(l,h["!comments"]))}delete h["!comments"];delete h["!legacy"]}if(u["!id"].rId1)Mr(i,mn(s),gn(u))}if(r.Strings!=null&&r.Strings.length>0){s="xl/sharedStrings."+t;Mr(i,s,ni(r.Strings,r));n.strs.push(s);bn(r.wbrels,-1,"sharedStrings."+t,dn.SST)}s="xl/workbook."+t;Mr(i,s,Ml(e,r));n.workbooks.push(s);bn(r.rels,1,s,dn.WB);s="xl/theme/theme1.xml";Mr(i,s,Xi(e.Themes,r));n.themes.push(s);bn(r.wbrels,-1,"theme/theme1.xml",dn.THEME);s="xl/styles."+t;Mr(i,s,Ii(e,r));n.styles.push(s);bn(r.wbrels,-1,"styles."+t,dn.STY);if(e.vbaraw&&a){s="xl/vbaProject.bin";Mr(i,s,e.vbaraw);n.vba.push(s);bn(r.wbrels,-1,"vbaProject.bin",dn.VBA)}s="xl/metadata."+t;Mr(i,s,Yi());n.metadata.push(s);bn(r.wbrels,-1,"metadata."+t,dn.XLMETA);if(f.length>1){s="xl/persons/person.xml";Mr(i,s,ss(f,r));n.people.push(s);bn(r.wbrels,-1,"persons/person.xml",dn.PEOPLE)}Mr(i,"[Content_Types].xml",pn(n,r));Mr(i,"_rels/.rels",gn(r.rels));Mr(i,"xl/_rels/workbook."+t+".rels",gn(r.wbrels));delete r.revssf;delete r.ssf;return i}function Oo(e,r){var t="";switch((r||{}).type||"base64"){case"buffer":return[e[0],e[1],e[2],e[3],e[4],e[5],e[6],e[7]];case"base64":t=w(e.slice(0,12));break;case"binary":t=e;break;case"array":return[e[0],e[1],e[2],e[3],e[4],e[5],e[6],e[7]];default:throw new Error("Unrecognized type "+(r&&r.type||"undefined"));}return[t.charCodeAt(0),t.charCodeAt(1),t.charCodeAt(2),t.charCodeAt(3),t.charCodeAt(4),t.charCodeAt(5),t.charCodeAt(6),t.charCodeAt(7)]}function Mo(e,r){if(Ye.find(e,"EncryptedPackage"))return To(e,r);return parse_xlscfb(e,r)}function No(e,r){var t,a=e;var n=r||{};if(!n.type)n.type=y&&Buffer.isBuffer(e)?"buffer":"base64";t=Pr(a,n);return Ao(t,n)}function Po(e,r){var t=0;e:while(t<e.length)switch(e.charCodeAt(t)){case 10:;case 13:;case 32:++t;break;case 60:return parse_xlml(e.slice(t),r);default:break e;}return Hn.to_workbook(e,r)}function Io(e,r){var t="",a=Oo(e,r);switch(r.type){case"base64":t=w(e);break;case"binary":t=e;break;case"buffer":t=e.toString("binary");break;case"array":t=vr(e);break;default:throw new Error("Unrecognized type "+r.type);}if(a[0]==239&&a[1]==187&&a[2]==191)t=ot(t);r.type="binary";return Po(t,r)}function Ro(e,r){var t=e;if(r.type=="base64")t=w(t);t=$cptable.utils.decode(1200,t.slice(2),"str");r.type="binary";return Po(t,r)}function Lo(e){return!e.match(/[^\x00-\x7F]/)?e:ct(e)}function Bo(e,r,t,a){if(a){t.type="string";return Hn.to_workbook(e,t)}return Hn.to_workbook(r,t)}function $o(e,r){o();var t=r||{};if(typeof ArrayBuffer!=="undefined"&&e instanceof ArrayBuffer)return $o(new Uint8Array(e),(t=gr(t),t.type="array",t));if(typeof Uint8Array!=="undefined"&&e instanceof Uint8Array&&!t.type)t.type=typeof Deno!=="undefined"?"buffer":"array";var a=e,n=[0,0,0,0],i=false;if(t.cellStyles){t.cellNF=true;t.sheetStubs=true}Ts={};if(t.dateNF)Ts.dateNF=t.dateNF;if(!t.type)t.type=y&&Buffer.isBuffer(e)?"buffer":"base64";if(t.type=="file"){t.type=y?"buffer":"binary";a=Qe(e);if(typeof Uint8Array!=="undefined"&&!y)t.type="array"}if(t.type=="string"){i=true;t.type="binary";t.codepage=65001;a=Lo(e)}if(t.type=="array"&&typeof Uint8Array!=="undefined"&&e instanceof Uint8Array&&typeof ArrayBuffer!=="undefined"){var s=new ArrayBuffer(3),l=new Uint8Array(s);l.foo="bar";if(!l.foo){t=gr(t);t.type="array";return $o(E(a),t)}}switch((n=Oo(a,t))[0]){case 208:if(n[1]===207&&n[2]===17&&n[3]===224&&n[4]===161&&n[5]===177&&n[6]===26&&n[7]===225)return Mo(Ye.read(a,t),t);break;case 9:if(n[1]<=8)return parse_xlscfb(a,t);break;case 60:return parse_xlml(a,t);case 73:if(n[1]===73&&n[2]===42&&n[3]===0)throw new Error("TIFF Image File is not a spreadsheet");if(n[1]===68)return Vn(a,t);break;case 84:if(n[1]===65&&n[2]===66&&n[3]===76)return Wn.to_workbook(a,t);break;case 80:return n[1]===75&&n[2]<9&&n[3]<9?No(a,t):Bo(e,a,t,i);case 239:return n[3]===60?parse_xlml(a,t):Bo(e,a,t,i);case 255:if(n[1]===254){return Ro(a,t)}else if(n[1]===0&&n[2]===2&&n[3]===0)return WK_.to_workbook(a,t);break;case 0:if(n[1]===0){if(n[2]>=2&&n[3]===0)return WK_.to_workbook(a,t);if(n[2]===0&&(n[3]===8||n[3]===9))return WK_.to_workbook(a,t)}break;case 3:;case 131:;case 139:;case 140:return zn.to_workbook(a,t);case 123:if(n[1]===92&&n[2]===114&&n[3]===116)return RTF.to_workbook(a,t);break;case 10:;case 13:;case 32:return Io(a,t);case 137:if(n[1]===80&&n[2]===78&&n[3]===71)throw new Error("PNG Image File is not a spreadsheet");break;}if($n.indexOf(n[0])>-1&&n[2]<=12&&n[3]<=31)return zn.to_workbook(a,t);return Bo(e,a,t,i)}function zo(e,r){var t=r||{};t.type="file";return $o(e,t)}function Uo(e,r){switch(r.type){case"base64":;case"binary":break;case"buffer":;case"array":r.type="";break;case"file":return Ze(r.file,Ye.write(e,{type:y?"buffer":""}));case"string":throw new Error("'string' output type invalid for '"+r.bookType+"' files");default:throw new Error("Unrecognized type "+r.type);}return Ye.write(e,r)}function Wo(e,r){var t=gr(r||{});var a=Eo(e,t);return Ho(a,t)}function jo(e,r){var t=gr(r||{});var a=Do(e,t);return Ho(a,t)}function Ho(e,r){var t={};var a=y?"nodebuffer":typeof Uint8Array!=="undefined"?"array":"string";if(r.compression)t.compression="DEFLATE";if(r.password)t.type=a;else switch(r.type){case"base64":t.type="base64";break;case"binary":t.type="string";break;case"string":throw new Error("'string' output type invalid for '"+r.bookType+"' files");case"buffer":;case"file":t.type=a;break;default:throw new Error("Unrecognized type "+r.type);}var n=e.FullPaths?Ye.write(e,{fileType:"zip",type:{nodebuffer:"buffer",string:"binary"}[t.type]||t.type,compression:!!r.compression}):e.generate(t);if(typeof Deno!=="undefined"){if(typeof n=="string"){if(r.type=="binary"||r.type=="base64")return n;n=new Uint8Array(_(n))}}if(r.password&&typeof encrypt_agile!=="undefined")return Uo(encrypt_agile(n,r.password),r);if(r.type==="file")return Ze(r.file,n);return r.type=="string"?ot(n):n}function Vo(e,r){var t=r||{};var a=write_xlscfb(e,t);return Uo(a,t)}function Xo(e,r,t){if(!t)t="";var a=t+e;switch(r.type){case"base64":return b(ct(a));case"binary":return ct(a);case"string":return e;case"file":return Ze(r.file,a,"utf8");case"buffer":{if(y)return k(a,"utf8");else if(typeof TextEncoder!=="undefined")return(new TextEncoder).encode(a);else return Xo(a,{type:"binary"}).split("").map(function(e){return e.charCodeAt(0)})};}throw new Error("Unrecognized type "+r.type)}function Go(e,r){switch(r.type){case"base64":return b(e);case"binary":return e;case"string":return e;case"file":return Ze(r.file,e,"binary");case"buffer":{if(y)return k(e,"binary");else return e.split("").map(function(e){return e.charCodeAt(0)})};}throw new Error("Unrecognized type "+r.type)}function Yo(e,r){switch(r.type){case"string":;case"base64":;case"binary":var t="";for(var a=0;a<e.length;++a)t+=String.fromCharCode(e[a]);return r.type=="base64"?b(t):r.type=="string"?ot(t):t;case"file":return Ze(r.file,e);case"buffer":return e;default:throw new Error("Unrecognized type "+r.type);}}function Jo(e,r){o();Fl(e);var t=gr(r||{});if(t.cellStyles){t.cellNF=true;t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=Jo(e,t);t.type="array";return _(a)}return jo(e,t)}function Ko(e,r){o();Fl(e);var t=gr(r||{});if(t.cellStyles){t.cellNF=true;t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=Ko(e,t);t.type="array";return _(a)}var n=0;if(t.sheet){if(typeof t.sheet=="number")n=t.sheet;else n=e.SheetNames.indexOf(t.sheet);if(!e.SheetNames[n])throw new Error("Sheet not found: "+t.sheet+" : "+typeof t.sheet)}switch(t.bookType||"xlsb"){case"xml":;case"xlml":return Xo(write_xlml(e,t),t);case"slk":;case"sylk":return Xo(Un.from_sheet(e.Sheets[e.SheetNames[n]],t),t);case"htm":;case"html":return Xo(no(e.Sheets[e.SheetNames[n]],t),t);case"txt":return Go(sc(e.Sheets[e.SheetNames[n]],t),t);case"csv":return Xo(ic(e.Sheets[e.SheetNames[n]],t),t,"\ufeff");case"dif":return Xo(Wn.from_sheet(e.Sheets[e.SheetNames[n]],t),t);case"dbf":return Yo(zn.from_sheet(e.Sheets[e.SheetNames[n]],t),t);case"prn":return Xo(Hn.from_sheet(e.Sheets[e.SheetNames[n]],t),t);case"rtf":return Xo(RTF.from_sheet(e.Sheets[e.SheetNames[n]],t),t);case"eth":return Xo(jn.from_sheet(e.Sheets[e.SheetNames[n]],t),t);case"fods":return Xo(bo(e,t),t);case"wk1":return Yo(WK_.sheet_to_wk1(e.Sheets[e.SheetNames[n]],t),t);case"wk3":return Yo(WK_.book_to_wk3(e,t),t);case"biff2":if(!t.biff)t.biff=2;case"biff3":if(!t.biff)t.biff=3;case"biff4":if(!t.biff)t.biff=4;return Yo(write_biff_buf(e,t),t);case"biff5":if(!t.biff)t.biff=5;case"biff8":;case"xla":;case"xls":if(!t.biff)t.biff=8;return Vo(e,t);case"xlsx":;case"xlsm":;case"xlam":;case"xlsb":;case"numbers":;case"ods":return Wo(e,t);default:throw new Error("Unrecognized bookType |"+t.bookType+"|");}}function qo(e){if(e.bookType)return;var r={xls:"biff8",htm:"html",slk:"sylk",socialcalc:"eth",Sh33tJS:"WTF"};var t=e.file.slice(e.file.lastIndexOf(".")).toLowerCase();if(t.match(/^\.[a-z]+$/))e.bookType=t.slice(1);e.bookType=r[e.bookType]||e.bookType}function Zo(e,r,t){var a=t||{};a.type="file";a.file=r;qo(a);return Ko(e,a)}function Qo(e,r,t){var a=t||{};a.type="file";a.file=r;qo(a);return Jo(e,a)}function ec(e,r,t,a){var n=t||{};n.type="file";n.file=e;qo(n);n.type="buffer";var i=a;if(!(i instanceof Function))i=t;return Je.writeFile(e,Ko(r,n),i)}function rc(e,r,t,a,n,i,s,l){var o=ya(t);var c=l.defval,f=l.raw||!Object.prototype.hasOwnProperty.call(l,"raw");var u=true;var h=n===1?[]:{};if(n!==1){if(Object.defineProperty)try{Object.defineProperty(h,"__rowNum__",{value:t,enumerable:false})}catch(p){h.__rowNum__=t}else h.__rowNum__=t}if(!s||e[t])for(var d=r.s.c;d<=r.e.c;++d){var m=s?e[t][d]:e[a[d]+o];if(m===undefined||m.t===undefined){if(c===undefined)continue;if(i[d]!=null){h[i[d]]=c}continue}var v=m.v;switch(m.t){case"z":if(v==null)break;continue;case"e":v=v==0?null:void 0;break;case"s":;case"d":;case"b":;case"n":break;default:throw new Error("unrecognized type "+m.t);}if(i[d]!=null){if(v==null){if(m.t=="e"&&v===null)h[i[d]]=null;else if(c!==undefined)h[i[d]]=c;else if(f&&v===null)h[i[d]]=null;else continue}else{h[i[d]]=f&&(m.t!=="n"||m.t==="n"&&l.rawNumbers!==false)?v:Pa(m,v,l)}if(v!=null)u=false}}return{row:h,isempty:u}}function tc(e,r){if(e==null||e["!ref"]==null)return[];var t={t:"n",v:0},a=0,n=1,i=[],s=0,l="";var o={s:{r:0,c:0},e:{r:0,c:0}};var c=r||{};var f=c.range!=null?c.range:e["!ref"];if(c.header===1)a=1;else if(c.header==="A")a=2;else if(Array.isArray(c.header))a=3;else if(c.header==null)a=0;switch(typeof f){case"string":o=Ma(f);break;case"number":o=Ma(e["!ref"]);o.s.r=f;break;default:o=f;}if(a>0)n=0;var u=ya(o.s.r);var h=[];var p=[];var d=0,m=0;var v=Array.isArray(e);var g=o.s.r,b=0;var w={};if(v&&!e[g])e[g]=[];var y=c.skipHidden&&e["!cols"]||[];var k=c.skipHidden&&e["!rows"]||[];for(b=o.s.c;b<=o.e.c;++b){if((y[b]||{}).hidden)continue;h[b]=Ca(b);t=v?e[g][b]:e[h[b]+u];switch(a){case 1:i[b]=b-o.s.c;break;case 2:i[b]=h[b];break;case 3:i[b]=c.header[b-o.s.c];break;default:if(t==null)t={w:"__EMPTY",t:"s"};l=s=Pa(t,null,c);m=w[s]||0;if(!m)w[s]=1;else{do{l=s+"_"+m++}while(w[l]);w[s]=m;w[l]=1}i[b]=l;}}for(g=o.s.r+n;g<=o.e.r;++g){if((k[g]||{}).hidden)continue;var x=rc(e,o,g,h,a,i,v,c);if(x.isempty===false||(a===1?c.blankrows!==false:!!c.blankrows))p[d++]=x.row}p.length=d;return p}var ac=/"/g;function nc(e,r,t,a,n,i,s,l){var o=true;var c=[],f="",u=ya(t);for(var h=r.s.c;h<=r.e.c;++h){if(!a[h])continue;var p=l.dense?(e[t]||[])[h]:e[a[h]+u];if(p==null)f="";else if(p.v!=null){o=false;f=""+(l.rawNumbers&&p.t=="n"?p.v:Pa(p,null,l));for(var d=0,m=0;d!==f.length;++d)if((m=f.charCodeAt(d))===n||m===i||m===34||l.forceQuotes){f='"'+f.replace(ac,'""')+'"';break}if(f=="ID")f='"ID"'}else if(p.f!=null&&!p.F){o=false;f="="+p.f;if(f.indexOf(",")>=0)f='"'+f.replace(ac,'""')+'"'}else f="";c.push(f)}if(l.blankrows===false&&o)return null;return c.join(s)}function ic(e,r){var t=[];var a=r==null?{}:r;if(e==null||e["!ref"]==null)return"";var n=Ma(e["!ref"]);var i=a.FS!==undefined?a.FS:",",s=i.charCodeAt(0);var l=a.RS!==undefined?a.RS:"\n",o=l.charCodeAt(0);var c=new RegExp((i=="|"?"\\|":i)+"+$");var f="",u=[];a.dense=Array.isArray(e);var h=a.skipHidden&&e["!cols"]||[];var p=a.skipHidden&&e["!rows"]||[];for(var d=n.s.c;d<=n.e.c;++d)if(!(h[d]||{}).hidden)u[d]=Ca(d);var m=0;for(var v=n.s.r;v<=n.e.r;++v){if((p[v]||{}).hidden)continue;f=nc(e,n,v,u,s,o,i,a);if(f==null){continue}if(a.strip)f=f.replace(c,"");if(f||a.blankrows!==false)t.push((m++?l:"")+f)}delete a.dense;return t.join("")}function sc(e,r){if(!r)r={};r.FS="\t";r.RS="\n";var t=ic(e,r);if(typeof $cptable=="undefined"||r.type=="string")return t;var a=$cptable.utils.encode(1200,t,"str");return String.fromCharCode(255)+String.fromCharCode(254)+a}function lc(e){var r="",t,a="";if(e==null||e["!ref"]==null)return[];var n=Ma(e["!ref"]),i="",s=[],l;var o=[];var c=Array.isArray(e);for(l=n.s.c;l<=n.e.c;++l)s[l]=Ca(l);for(var f=n.s.r;f<=n.e.r;++f){i=ya(f);for(l=n.s.c;l<=n.e.c;++l){r=s[l]+i;t=c?(e[f]||[])[l]:e[r];a="";if(t===undefined)continue;else if(t.F!=null){r=t.F;if(!t.f)continue;a=t.f;if(r.indexOf(":")==-1)r=r+":"+r}if(t.f!=null)a=t.f;else if(t.t=="z")continue;else if(t.t=="n"&&t.v!=null)a=""+t.v;else if(t.t=="b")a=t.v?"TRUE":"FALSE";else if(t.w!==undefined)a="'"+t.w;else if(t.v===undefined)continue;else if(t.t=="s")a="'"+t.v;else a=""+t.v;o[o.length]=r+"="+a}}return o}function oc(e,r,t){var a=t||{};var n=+!a.skipHeader;var i=e||{};var s=0,l=0;if(i&&a.origin!=null){if(typeof a.origin=="number")s=a.origin;else{var o=typeof a.origin=="string"?Ea(a.origin):a.origin;s=o.r;l=o.c}}var c;var f={s:{c:0,r:0},e:{c:l,r:s+r.length-1+n}};if(i["!ref"]){var u=Ma(i["!ref"]);f.e.c=Math.max(f.e.c,u.e.c);f.e.r=Math.max(f.e.r,u.e.r);if(s==-1){s=u.e.r+1;f.e.r=s+r.length-1+n}}else{if(s==-1){s=0;f.e.r=r.length-1+n}}var h=a.header||[],p=0;r.forEach(function(e,r){er(e).forEach(function(t){if((p=h.indexOf(t))==-1)h[p=h.length]=t;var o=e[t];var f="z";var u="";var d=Fa({c:l+p,r:s+r+n});c=fc(i,d);if(o&&typeof o==="object"&&!(o instanceof Date)){i[d]=o}else{if(typeof o=="number")f="n";else if(typeof o=="boolean")f="b";else if(typeof o=="string")f="s";else if(o instanceof Date){f="d";if(!a.cellDates){f="n";o=sr(o)}u=a.dateNF||X[14]}else if(o===null&&a.nullError){f="e";o=0}if(!c)i[d]=c={t:f,v:o};else{c.t=f;c.v=o;delete c.w;delete c.R;if(u)c.z=u}if(u)c.z=u}})});f.e.c=Math.max(f.e.c,l+h.length-1);var d=ya(s);if(n)for(p=0;p<h.length;++p)i[Ca(p+l)+d]={t:"s",v:h[p]};i["!ref"]=Oa(f);return i}function cc(e,r){return oc(null,e,r)}function fc(e,r,t){if(typeof r=="string"){if(Array.isArray(e)){var a=Ea(r);if(!e[a.r])e[a.r]=[];return e[a.r][a.c]||(e[a.r][a.c]={t:"z"})}return e[r]||(e[r]={t:"z"})}if(typeof r!="number")return fc(e,Fa(r));return fc(e,Fa({r:r,c:t||0}))}function uc(e,r){if(typeof r=="number"){if(r>=0&&e.SheetNames.length>r)return r;throw new Error("Cannot find sheet # "+r)}else if(typeof r=="string"){var t=e.SheetNames.indexOf(r);if(t>-1)return t;throw new Error("Cannot find sheet name |"+r+"|")}else throw new Error("Cannot find sheet |"+r+"|")}function hc(){return{SheetNames:[],Sheets:{}}}function pc(e,r,t,a){var n=1;if(!t)for(;n<=65535;++n,t=undefined)if(e.SheetNames.indexOf(t="Sheet"+n)==-1)break;if(!t||e.SheetNames.length>=65535)throw new Error("Too many worksheets");if(a&&e.SheetNames.indexOf(t)>=0){var i=t.match(/(^.*?)(\d+)$/);n=i&&+i[2]||0;var s=i&&i[1]||t;for(++n;n<=65535;++n)if(e.SheetNames.indexOf(t=s+n)==-1)break}Tl(t);if(e.SheetNames.indexOf(t)>=0)throw new Error("Worksheet with name |"+t+"| already exists!");e.SheetNames.push(t);e.Sheets[t]=r;return t}function dc(e,r,t){if(!e.Workbook)e.Workbook={};if(!e.Workbook.Sheets)e.Workbook.Sheets=[];var a=uc(e,r);if(!e.Workbook.Sheets[a])e.Workbook.Sheets[a]={};switch(t){case 0:;case 1:;case 2:break;default:throw new Error("Bad sheet visibility setting "+t);}e.Workbook.Sheets[a].Hidden=t}function mc(e,r){e.z=r;return e}function vc(e,r,t){if(!r){delete e.l}else{e.l={Target:r};if(t)e.l.Tooltip=t}return e}function gc(e,r,t){return vc(e,"#"+r,t)}function bc(e,r,t){if(!e.c)e.c=[];e.c.push({t:r,a:t||"SheetJS"})}function wc(e,r,t,a){var n=typeof r!="string"?r:Ma(r);var i=typeof r=="string"?r:Oa(r);for(var s=n.s.r;s<=n.e.r;++s)for(var l=n.s.c;l<=n.e.c;++l){var o=fc(e,s,l);o.t="n";o.F=i;delete o.v;if(s==n.s.r&&l==n.s.c){o.f=t;if(a)o.D=true}}return e}var yc={encode_col:Ca,encode_row:ya,encode_cell:Fa,encode_range:Oa,decode_col:Sa,decode_row:wa,split_cell:Ta,decode_cell:Ea,decode_range:Da,format_cell:Pa,sheet_add_aoa:Ra,sheet_add_json:oc,sheet_add_dom:io,aoa_to_sheet:La,json_to_sheet:cc,table_to_sheet:so,table_to_book:lo,sheet_to_csv:ic,sheet_to_txt:sc,sheet_to_json:tc,sheet_to_html:no,sheet_to_formulae:lc,sheet_to_row_object_array:tc,sheet_get_cell:fc,book_new:hc,book_append_sheet:pc,book_set_sheet_visibility:dc,cell_set_number_format:mc,cell_set_hyperlink:vc,cell_set_internal_link:gc,cell_add_comment:bc,sheet_set_array_formula:wc,consts:{SHEET_VISIBLE:0,SHEET_HIDDEN:1,SHEET_VERY_HIDDEN:2}};if(typeof parse_xlscfb!=="undefined")e.parse_xlscfb=parse_xlscfb;e.parse_zip=Ao;e.read=$o;e.readFile=zo;e.readFileSync=zo;e.write=Ko;e.writeFile=Zo;e.writeFileSync=Zo;e.writeFileAsync=ec;e.utils=yc;e.writeXLSX=Jo;e.writeFileXLSX=Qo;e.SSF=We;if(typeof __stream!=="undefined")e.stream=__stream;if(typeof Ye!=="undefined")e.CFB=Ye;if(typeof require!=="undefined"){var kc=undefined;if((kc||{}).Readable)set_readable(kc.Readable)}}if(typeof exports!=="undefined")make_xlsx_lib(exports);else if(typeof module!=="undefined"&&module.exports)make_xlsx_lib(module.exports);else if(typeof define==="function"&&define.amd)define("xlsx",function(){if(!XLSX.version)make_xlsx_lib(XLSX);return XLSX});else make_xlsx_lib(XLSX);if(typeof window!=="undefined"&&!window.XLSX)try{window.XLSX=XLSX}catch(e){}
 </script>
 <style>
-:root{--bg:#F2F4F6;--pan:rgba(255,255,255,.97);--ink:#191F28;--sub:#6B7684;--line:#E5E8EB;
---teal:#0064FF;--teal-l:#E8F2FF;--or:#0064FF;--or-l:#E8F2FF;--blue:#B0B8C1;--brown:#0064FF}
+:root{--bg:#F4F5F6;--pan:rgba(255,255,255,.97);--ink:#1E2124;--sub:#6D7882;--line:#E6E8EA;
+--teal:#256EF4;--teal-l:#ECF2FE;--or:#256EF4;--or-l:#ECF2FE;--blue:#B1B8BE;--brown:#256EF4}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;font-family:Pretendard,"Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--bg);overflow:hidden}
 button{font-family:inherit;cursor:pointer;color:inherit}
@@ -100,15 +100,15 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--or);outline-off
 .top{position:absolute;left:14px;right:14px;top:10px;height:46px;display:flex;align-items:center;z-index:6;pointer-events:none}
 .top>*{pointer-events:auto}
 .brand{display:flex;align-items:center;gap:10px;border-radius:14px;padding:6px 14px 6px 7px}
-.brand .mk{width:30px;height:30px;border-radius:50%;background:#191F28;display:grid;place-items:center}
+.brand .mk{width:30px;height:30px;border-radius:50%;background:#1E2124;display:grid;place-items:center}
 .brand b{font-size:14px;font-weight:900;display:block;letter-spacing:-.3px}
 .brand small{font-size:10.5px;color:var(--sub)}
 .tabs{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:2px;border-radius:999px;padding:4px}
 .tabs button{border:0;background:none;padding:6px 14px;border-radius:999px;font-size:12.5px;color:var(--sub)}
-.tabs button.on{background:#191F28;color:#fff;font-weight:700}
+.tabs button.on{background:#1E2124;color:#fff;font-weight:700}
 .tright{margin-left:auto;display:flex;gap:8px}
 .tbtn{border-radius:12px;padding:8px 14px;font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px}
-.tbtn.run{background:#191F28;color:#fff;border-color:#191F28}
+.tbtn.run{background:#1E2124;color:#fff;border-color:#1E2124}
 /* 좌측 */
 .left{position:absolute;left:14px;top:66px;bottom:14px;width:min(31%,430px);min-width:340px;border-radius:18px;display:flex;flex-direction:column;z-index:5;overflow:hidden}
 .srch{padding:12px 12px 8px}
@@ -119,7 +119,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--or);outline-off
 .ib.rec{background:var(--or);color:#fff}
 .voice{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--sub)}
 .chip{border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 8px;font-size:11px;display:flex;gap:4px;align-items:center}
-.chip.on{background:var(--teal-l);border-color:#C2DCFF;color:var(--teal);font-weight:700}
+.chip.on{background:var(--teal-l);border-color:#B1CEFB;color:var(--teal);font-weight:700}
 .voice p{margin:0;flex:1;line-height:1.4}
 .lhead{padding:10px 14px 6px;border-top:1px solid var(--line)}
 .lhead h3{margin:0;font-size:15px;font-weight:900;display:flex;gap:8px;align-items:baseline}
@@ -133,17 +133,17 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--or);outline-off
 .qa .q .ar{color:var(--sub);font-size:10px;transition:transform .2s}
 .qa.open .q .ar{transform:rotate(90deg)}
 .qa .ans{display:none;padding:0 14px 14px}
-.qa.open{border-color:#C2DCFF}
+.qa.open{border-color:#B1CEFB}
 .qa.open .ans{display:block}
 .ans .lis{text-align:right;font-size:11px;color:var(--sub);margin:-4px 0 4px}
 .ans .lis button{border:0;background:none;font-size:11px;color:var(--sub)}
 .conc{font-size:15px;font-weight:900;line-height:1.45;margin:2px 0 6px;letter-spacing:-.2px}
-.desc{font-size:13px;line-height:1.65;color:#4E5968;margin:0 0 10px}
+.desc{font-size:13px;line-height:1.65;color:#464C53;margin:0 0 10px}
 .ev{border-left:2px solid var(--line);padding:0 0 0 10px;margin-bottom:12px}
 .ev .h{font-size:11px;color:var(--sub);margin-bottom:4px}
 .ev div.r{font-size:12px;line-height:1.5;margin:4px 0;display:flex;gap:6px}
 .ev i{font-style:normal;font-size:10.5px;font-weight:700;border-radius:4px;padding:0 5px;flex:none;height:17px;line-height:17px}
-.t1{background:#E8F2FF;color:var(--blue)} .t2{background:#F2F4F6;color:#4E5968} .t3{background:var(--or-l);color:var(--or)}
+.t1{background:#ECF2FE;color:var(--blue)} .t2{background:#F4F5F6;color:#464C53} .t3{background:var(--or-l);color:var(--or)}
 .ch{margin-bottom:12px}
 .ch .hd{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:700;margin-bottom:6px}
 .ch .hd button{border:0;background:none;font-size:11px;color:var(--or)}
@@ -156,19 +156,19 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--or);outline-off
 .bars .g div b{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10.5px;white-space:nowrap}
 .bars .a{background:var(--blue)} .bars .a b{color:var(--blue)} .bars .b{background:var(--brown)} .bars .b b{color:var(--brown)}
 .xl{display:flex;gap:10px;margin-top:4px}.xl span{flex:1;text-align:center;font-size:10.5px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mapgo{display:block;width:100%;border:1.5px solid #C2DCFF;background:#E8F2FF;border-radius:10px;padding:9px;text-align:center}
-.mapgo b{display:block;color:#0064FF;font-size:13px}.mapgo small{font-size:11px;color:var(--sub)}
+.mapgo{display:block;width:100%;border:1.5px solid #B1CEFB;background:#ECF2FE;border-radius:10px;padding:9px;text-align:center}
+.mapgo b{display:block;color:#256EF4;font-size:13px}.mapgo small{font-size:11px;color:var(--sub)}
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0 12px}
 .kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
 .kpi small{font-size:11.5px;color:var(--sub)}.kpi b{display:block;font-size:24px;font-weight:900;letter-spacing:-.5px}
 .kpi b em{font-style:normal;font-size:12px;font-weight:500;color:var(--sub);margin-left:2px}
-.kpi.hot{background:var(--or-l);border-color:#C2DCFF}.kpi.hot b{color:#F04452}
+.kpi.hot{background:var(--or-l);border-color:#B1CEFB}.kpi.hot b{color:#D63D4A}
 table{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border-radius:10px}
 th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right}
 th:first-child,td:first-child{text-align:left}th{font-size:11px;color:var(--sub);font-weight:500}
-tr.cl{cursor:pointer}tr.cl:hover{background:#F9FAFB}
-.note{font-size:12px;line-height:1.7;color:#4E5968;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
-.note b{display:block;margin-bottom:3px}.note.warn{background:#FFF8E6;border-color:#FFE3A3}
+tr.cl{cursor:pointer}tr.cl:hover{background:#F4F5F6}
+.note{font-size:12px;line-height:1.7;color:#464C53;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.note b{display:block;margin-bottom:3px}.note.warn{background:#FFF3DB;border-color:#FFF3DB}
 .fi{border:1px solid var(--line);border-radius:9px;padding:8px;font:inherit;font-size:12.5px;min-width:0}
 .btns{display:flex;gap:8px;margin-top:8px}.btns button{flex:1;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px;font-size:12.5px}
 .btns button.pri{background:var(--or);border-color:var(--or);color:#fff;font-weight:700}
@@ -177,15 +177,15 @@ tr.cl{cursor:pointer}tr.cl:hover{background:#F9FAFB}
 .badge.hide{opacity:0;pointer-events:none}
 .badge .dot{width:10px;height:10px;border-radius:50%;border:2.5px solid var(--or)}
 .badge small{display:block;font-size:10.5px;color:var(--sub)}
-.badge .pg{display:flex;gap:3px;margin-left:6px}.badge .pg i{width:12px;height:4px;border-radius:2px;background:#E5E8EB}.badge .pg i.on{background:var(--or)}
+.badge .pg{display:flex;gap:3px;margin-left:6px}.badge .pg i{width:12px;height:4px;border-radius:2px;background:#E6E8EA}.badge .pg i.on{background:var(--or)}
 /* 우측 */
 .right{position:absolute;right:14px;top:66px;width:210px;max-height:calc(100% - 350px);overflow:auto;border-radius:16px;padding:8px;z-index:5;font-size:12.5px}
 .right h4{font-size:10.5px;color:var(--sub);font-weight:500;margin:10px 6px 3px}
 .right h4:first-child{margin-top:4px}
 .opt{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;padding:6px 8px;border-radius:8px;text-align:left;font-size:12.5px}
-.opt:hover{background:#F2F4F6}
-.opt.on{background:#E8F2FF;font-weight:700}
-.opt .sq{width:11px;height:11px;border-radius:3px;border:1.5px solid #D1D6DB;flex:none}
+.opt:hover{background:#F4F5F6}
+.opt.on{background:#ECF2FE;font-weight:700}
+.opt .sq{width:11px;height:11px;border-radius:3px;border:1.5px solid #CDD1D5;flex:none}
 .opt.on .sq{background:var(--teal);border-color:var(--teal)}
 .opt .ci{width:11px;height:11px;border-radius:50%;border:2px solid var(--c);flex:none}
 .opt.on .ci{background:var(--c)}
@@ -196,22 +196,22 @@ tr.cl{cursor:pointer}tr.cl:hover{background:#F9FAFB}
 .opt.off{opacity:.4}
 .legend{position:absolute;right:14px;bottom:130px;width:210px;border-radius:14px;padding:10px 12px;z-index:5;font-size:11.5px}
 .legend b{font-size:11.5px}
-.grad{height:8px;border-radius:4px;margin:6px 0 3px;background:linear-gradient(90deg,#E8F2FF,#85B9FF,#4795FF,#0064FF,#003EA8)}
+.grad{height:8px;border-radius:4px;margin:6px 0 3px;background:linear-gradient(90deg,#ECF2FE,#86AFF9,#4C87F6,#256EF4,#083891)}
 .legend .lb{display:flex;justify-content:space-between;color:var(--sub);font-size:10.5px}
-.legend p{margin:6px 0;color:#4E5968;line-height:1.5}
+.legend p{margin:6px 0;color:#464C53;line-height:1.5}
 .legend .lk{display:flex;gap:10px}.legend .lk button{border:0;background:none;padding:0;font-size:11px;color:var(--or);text-decoration:underline}
 /* 하단 */
 .timeline{position:absolute;left:calc(min(31%,430px) + 28px);right:238px;bottom:14px;height:104px;border-radius:16px;padding:8px 14px 6px;z-index:5;display:flex;flex-direction:column}
 .timeline header{display:flex;align-items:center;gap:6px;font-size:11.5px}
 .timeline header button{border:0;background:none;padding:3px 10px;border-radius:999px;font-size:11.5px;color:var(--sub)}
-.timeline header button.on{background:#191F28;color:#fff;font-weight:700}
+.timeline header button.on{background:#1E2124;color:#fff;font-weight:700}
 .timeline header span{margin-left:auto;color:var(--sub)}.timeline header span b{color:var(--ink)}
 .tl{flex:1;display:flex;align-items:flex-end;gap:2px;padding-top:6px}
-.tl button{flex:1;border:0;background:#D1D6DB;padding:0;border-radius:2px 2px 0 0;min-height:2px}
+.tl button{flex:1;border:0;background:#CDD1D5;padding:0;border-radius:2px 2px 0 0;min-height:2px}
 .tl button.o{background:var(--or)}.tl button.sel{outline:2px solid var(--ink)}
 .tl button:hover{filter:brightness(.9)}
 .tlx{display:flex;justify-content:space-between;font-size:10px;color:var(--sub);margin-top:2px}
-.stamp{position:absolute;left:calc(min(31%,430px) + 28px);top:66px;font-size:11px;background:#FFF8E6;border:1px solid #FFE3A3;color:#0050D9;border-radius:8px;padding:4px 8px;z-index:4}
+.stamp{position:absolute;left:calc(min(31%,430px) + 28px);top:66px;font-size:11px;background:#FFF3DB;border:1px solid #FFF3DB;color:#0B50D0;border-radius:8px;padding:4px 8px;z-index:4}
 .maplibregl-popup-content{font-family:inherit;border-radius:12px;padding:10px 12px;font-size:12.5px;line-height:1.6}
 .maplibregl-popup-content b{font-size:13.5px}
 .maplibregl-ctrl-bottom-right{bottom:120px;right:232px}
@@ -224,13 +224,13 @@ tr.cl{cursor:pointer}tr.cl:hover{background:#F9FAFB}
 #kpiBar,#qaFab,#layerFab{display:none}
 body.l2 .tabs,body.l2 .timeline,body.l2 .stamp{display:none}
 body.l2 #kpiBar{display:flex;position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:6;border-radius:20px;padding:8px 10px;gap:6px;align-items:center}
-#kpiBar .ks{display:flex;align-items:center;gap:6px;background:#F2F4F6;border-radius:12px;padding:6px 8px 6px 12px;width:280px}
+#kpiBar .ks{display:flex;align-items:center;gap:6px;background:#F4F5F6;border-radius:12px;padding:6px 8px 6px 12px;width:280px}
 #kpiBar .ks input{border:0;outline:0;background:none;flex:1;font:inherit;font-size:13px;min-width:0}
-#kpiBar .kk{padding:4px 14px;border-left:1px solid #E5E8EB;min-width:92px}#kpiBar .kk:first-of-type{border:0}
-#kpiBar .kk small{display:block;font-size:11px;color:#8B95A1;font-weight:600}#kpiBar .kk b{font-size:20px;font-weight:800;letter-spacing:-.04em}#kpiBar .kk b em{font-style:normal;font-size:11px;color:#8B95A1;font-weight:600;margin-left:2px}
-#kpiBar .kk.hot b{color:#F04452}
+#kpiBar .kk{padding:4px 14px;border-left:1px solid #E6E8EA;min-width:92px}#kpiBar .kk:first-of-type{border:0}
+#kpiBar .kk small{display:block;font-size:11px;color:#6D7882;font-weight:600}#kpiBar .kk b{font-size:20px;font-weight:800;letter-spacing:-.04em}#kpiBar .kk b em{font-style:normal;font-size:11px;color:#6D7882;font-weight:600;margin-left:2px}
+#kpiBar .kk.hot b{color:#D63D4A}
 body.l2 #qaFab,body.l2 #layerFab{display:inline-flex;position:absolute;left:14px;z-index:6;align-items:center;gap:6px;border-radius:14px;padding:12px 16px;font-weight:700;font-size:13.5px;border:0}
-body.l2 #qaFab{bottom:14px;background:#0064FF;color:#fff}body.l2 #qaFab .ico{stroke:#fff}
+body.l2 #qaFab{bottom:14px;background:#256EF4;color:#fff}body.l2 #qaFab .ico{stroke:#fff}
 body.l2 #layerFab{bottom:66px}
 body.l2 .left{left:auto;right:14px;top:84px;width:400px;min-width:0;transform:translateX(calc(100% + 30px));transition:transform .35s cubic-bezier(.22,1,.36,1)}
 body.l2 .left.show{transform:none}
@@ -244,8 +244,8 @@ body.l2 .left .srch{display:none}
 #l3tabs,#l3page{display:none}
 body.l3 .tabs,body.l3 .left,body.l3 .stamp{display:none}
 body.l3 #l3tabs{display:flex;position:absolute;left:50%;transform:translateX(-50%);top:10px;z-index:7;gap:2px;border-radius:999px;padding:4px}
-#l3tabs button{border:0;background:none;padding:7px 16px;border-radius:999px;font-size:13px;font-weight:650;color:#8B95A1}
-#l3tabs button.on{background:#191F28;color:#fff}
+#l3tabs button{border:0;background:none;padding:7px 16px;border-radius:999px;font-size:13px;font-weight:650;color:#6D7882}
+#l3tabs button.on{background:#1E2124;color:#fff}
 body.l3.l3doc #l3page{display:block;position:absolute;left:14px;right:14px;top:66px;bottom:14px;z-index:6;background:#fff;border-radius:20px;overflow:auto;box-shadow:0 4px 12px rgba(0,0,0,.06)}
 body.l3.l3doc .right,body.l3.l3doc .legend,body.l3.l3doc .timeline,body.l3.l3doc .badge{display:none}
 body.l3.l3doc .maplibregl-ctrl-bottom-right{display:none}
@@ -253,72 +253,191 @@ body.l3:not(.l3doc) .timeline{left:28px}
 body.l3.l3det .left{display:flex;left:14px}
 body.l3.l3det .timeline{left:calc(min(31%,430px) + 28px)}
 .l3w{max-width:1280px;margin:0 auto;padding:28px 32px 40px}
-.l3h{display:flex;align-items:flex-end;gap:12px;margin-bottom:18px}.l3h h2{margin:0;font-size:24px;font-weight:800;letter-spacing:-.03em}.l3h p{margin:0;color:#8B95A1;font-size:13px;font-weight:600}
+.l3h{display:flex;align-items:flex-end;gap:12px;margin-bottom:18px}.l3h h2{margin:0;font-size:24px;font-weight:800;letter-spacing:-.03em}.l3h p{margin:0;color:#6D7882;font-size:13px;font-weight:600}
 .l3h .sp{margin-left:auto}
 .l3k{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
-.l3k div{background:#F2F4F6;border-radius:16px;padding:16px 18px}.l3k small{color:#6B7684;font-weight:600;font-size:12.5px}.l3k b{display:block;font-size:28px;font-weight:800;letter-spacing:-.045em;margin-top:4px}.l3k b em{font-style:normal;font-size:13px;color:#8B95A1;margin-left:2px}.l3k .hot{background:#FFE8E8}.l3k .hot b{color:#F04452}
-.l3g{display:grid;grid-template-columns:1fr 1fr;gap:12px}.l3c{border:1px solid #F2F4F6;border-radius:16px;padding:16px 18px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.l3c h3{margin:0 0 12px;font-size:15px;font-weight:800;letter-spacing:-.02em}.l3c h3 small{font-size:11.5px;color:#8B95A1;font-weight:600;margin-left:6px}
-.hb{display:grid;grid-template-columns:70px 1fr 64px;gap:8px;align-items:center;font-size:12.5px;margin:5px 0;cursor:pointer}.hb:hover span:first-child{color:#0064FF}
-.hb i{display:block;height:10px;border-radius:5px;background:#0064FF}.hb .tr{background:#F2F4F6;border-radius:5px}.hb b{text-align:right;font-weight:700}
-.vb{display:flex;align-items:flex-end;gap:8px;height:160px;padding-top:18px;border-bottom:1px solid #E5E8EB}.vb div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}.vb i{width:70%;background:#D1D6DB;border-radius:6px 6px 0 0}.vb i.o{background:#0064FF}.vb b{font-size:11px;margin-bottom:3px}
-.vbl{display:flex;gap:8px;margin-top:4px}.vbl span{flex:1;text-align:center;font-size:11px;color:#8B95A1}
-.l3f{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}.l3f input,.l3f select{background:#F2F4F6;border:0;border-radius:12px;padding:10px 14px;font:inherit;font-size:13px}.l3f input{flex:1;min-width:220px}
-.l3t{width:100%;font-size:13px}.l3t th{position:sticky;top:0;background:#fff;cursor:pointer;white-space:nowrap}.l3t td,.l3t th{padding:10px 8px}.l3t tbody tr{cursor:pointer}.l3t tbody tr:hover{background:#F9FAFB}
+.l3k div{background:#F4F5F6;border-radius:16px;padding:16px 18px}.l3k small{color:#6D7882;font-weight:600;font-size:12.5px}.l3k b{display:block;font-size:28px;font-weight:800;letter-spacing:-.045em;margin-top:4px}.l3k b em{font-style:normal;font-size:13px;color:#6D7882;margin-left:2px}.l3k .hot{background:#FDEFEC}.l3k .hot b{color:#D63D4A}
+.l3g{display:grid;grid-template-columns:1fr 1fr;gap:12px}.l3c{border:1px solid #F4F5F6;border-radius:16px;padding:16px 18px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.l3c h3{margin:0 0 12px;font-size:15px;font-weight:800;letter-spacing:-.02em}.l3c h3 small{font-size:11.5px;color:#6D7882;font-weight:600;margin-left:6px}
+.hb{display:grid;grid-template-columns:70px 1fr 64px;gap:8px;align-items:center;font-size:12.5px;margin:5px 0;cursor:pointer}.hb:hover span:first-child{color:#256EF4}
+.hb i{display:block;height:10px;border-radius:5px;background:#256EF4}.hb .tr{background:#F4F5F6;border-radius:5px}.hb b{text-align:right;font-weight:700}
+.vb{display:flex;align-items:flex-end;gap:8px;height:160px;padding-top:18px;border-bottom:1px solid #E6E8EA}.vb div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}.vb i{width:70%;background:#CDD1D5;border-radius:6px 6px 0 0}.vb i.o{background:#256EF4}.vb b{font-size:11px;margin-bottom:3px}
+.vbl{display:flex;gap:8px;margin-top:4px}.vbl span{flex:1;text-align:center;font-size:11px;color:#6D7882}
+.l3f{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}.l3f input,.l3f select{background:#F4F5F6;border:0;border-radius:12px;padding:10px 14px;font:inherit;font-size:13px}.l3f input{flex:1;min-width:220px}
+.l3t{width:100%;font-size:13px}.l3t th{position:sticky;top:0;background:#fff;cursor:pointer;white-space:nowrap}.l3t td,.l3t th{padding:10px 8px}.l3t tbody tr{cursor:pointer}.l3t tbody tr:hover{background:#F4F5F6}
 .l3t td:first-child{font-weight:700}
 @media print{ body.l3 .top,body.l3 #map,body.l3 #cv{display:none!important} body.l3 #l3page{position:static;box-shadow:none} html,body{overflow:visible;height:auto} .l3f,.l3h .sp{display:none} @page{size:A4 landscape;margin:12mm} }
 body.e3 #oView .opt[data-k="grid"],body.e3 #oView .opt[data-k="vwb"],body.e3 #oView .opt[data-k="is3d"]{display:none}
-body.e3 #oView .opt[data-k="eng"]{background:#E8F2FF;color:#0064FF}
+body.e3 #oView .opt[data-k="eng"]{background:#ECF2FE;color:#256EF4}
 [hidden]{display:none!important}
-#compass{position:absolute;right:14px;bottom:132px;width:52px;height:52px;border-radius:50%;z-index:5;padding:0;display:grid;place-items:center;border:1px solid #F2F4F6}
+#compass{position:absolute;right:14px;bottom:132px;width:52px;height:52px;border-radius:50%;z-index:5;padding:0;display:grid;place-items:center;border:1px solid #F4F5F6}
 #compass svg{width:40px;height:40px;overflow:visible}
 body.l2 #compass{bottom:132px}
 .srch{position:relative}.sug{position:absolute;left:12px;right:12px;top:56px;z-index:20;background:#fff;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:6px;max-height:360px;overflow:auto}
-.sug .sh{font-size:11px;color:#8B95A1;font-weight:600;padding:6px 10px 4px}
-.sug .it{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:10px;cursor:pointer}.sug .it:hover,.sug .it.on{background:#F2F4F6}
-.sug .it i{width:9px;height:9px;border-radius:50%;flex:none}.sug .it b{font-weight:700;font-size:13.5px;color:#191F28}.sug .it b mark{background:none;color:#0064FF}
-.sug .it small{font-size:11.5px;color:#8B95A1;font-weight:600}.sug .it em{margin-left:auto;font-style:normal;font-size:11.5px;color:#4E5968;font-weight:600;white-space:nowrap}
-.sug .it.sq b{font-weight:600}.sug .none{padding:12px;color:#8B95A1;font-size:12.5px}
-.slabel{background:#fff;border-radius:10px;padding:5px 9px;box-shadow:0 4px 12px rgba(0,0,0,.12);display:flex;align-items:center;gap:6px;font-size:12px;white-space:nowrap;cursor:pointer;border:1px solid #F2F4F6}.slabel i{width:8px;height:8px;border-radius:50%;flex:none}.slabel b{font-weight:800;color:#191F28}.slabel span{color:#6B7684;font-weight:600}.slabel.hl{border-color:#0064FF;box-shadow:0 0 0 2px #0064FF33,0 4px 12px rgba(0,0,0,.12)}
-.sim{display:grid;gap:10px}.sim label{display:grid;grid-template-columns:1fr auto;gap:4px 8px;font-size:12.5px;font-weight:600;color:#4E5968}.sim label b{color:#0064FF;font-weight:800}.sim input{grid-column:span 2;accent-color:#0064FF;width:100%}
+.sug .sh{font-size:11px;color:#6D7882;font-weight:600;padding:6px 10px 4px}
+.sug .it{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:10px;cursor:pointer}.sug .it:hover,.sug .it.on{background:#F4F5F6}
+.sug .it i{width:9px;height:9px;border-radius:50%;flex:none}.sug .it b{font-weight:700;font-size:13.5px;color:#1E2124}.sug .it b mark{background:none;color:#256EF4}
+.sug .it small{font-size:11.5px;color:#6D7882;font-weight:600}.sug .it em{margin-left:auto;font-style:normal;font-size:11.5px;color:#464C53;font-weight:600;white-space:nowrap}
+.sug .it.sq b{font-weight:600}.sug .none{padding:12px;color:#6D7882;font-size:12.5px}
+.slabel{background:#fff;border-radius:10px;padding:5px 9px;box-shadow:0 4px 12px rgba(0,0,0,.12);display:flex;align-items:center;gap:6px;font-size:12px;white-space:nowrap;cursor:pointer;border:1px solid #F4F5F6}.slabel i{width:8px;height:8px;border-radius:50%;flex:none}.slabel b{font-weight:800;color:#1E2124}.slabel span{color:#6D7882;font-weight:600}.slabel.hl{border-color:#256EF4;box-shadow:0 0 0 2px #256EF433,0 4px 12px rgba(0,0,0,.12)}
+.sim{display:grid;gap:10px}.sim label{display:grid;grid-template-columns:1fr auto;gap:4px 8px;font-size:12.5px;font-weight:600;color:#464C53}.sim label b{color:#256EF4;font-weight:800}.sim input{grid-column:span 2;accent-color:#256EF4;width:100%}
 /* ===== Toss Light 디자인 적용 ===== */
-.ico{width:16px;height:16px;flex:none;fill:none;stroke:#0064FF;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}
+.ico{width:16px;height:16px;flex:none;fill:none;stroke:#256EF4;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}
 .tbtn.run .ico,.ib.go .ico,.ib.rec .ico,.mapgo .ico,.btns .pri .ico{stroke:#fff}
 .opt .ic{display:inline-flex;width:16px}.qa .q .ar{display:inline-flex}.qa .q .ar .ico{width:14px;height:14px}
 .lhead h3 span .ico{width:18px;height:18px;vertical-align:-3px}
-html,body{font-family:"Toss Product Sans",Pretendard,"Pretendard Variable",-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;font-weight:500;letter-spacing:-.012em;color:#191F28}
-.glass{background:rgba(255,255,255,.97);backdrop-filter:none;border:1px solid #F2F4F6;box-shadow:0 4px 12px rgba(0,0,0,.06)}
+html,body{font-family:"Toss Product Sans",Pretendard,"Pretendard Variable",-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;font-weight:500;letter-spacing:-.012em;color:#1E2124}
+.glass{background:rgba(255,255,255,.97);backdrop-filter:none;border:1px solid #F4F5F6;box-shadow:0 4px 12px rgba(0,0,0,.06)}
 .left{border-radius:20px}.right,.legend,.timeline{border-radius:20px}
-.brand{border-radius:14px}.brand .mk{background:#0064FF;border-radius:58% 42% 62% 38%;transform:rotate(-24deg);box-shadow:inset -5px -5px 0 rgba(0,0,0,.10)}
+.brand{border-radius:14px}.brand .mk{background:#256EF4;border-radius:58% 42% 62% 38%;transform:rotate(-24deg);box-shadow:inset -5px -5px 0 rgba(0,0,0,.10)}
 .brand .mk svg{transform:rotate(24deg)}.brand b{font-weight:800;letter-spacing:-.04em}
-.tabs button{font-weight:650;color:#8B95A1}.tabs button.on{background:#191F28;color:#fff;font-weight:700}
-.tbtn{border-radius:12px;font-weight:700;color:#191F28}
-.srch .box{background:#F2F4F6;border:0;border-radius:12px}.srch input{font-weight:500}
-.chip{border:0;background:#F2F4F6;border-radius:9999px;font-weight:600;color:#4E5968}.chip.on{background:#E8F2FF;color:#0064FF}
-.lhead h3{font-weight:800;letter-spacing:-.025em}.lhead h3 span{color:#0064FF}
-.qa{border:1px solid #F2F4F6;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.04)}.qa.open{border-color:#C2DCFF}
-.qa .q{font-weight:700}.conc{font-weight:800;letter-spacing:-.025em}.desc{color:#4E5968}
-.t1{background:#E8F2FF;color:#0064FF}.t2{background:#F2F4F6;color:#4E5968}.t3{background:#FFF4D6;color:#E08600}
-.ev{border-left:2px solid #E5E8EB}
-.bars .a{background:#C9D0D8}.bars .a b{color:#6B7684}.bars .b{background:#0064FF}.bars .b b{color:#0064FF}
-.ch .hd button,.legend .lk button{color:#0064FF}
-.mapgo{background:#0064FF;border:0;border-radius:12px;padding:12px}.mapgo b{color:#fff;font-weight:700}.mapgo small{color:rgba(255,255,255,.8)}.mapgo:hover{background:#0050D9}
-.kpi{border:0;background:#F2F4F6;border-radius:14px}.kpi small{color:#6B7684;font-weight:600}.kpi b{font-weight:800;letter-spacing:-.045em}
-.kpi.hot{background:#FFE8E8;border:0}.kpi.hot b{color:#F04452}
-table{border-radius:12px}th{color:#8B95A1;font-weight:600}td{border-bottom:1px solid #F2F4F6}tr.cl:hover{background:#F9FAFB}
-.note{border:0;background:#F2F4F6;border-radius:14px;color:#4E5968}.note b{color:#191F28}.note.warn{background:#FFF4D6}
-.btns button{border:0;background:#F2F4F6;border-radius:12px;font-weight:700;color:#191F28}.btns button:hover{background:#E5E8EB}
-.btns button.pri{background:#0064FF;color:#fff}.btns button.pri:hover{background:#0050D9}
-.fi{background:#F2F4F6;border:0;border-radius:12px}
-.opt{border-radius:10px;font-weight:600}.opt:hover{background:#F2F4F6}.opt.on{background:#E8F2FF;color:#0064FF;font-weight:700}.opt.on .sq{background:#0064FF;border-color:#0064FF}.opt.on .ic{color:#0064FF}
-.right h4{color:#8B95A1;font-weight:600}
-.timeline header button.on{background:#191F28}.tl button{background:#D1D6DB}.tl button.o{background:#0064FF}
-.stamp{background:#E8F2FF;border:0;color:#0050D9;border-radius:9999px;padding:5px 12px;font-weight:600}
-.badge .dot{border-color:#0064FF}.badge .pg i.on{background:#0064FF}
-.grad{background:linear-gradient(90deg,#E8F2FF,#85B9FF,#4795FF,#0064FF,#003EA8)}
+.tabs button{font-weight:650;color:#6D7882}.tabs button.on{background:#1E2124;color:#fff;font-weight:700}
+.tbtn{border-radius:12px;font-weight:700;color:#1E2124}
+.srch .box{background:#F4F5F6;border:0;border-radius:12px}.srch input{font-weight:500}
+.chip{border:0;background:#F4F5F6;border-radius:9999px;font-weight:600;color:#464C53}.chip.on{background:#ECF2FE;color:#256EF4}
+.lhead h3{font-weight:800;letter-spacing:-.025em}.lhead h3 span{color:#256EF4}
+.qa{border:1px solid #F4F5F6;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.04)}.qa.open{border-color:#B1CEFB}
+.qa .q{font-weight:700}.conc{font-weight:800;letter-spacing:-.025em}.desc{color:#464C53}
+.t1{background:#ECF2FE;color:#256EF4}.t2{background:#F4F5F6;color:#464C53}.t3{background:#FFF3DB;color:#8A5C00}
+.ev{border-left:2px solid #E6E8EA}
+.bars .a{background:#CDD1D5}.bars .a b{color:#6D7882}.bars .b{background:#256EF4}.bars .b b{color:#256EF4}
+.ch .hd button,.legend .lk button{color:#256EF4}
+.mapgo{background:#256EF4;border:0;border-radius:12px;padding:12px}.mapgo b{color:#fff;font-weight:700}.mapgo small{color:rgba(255,255,255,.8)}.mapgo:hover{background:#0B50D0}
+.kpi{border:0;background:#F4F5F6;border-radius:14px}.kpi small{color:#6D7882;font-weight:600}.kpi b{font-weight:800;letter-spacing:-.045em}
+.kpi.hot{background:#FDEFEC;border:0}.kpi.hot b{color:#D63D4A}
+table{border-radius:12px}th{color:#6D7882;font-weight:600}td{border-bottom:1px solid #F4F5F6}tr.cl:hover{background:#F4F5F6}
+.note{border:0;background:#F4F5F6;border-radius:14px;color:#464C53}.note b{color:#1E2124}.note.warn{background:#FFF3DB}
+.btns button{border:0;background:#F4F5F6;border-radius:12px;font-weight:700;color:#1E2124}.btns button:hover{background:#E6E8EA}
+.btns button.pri{background:#256EF4;color:#fff}.btns button.pri:hover{background:#0B50D0}
+.fi{background:#F4F5F6;border:0;border-radius:12px}
+.opt{border-radius:10px;font-weight:600}.opt:hover{background:#F4F5F6}.opt.on{background:#ECF2FE;color:#256EF4;font-weight:700}.opt.on .sq{background:#256EF4;border-color:#256EF4}.opt.on .ic{color:#256EF4}
+.right h4{color:#6D7882;font-weight:600}
+.timeline header button.on{background:#1E2124}.tl button{background:#CDD1D5}.tl button.o{background:#256EF4}
+.stamp{background:#ECF2FE;border:0;color:#0B50D0;border-radius:9999px;padding:5px 12px;font-weight:600}
+.badge .dot{border-color:#256EF4}.badge .pg i.on{background:#256EF4}
+.grad{background:linear-gradient(90deg,#ECF2FE,#86AFF9,#4C87F6,#256EF4,#083891)}
 .maplibregl-popup-content{border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.10)}
-.ib.go{background:#0064FF;color:#fff}
+.ib.go{background:#256EF4;color:#fff}
 @media (prefers-color-scheme:dark){}
+
+/* ===== 정부24(KRDS) 디자인 적용 ===== */
+:root{--bg:#F4F5F6;--pan:#FFFFFF;--ink:#1E2124;--sub:#6D7882;--line:#E6E8EA;
+ --teal:#256EF4;--teal-l:#ECF2FE;--or:#256EF4;--or-l:#ECF2FE;--blue:#B1B8BE;--brown:#256EF4;
+ --ai:linear-gradient(102deg,#0FB87D 10%,#256EF4 90%);--navy:#003963;--b60:#0B50D0;--b70:#083891;
+ --b10:#D8E5FD;--b20:#B1CEFB;--info:#E7F4FE;--g20:#CDD1D5;--g60:#58616A;--g70:#464C53}
+html,body{font-family:"Pretendard GOV",Pretendard,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif;font-weight:400;letter-spacing:-.01em;color:#1E2124;background:#F4F5F6}
+b,strong{font-weight:700}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #fff;box-shadow:0 0 0 4px #256EF4;outline-offset:0}
+.glass{background:#fff;backdrop-filter:none;border:1px solid #E6E8EA;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.left,.right,.legend,.timeline{border-radius:16px}
+.ico{stroke:#256EF4;stroke-width:1.7}
+/* 브랜드 */
+.brand{border-radius:12px;border:1px solid #E6E8EA;background:#fff;padding:6px 14px 6px 8px}
+.brand .mk{background:#003963;border-radius:50%;transform:none;box-shadow:none}
+.brand .mk svg{transform:none;stroke:#fff}
+.brand b{font-weight:700;letter-spacing:-.01em;color:#1E2124}
+.brand small{color:#6D7882;font-weight:400}
+/* 시그니처 · 알약형 통합검색창 + 초록→청색 AI 테 */
+.srch .box{border:2px solid transparent;border-radius:999px;padding:2px 2px 2px 18px;
+ background:linear-gradient(#fff,#fff) padding-box,linear-gradient(102deg,#0FB87D 10%,#256EF4 90%) border-box;
+ box-shadow:0 6px 8px rgba(37,110,244,.10)}
+.srch .box:focus-within{background:linear-gradient(#fff,#fff) padding-box,linear-gradient(#256EF4,#256EF4) border-box}
+.srch input{font-weight:400;font-size:13.5px;color:#1E2124}
+.srch input::placeholder{color:#6D7882}
+.ib{color:#464C53}
+.ib.go{width:34px;height:34px;border-radius:50%;background:#256EF4}
+.ib.go .ico{stroke:#fff}.ib.go:hover{background:#0B50D0}
+.sug{border-radius:12px;border:1px solid #E6E8EA;box-shadow:0 16px 24px rgba(0,0,0,.12)}
+.sug .it{border-radius:8px}
+.sug .it:hover,.sug .it.on{background:#ECF2FE}
+.sug .it b{font-weight:700;color:#1E2124}.sug .it b mark{color:#0B50D0}
+.sug .it small,.sug .sh,.sug .none{font-weight:400;color:#6D7882}
+.sug .it em{font-weight:400;color:#464C53}
+/* 상단 메뉴 · KRDS GNB 밑줄 방식 */
+.tabs{border-radius:10px;padding:2px 6px}
+.tabs button{border-radius:0;border-bottom:2px solid transparent;padding:9px 10px 7px;font-weight:700;color:#1E2124;background:none}
+.tabs button:hover{color:#0B50D0}
+.tabs button.on{background:none;color:#0B50D0;border-bottom-color:#256EF4}
+/* 버튼 */
+.tbtn{border:1px solid #58616A;background:#fff;border-radius:8px;font-weight:700;color:#1E2124}
+.tbtn:hover{background:#F4F5F6}
+.tbtn#demoBtn{background:#256EF4;border-color:transparent;color:#fff}
+.tbtn#demoBtn .ico{stroke:#fff}
+.tbtn#demoBtn:hover{background:#0B50D0}
+.tbtn#demoBtn.run{background:#DE3412}
+.tbtn#demoBtn.run:hover{background:#BD2C0F}
+select.tbtn,#rgn{border:1px solid #58616A;border-radius:8px;background:#fff;font-weight:700}
+.chip{border:1px solid #CDD1D5;background:#fff;border-radius:999px;font-weight:700;color:#464C53;padding:4px 10px}
+.chip.on{background:#ECF2FE;border-color:#256EF4;color:#0B50D0}
+.btns button{border:1px solid #58616A;background:#fff;border-radius:8px;font-weight:700;color:#1E2124}
+.btns button:hover{background:#F4F5F6}
+.btns button.pri{background:#256EF4;border-color:transparent;color:#fff}
+.btns button.pri:hover{background:#0B50D0}
+/* 질의응답 카드 */
+.lhead h3{font-weight:700;letter-spacing:-.01em}
+.lhead h3 span{color:#256EF4}
+.lhead p{color:#6D7882}
+.qa{border:1px solid #CDD1D5;border-radius:12px;box-shadow:none}
+.qa:hover{border-color:#256EF4}
+.qa.open{border-color:#256EF4}
+.qa .q{font-weight:700;font-size:14px;color:#1E2124}
+.conc{font-weight:700;font-size:15.5px;letter-spacing:-.01em}
+.desc{color:#464C53}
+.ev .h{color:#6D7882}
+.ev div.r{font-size:12.5px}
+.ev i{border-radius:4px;font-weight:700}
+.t1{background:#ECF2FE;color:#0B50D0}
+.t2{background:#F4F5F6;color:#464C53}
+.t3{background:#FFF3DB;color:#8A5C00}
+.bars .b{background:#256EF4}.bars .b b{color:#0B50D0}
+.bars .a{background:#CDD1D5}.bars .a b{color:#6D7882}
+.ch .hd button,.legend .lk button{color:#0B50D0}
+.mapgo{background:#256EF4;border:0;border-radius:8px;padding:12px}
+.mapgo b{color:#fff;font-weight:700}.mapgo small{color:rgba(255,255,255,.85)}
+.mapgo:hover{background:#0B50D0}.mapgo:active{background:#083891}
+/* 지표·표·안내 */
+.kpi{background:#fff;border:1px solid #E6E8EA;border-radius:12px}
+.kpi small{color:#6D7882;font-weight:400}
+.kpi b{font-weight:700;letter-spacing:-.01em}
+.kpi.hot{background:#FDEFEC;border-color:#FDEFEC}
+.kpi.hot b{color:#BD2C0F}
+table{border-radius:8px}
+th{color:#6D7882;font-weight:400}
+td{border-bottom:1px solid #E6E8EA}
+tr.cl:hover{background:#F4F5F6}
+.note{background:#E7F4FE;border:1px solid #D8E5FD;border-radius:16px;color:#464C53;font-size:12.5px}
+.note b{color:#1E2124}
+.note.warn{background:#FFF3DB;border-color:#FFF3DB;color:#4A3A12}
+.note.warn b{color:#8A5C00}
+.fi{background:#fff;border:1px solid #B1B8BE;border-radius:8px}
+/* 우측 패널 */
+.right h4{color:#6D7882;font-weight:700;font-size:11px}
+.opt{border-radius:8px;font-weight:400;color:#1E2124}
+.opt:hover{background:#F4F5F6}
+.opt.on{background:#ECF2FE;color:#0B50D0;font-weight:700}
+.opt.on .sq{background:#256EF4;border-color:#256EF4}
+.opt.on .ic{color:#0B50D0}
+.opt .ct{color:#6D7882}
+.legend p{color:#464C53}
+.grad{border-radius:4px}
+/* 하단·기타 */
+.stamp{background:#FFF3DB;border:1px solid #FFF3DB;color:#8A5C00;border-radius:4px;font-weight:700}
+.timeline header button{border-radius:8px;font-weight:700}
+.timeline header button.on{background:#256EF4;color:#fff}
+.tl button{background:#CDD1D5}.tl button.o{background:#256EF4}
+.badge .dot{border-color:#256EF4}.badge .pg i.on{background:#256EF4}
+#compass{right:240px;bottom:226px;border:1px solid #E6E8EA;box-shadow:0 2px 8px rgba(0,0,0,.04);background:#fff}
+body.l2 #compass{right:14px;bottom:132px}
+body.l3.l3doc #compass{display:none}
+.sim input{accent-color:#256EF4}
+.sim label b{color:#0B50D0}
+.maplibregl-popup-content{border-radius:12px;box-shadow:0 16px 24px rgba(0,0,0,.12)}
+.maplibregl-ctrl-group{border-radius:8px!important;box-shadow:0 2px 8px rgba(0,0,0,.04)!important}
+.hb i{background:#256EF4}.vb i.o{background:#256EF4}.vb i{background:#CDD1D5}
+.l3k div{background:#F4F5F6;border-radius:12px}
+.l3k .hot{background:#FDEFEC}.l3k .hot b{color:#BD2C0F}
+.l3c{border:1px solid #CDD1D5;border-radius:12px;box-shadow:none}
+#l3tabs button.on{background:#256EF4}
 </style>
 </head>
 <body>
@@ -388,20 +507,23 @@ const GK=()=>REGION?'em':'sg', GL=()=>REGION?'읍면동':'시군', RN=()=>REGION
 let IS_SAMPLE = true;
 const NOW = 2026;
 const Q = s => document.querySelector(s);
-const fmt = n => Math.round(n).toLocaleString('ko-KR');
+const fmt = n => (n==null||isNaN(n))?'—':Math.round(n).toLocaleString('ko-KR');
+const yv = (v,u) => v==null?'<b>—</b>':`<b>${fmt(v)}<em>${u}</em></b>`;
 const avg = a => a.length ? a.reduce((x,y)=>x+y,0)/a.length : 0;
 const by = (arr,k)=>arr.reduce((m,s)=>((m[s[k]]??=[]).push(s),m),{});
 const short = n => n.replace(/예시|\(분교장\)/g,'');
 
 /* ---------- 지표 ---------- */
 let RANK=[]; let SMALL=60, AGEC=40;  /* 재구조화 검토 대상: 2026년 기준 경과 40년 이상 + 학생 60명 이상 */
+let HASYR=false;
 function derive(){
-  const ag=SCHOOLS.map(s=>NOW-s.yr), st=SCHOOLS.map(s=>s.st);
-  const aMin=Math.min(...ag),aMax=Math.max(...ag),sMin=Math.min(...st),sMax=Math.max(...st);
+  HASYR=!IS_SAMPLE||ALL.some(s=>s.bsrc);
+  const ag=SCHOOLS.map(s=>(!IS_SAMPLE||s.bsrc)?NOW-s.yr:null), st=SCHOOLS.map(s=>s.st);
+  const agv=ag.filter(v=>v!=null), aMin=agv.length?Math.min(...agv):0, aMax=agv.length?Math.max(...agv):1,sMin=Math.min(...st),sMax=Math.max(...st);
   const dec=SCHOOLS.map(s=>s.st5>0?Math.max(0,(s.st5-s.st)/s.st5):0), dMax=Math.max(...dec)||1;
-  SCHOOLS.forEach((s,i)=>{ s.age=ag[i]; s.dec=dec[i]; s.pa=s.st>0?s.ar/s.st:0;
-    s.score=((s.age-aMin)/(aMax-aMin||1))*.5+(1-(s.st-sMin)/(sMax-sMin||1))*.3+(dec[i]/dMax)*.2; });
-  SMALL=(typeof SIM!=='undefined'?SIM.small:60); AGEC=(typeof SIM!=='undefined'?SIM.age:40); RANK=[...SCHOOLS].filter(s=>s.age>=AGEC&&s.st>=SMALL).sort((a,b)=>b.age-a.age||b.st-a.st);
+  SCHOOLS.forEach((s,i)=>{ s.age=ag[i]; s.dec=dec[i]; s.pa=(s.age!=null&&s.st>0)?s.ar/s.st:null;
+    s.score=((s.age==null?aMin:s.age)-aMin)/(aMax-aMin||1)*.5+(1-(s.st-sMin)/(sMax-sMin||1))*.3+(dec[i]/dMax)*.2; });
+  SMALL=(typeof SIM!=='undefined'?SIM.small:60); AGEC=(typeof SIM!=='undefined'?SIM.age:40); RANK=[...SCHOOLS].filter(s=>s.age!=null&&s.age>=AGEC&&s.st>=SMALL).sort((a,b)=>b.age-a.age||b.st-a.st);
 }
 
 /* ---------- 브이월드 배경지도 ---------- */
@@ -413,7 +535,7 @@ let vwErr=0;
 const BMS={sat:'영상',hyb:'영상 + 지명',base:'일반',white:'흰색(백지도)',midnight:'야간'};
 function styleFor(k){
   if(!VWKEY) return FALLBACK;
-  const b='https://api.vworld.kr/req/wmts/1.0.0/'+VWKEY+'/', src={}, layers=[{id:'bg',type:'background',paint:{'background-color':'#F2F4F6'}}];
+  const b='https://api.vworld.kr/req/wmts/1.0.0/'+VWKEY+'/', src={}, layers=[{id:'bg',type:'background',paint:{'background-color':'#F4F5F6'}}];
   const add=(id,l,ext)=>{src[id]={type:'raster',tiles:[b+l+'/{z}/{y}/{x}.'+ext],tileSize:256,minzoom:6,maxzoom:19,attribution:'© 국토교통부 브이월드'};layers.push({id,type:'raster',source:id});};
   if(k==='base') add('vw-base','Base','png');
   if(k==='white') add('vw-white','white','png');
@@ -441,15 +563,15 @@ const METRICS={
   old:{l:'40년↑ 학교',u:'곳',agg:L=>L.filter(s=>s.age>=40).length,desc:'준공 40년이 지난 학교 수입니다. 개축·재구조화 수요가 모인 곳입니다.'},
   score:{l:'재구조화 점수',u:'점',agg:L=>Math.max(...L.map(s=>s.score))*100,desc:'격자 안 가장 높은 재구조화 점수입니다. 경과 50%·소규모 30%·감소율 20%.'}
 };
-const RINGS={age:{l:'경과연수 그라데이션',c:'#ef8a2e',f:null},target:{l:'재구조화 검토 대상',c:'#0064FF',f:s=>s.age>=AGEC&&s.st>=SMALL},old:{l:'40년↑ 강조',c:'#FF9500',f:s=>s.age>=40},small:{l:'60명↓ 강조',c:'#4795FF',f:s=>s.st<=60},both:{l:'노후+소규모 강조',c:'#F04452',f:s=>s.age>=40&&s.st<=60}};
+const RINGS={age:{l:'경과연수 그라데이션',c:'#ef8a2e',f:null},target:{l:'재구조화 검토 대상',c:'#256EF4',f:s=>s.age>=AGEC&&s.st>=SMALL},old:{l:'40년↑ 강조',c:'#F5821F',f:s=>s.age>=40},small:{l:'60명↓ 강조',c:'#4C87F6',f:s=>s.st<=60},both:{l:'노후+소규모 강조',c:'#D63D4A',f:s=>s.age>=40&&s.st<=60}};
 const GSTOP=[[0,[47,158,110]],[15,[143,190,90]],[25,[227,181,59]],[35,[239,138,46]],[45,[200,66,28]],[60,[122,24,12]]];
-const GC=a=>{ a=Math.max(0,a); for(let i=1;i<GSTOP.length;i++){ const [a1,c1]=GSTOP[i]; if(a<=a1){ const [a0,c0]=GSTOP[i-1], k=(a-a0)/(a1-a0); return 'rgb('+c0.map((v,j)=>Math.round(v+(c1[j]-v)*k)).join(',')+')'; } } return 'rgb(122,24,12)'; }, DIM='#D1D6DB';
+const GC=a=>{ if(a==null) return '#CDD1D5'; a=Math.max(0,a); for(let i=1;i<GSTOP.length;i++){ const [a1,c1]=GSTOP[i]; if(a<=a1){ const [a0,c0]=GSTOP[i-1], k=(a-a0)/(a1-a0); return 'rgb('+c0.map((v,j)=>Math.round(v+(c1[j]-v)*k)).join(',')+')'; } } return 'rgb(122,24,12)'; }, DIM='#CDD1D5';
 let HL=[], HLIDS=new Set();
-function colColor(s){ if(HLIDS.size) return HLIDS.has(s.id)?'#0064FF':DIM; const m=RINGS[S.cmode]; return m.f? (m.f(s)?m.c:DIM) : GC(s.age); }
+function colColor(s){ if(HLIDS.size) return HLIDS.has(s.id)?'#256EF4':DIM; const m=RINGS[S.cmode]; return m.f? (m.f(s)?m.c:DIM) : GC(s.age); }
 
 /* ---------- 지도 ---------- */
 let HOME={center:[126.95,34.62],zoom:8.4,pitch:55,bearing:-15};
-const FALLBACK={version:8,sources:{},layers:[{id:'bg',type:'background',paint:{'background-color':'#F2F4F6'}}]};
+const FALLBACK={version:8,sources:{},layers:[{id:'bg',type:'background',paint:{'background-color':'#F4F5F6'}}]};
 let map=null, fallback=false, ready=false, introDone=false, hK=0, fbT=0;
 try{
   if(typeof maplibregl==='undefined') throw new Error('no maplibre');
@@ -500,21 +622,21 @@ function addOverlays(){
   const L=map.getStyle().layers, sym=L.find(l=>l.type==='symbol');
   if(!fallback && map.getSource('openmaptiles')){
     map.addLayer({id:'bld3d',type:'fill-extrusion',source:'openmaptiles','source-layer':'building',minzoom:12.5,
-      paint:{'fill-extrusion-color':'#E5E8EB','fill-extrusion-height':['coalesce',['get','render_height'],7],'fill-extrusion-base':['coalesce',['get','render_min_height'],0],'fill-extrusion-opacity':.9}});
+      paint:{'fill-extrusion-color':'#E6E8EA','fill-extrusion-height':['coalesce',['get','render_height'],7],'fill-extrusion-base':['coalesce',['get','render_min_height'],0],'fill-extrusion-opacity':.9}});
   }
   map.addSource('sg',{type:'geojson',data:sgFC()});
   const vw=!!VWKEY&&!fallback, noBase=!VWKEY||fallback;
-  map.addLayer({id:'sg-fill',type:'fill',source:'sg',paint:{'fill-color':['interpolate',['linear'],['get','avg'],25,'#F9FAFB',33,'#EEF3FB',40,'#DCE8F8'],'fill-opacity':vw?0:noBase?1:.55}},sym&&sym.id);
-  map.addLayer({id:'sg-sel',type:'line',source:'sg',filter:['==',['get','name'],REGION||'__'],paint:{'line-color':'#0064FF','line-width':3.2}});
-  if(!vw) map.addLayer({id:'sg-line',type:'line',source:'sg',paint:{'line-color':vw&&S.bm!=='base'&&S.bm!=='white'?'#ffffff':'#B0B8C1','line-width':vw?1.4:1}},sym&&sym.id);
-  if(!noBase&&!vw) map.addLayer({id:'sg-lbl',type:'symbol',source:'sg',layout:{'text-field':['get','name'],'text-size':12,'text-font':['Noto Sans Regular']},paint:{'text-color':'#4E5968','text-halo-color':'#fff','text-halo-width':1.5}});
+  map.addLayer({id:'sg-fill',type:'fill',source:'sg',paint:{'fill-color':['interpolate',['linear'],['get','avg'],25,'#F4F5F6',33,'#ECF2FE',40,'#B1CEFB'],'fill-opacity':vw?0:noBase?1:.55}},sym&&sym.id);
+  map.addLayer({id:'sg-sel',type:'line',source:'sg',filter:['==',['get','name'],REGION||'__'],paint:{'line-color':'#256EF4','line-width':3.2}});
+  if(!vw) map.addLayer({id:'sg-line',type:'line',source:'sg',paint:{'line-color':vw&&S.bm!=='base'&&S.bm!=='white'?'#ffffff':'#B1B8BE','line-width':vw?1.4:1}},sym&&sym.id);
+  if(!noBase&&!vw) map.addLayer({id:'sg-lbl',type:'symbol',source:'sg',layout:{'text-field':['get','name'],'text-size':12,'text-font':['Noto Sans Regular']},paint:{'text-color':'#464C53','text-halo-color':'#fff','text-halo-width':1.5}});
   map.addSource('vwp',{type:'geojson',data:vwpFC()});
-  map.addLayer({id:'vwp-fill',type:'fill',source:'vwp',minzoom:13.5,layout:{visibility:S.vwb?'visible':'none'},paint:{'fill-color':'#0064FF','fill-opacity':.08}});
-  map.addLayer({id:'vwp-line',type:'line',source:'vwp',minzoom:13.5,layout:{visibility:S.vwb?'visible':'none'},paint:{'line-color':'#0064FF','line-width':2,'line-dasharray':[2,1.2]}});
+  map.addLayer({id:'vwp-fill',type:'fill',source:'vwp',minzoom:13.5,layout:{visibility:S.vwb?'visible':'none'},paint:{'fill-color':'#256EF4','fill-opacity':.08}});
+  map.addLayer({id:'vwp-line',type:'line',source:'vwp',minzoom:13.5,layout:{visibility:S.vwb?'visible':'none'},paint:{'line-color':'#256EF4','line-width':2,'line-dasharray':[2,1.2]}});
   map.addSource('vwb',{type:'geojson',data:vwbFC()});
   map.addLayer({id:'vwb3d',type:'fill-extrusion',source:'vwb',minzoom:13.5,layout:{visibility:S.vwb?'visible':'none'},paint:{'fill-extrusion-color':['get','c'],'fill-extrusion-height':['get','h'],'fill-extrusion-opacity':.93}});
   map.addSource('grid',{type:'geojson',data:gridFC()});
-  map.addLayer({id:'grid',type:'fill-extrusion',source:'grid',paint:{'fill-extrusion-color':['interpolate',['linear'],['get','t'],0,'#E8F2FF',.25,'#85B9FF',.5,'#4795FF',.75,'#0064FF',1,'#003EA8'],'fill-extrusion-height':['*',['get','h'],hK],'fill-extrusion-opacity':.82}});
+  map.addLayer({id:'grid',type:'fill-extrusion',source:'grid',paint:{'fill-extrusion-color':['interpolate',['linear'],['get','t'],0,'#ECF2FE',.25,'#86AFF9',.5,'#4C87F6',.75,'#256EF4',1,'#083891'],'fill-extrusion-height':['*',['get','h'],hK],'fill-extrusion-opacity':.82}});
   map.addSource('col',{type:'geojson',data:colFC()});
   map.addLayer({id:'col',type:'fill-extrusion',source:'col',layout:{visibility:'none'},paint:{'fill-extrusion-color':['get','c'],'fill-extrusion-height':['*',['get','h'],hK],'fill-extrusion-opacity':.95}});
   map.addSource('roof',{type:'geojson',data:roofFC()});
@@ -565,7 +687,7 @@ function renderRight(){
   Q('#oView').innerHTML=V.map(([k,i,l])=>`<button class="opt ${S[k]?'on':''}" data-k="${k}"><span class="ic">${i}</span>${l}</button>`).join('');
   Q('#oView').querySelectorAll('.opt').forEach(b=>b.onclick=()=>toggleView(b.dataset.k));
   const cnt=k=>SCHOOLS.filter(s=>s.lv===k&&(S.yr===null||s.yr===S.yr)).length;
-  const FAC=[['초','초등학교','#0064FF'],['중','중학교','#4795FF'],['고','고등학교','#8B95A1']];
+  const FAC=[['초','초등학교','#256EF4'],['중','중학교','#4C87F6'],['고','고등학교','#6D7882']];
   Q('#oFac').innerHTML=FAC.map(([k,l,c])=>`<button class="opt ${S.fac.has(k)?'':'off'}" data-k="${k}" style="--c:${c}"><span class="dt"></span>${l}<span class="ct">${cnt(k)}</span></button>`).join('')+
     `<button class="opt" disabled style="--c:#b9b3a6"><span class="dt"></span>분교장<span class="ct">${SCHOOLS.filter(s=>s.bk).length}</span></button><button class="opt" disabled style="--c:#b9b3a6"><span class="dt"></span>섬 지역 학교<span class="ct">${SCHOOLS.filter(s=>s.isl).length}</span></button>`;
   Q('#oFac').querySelectorAll('.opt[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k;S.fac.has(k)?S.fac.delete(k):S.fac.add(k);onFilter();});
@@ -582,9 +704,9 @@ function toggleView(k){ if(k==='eng'){ setEngine(E3.on?'ml':'vw'); return; }
 function spin(){ if(!S.rot||!map) return; map.setBearing(map.getBearing()+0.05); requestAnimationFrame(spin); }
 function renderLegend(){
   if(S.col){ const m=RINGS[S.cmode];
-    Q('#legend').innerHTML = HLIDS.size ? `<b>학교 건물 · 선택 강조</b><div class="grad" style="background:linear-gradient(90deg,#0064FF 50%,${DIM} 50%)"></div><div class="lb"><span>해당 ${HLIDS.size}곳</span><span>그 외</span></div><p>질문에 해당하는 학교 건물만 파란색으로 표시합니다. 높이는 학생수입니다.</p><div class="lk"><button id="lkC">강조 해제</button><button id="lkT">상위 20개교 표</button></div>`
+    Q('#legend').innerHTML = HLIDS.size ? `<b>학교 건물 · 선택 강조</b><div class="grad" style="background:linear-gradient(90deg,#256EF4 50%,${DIM} 50%)"></div><div class="lb"><span>해당 ${HLIDS.size}곳</span><span>그 외</span></div><p>질문에 해당하는 학교 건물만 파란색으로 표시합니다. 높이는 학생수입니다.</p><div class="lk"><button id="lkC">강조 해제</button><button id="lkT">상위 20개교 표</button></div>`
     : m.f ? `<b>학교 건물 · ${m.l}</b><div class="grad" style="background:linear-gradient(90deg,${m.c} 50%,${DIM} 50%)"></div><div class="lb"><span>해당 ${SCHOOLS.filter(s=>pass(s)&&m.f(s)).length}곳</span><span>그 외</span></div><p>조건에 해당하는 학교 건물에 색을 넣었습니다. 높이는 학생수입니다.</p><div class="lk"><button id="lkT">상위 20개교 표</button></div>`
-    : `<b>학교 건물 · 경과연수</b><div class="grad" style="background:linear-gradient(90deg,rgb(47,158,110) 0%,rgb(143,190,90) 25%,rgb(227,181,59) 41.7%,rgb(239,138,46) 58.3%,rgb(200,66,28) 75%,rgb(122,24,12) 100%)"></div><div class="lb"><span>0년</span><span>20</span><span>40</span><span>60년+</span></div><p>경과연수가 길수록 초록에서 적갈색으로 짙어집니다. 학교는 육각 기둥으로 표시하며 높이는 학생수입니다.</p><div class="lk"><button id="lkT">상위 20개교 표</button></div>`;
+    : `<b>학교 건물 · 경과연수</b><div class="grad" style="background:linear-gradient(90deg,rgb(47,158,110) 0%,rgb(143,190,90) 25%,rgb(227,181,59) 41.7%,rgb(239,138,46) 58.3%,rgb(200,66,28) 75%,rgb(122,24,12) 100%)"></div><div class="lb"><span>0년</span><span>20</span><span>40</span><span>60년+</span></div><p>${HASYR?'경과연수가 길수록 초록에서 적갈색으로 짙어집니다.':'<b>준공년도 자료가 없어 회색으로 표시합니다.</b>'} 학교는 육각 기둥으로 표시하며 높이는 학생수입니다.</p><div class="lk"><button id="lkT">상위 20개교 표</button></div>`;
     const lc=Q('#lkC'); if(lc) lc.onclick=()=>{ highlight([]); renderRight(); }; }
   else { const M=METRICS[S.metric]; const vals=gridFC().features.map(f=>f.properties.v), mx=Math.max(...vals,1);
     Q('#legend').innerHTML=`<b>${M.l} · 격자</b><div class="grad"></div><div class="lb"><span>낮음</span><span>${fmt(mx/2)}</span><span>${fmt(mx)}${M.u}+</span></div><p>${M.desc}</p><div class="lk"><button id="lkM">자세한 설명</button><button id="lkT">상위 20개교 표</button></div>`;
@@ -595,7 +717,7 @@ function renderLegend(){
 /* ---------- 타임라인 ---------- */
 let tlMode='yr';
 document.querySelectorAll('.timeline header button').forEach(b=>b.onclick=()=>{tlMode=b.dataset.m;document.querySelectorAll('.timeline header button').forEach(x=>x.classList.toggle('on',x===b));renderTL();});
-function renderTL(){
+function renderTL(){ if(!HASYR){ Q('#tl').innerHTML=''; Q('.timeline').style.display='none'; return; } Q('.timeline').style.display='';
   const L=SCHOOLS.filter(s=>S.fac.has(s.lv));
   if(tlMode==='yr'){
     const y0=Math.min(...L.map(s=>s.yr),1962), ys=[]; for(let y=y0;y<=2025;y++) ys.push(y);
@@ -673,13 +795,15 @@ function chartHTML(ch){ const mx=Math.max(...ch.rows.flatMap(r=>[r.a,r.b]),1);
   return `<div class="ch"><div class="hd">${ch.t}<button class="big">크게 보기 +</button></div><div class="lg"><span style="--c:var(--blue)">${ch.a}</span><span style="--c:var(--brown)">${ch.b}</span></div>
   <div class="bars">${ch.rows.map(r=>`<div class="g"><div class="a" style="height:${r.a/mx*82}%"><b>${fmt(r.a)}</b></div><div class="b" style="height:${r.b/mx*82}%"><b>${r.b%1?r.b:fmt(r.b)}</b></div></div>`).join('')}</div>
   <div class="xl">${ch.rows.map(r=>`<span title="${r.l}">${r.l}</span>`).join('')}</div></div>`; }
+function noYear(){ return `<div class="note warn"><b>준공년도 자료가 아직 없습니다</b>건축물대장(또는 KEIIS 건물정보)을 불러오면 경과연수·노후도·재구조화 검토 대상이 계산됩니다. 그때까지 준공년도 관련 값은 &ldquo;—&rdquo;로 표시합니다.</div>`; }
 function renderAsk(){
   Q('#lhead').innerHTML=`<h3><span>01</span>핵심 질의응답 · ${RN()} <span id="qn">0 / ${QA.length}</span></h3><p>준비된 질문을 누르거나, 조건을 직접 입력해 보십시오. 예: "신안군 40년 이상 초등학교", "감소율 상위 10곳"</p>`;
   Q('#lbody').innerHTML=QA.map((x,i)=>`<div class="qa" id="qa${i}"><button class="q" data-i="${i}" aria-expanded="false"><span class="ar">${ic('chev')}</span>${x.q}</button><div class="ans"></div></div>`).join('');
+  if(!HASYR) Q('#lbody').insertAdjacentHTML('afterbegin',noYear());
   document.querySelectorAll('.qa .q').forEach(b=>b.onclick=()=>openQA(+b.dataset.i));
 }
 function openQA(i,force){
-  const el=Q('#qa'+i); if(!el) return; const was=el.classList.contains('open');
+  const el=Q('#qa'+i); if(!el) return; const need=/40년|노후|경과|준공|재구조화|1인당|연면적/.test(QA[i].q); if(need&&!HASYR){ el.classList.add('open'); el.querySelector('.ans').innerHTML=noYear(); return; } const was=el.classList.contains('open');
   document.querySelectorAll('.qa').forEach(q=>{q.classList.remove('open');q.querySelector('.q').setAttribute('aria-expanded','false');});
   if(was&&!force){ highlight([]); Q('#qn').textContent=`0 / ${QA.length}`; return; }
   const r=QA[i].f();
@@ -705,8 +829,8 @@ function schoolFind(q){ const k=nz(q); if(!k) return []; const ab=k.replace(/(�
 function hiName(n,q){ const k=q.trim(); if(!k) return n; const i=n.indexOf(k); return i<0?n:n.slice(0,i)+'<mark>'+n.slice(i,i+k.length)+'</mark>'+n.slice(i+k.length); }
 function renderSug(){ const q=Q('#q').value, box=Q('#sug'); if(!q.trim()){ box.hidden=true; Q('#q').setAttribute('aria-expanded','false'); return; }
   const L=schoolFind(q); SUG=L.map(s=>({t:'s',s})); SUGI=L.length?0:-1;
-  box.innerHTML=(L.length?`<div class="sh">학교 ${L.length}곳</div>`+L.map((s,i)=>`<div class="it${i===0?' on':''}" role="option" data-i="${i}"><i style="background:${GC(s.age)}"></i><div><b>${hiName(s.n,q)}</b><br><small>${s.sg} ${s.em||''} · ${s.lv}등학교${s.bk?' · 분교':''}</small></div><em>${s.age}년 · ${fmt(s.st)}명</em></div>`).join(''):'<div class="none">일치하는 학교가 없습니다. Enter를 누르면 질문으로 찾습니다.</div>')+
-    `<div class="sh">질문으로 찾기</div><div class="it sq" data-i="qa"><span style="color:#0064FF;display:inline-flex">${ic('search')}</span><b>"${q.replace(/</g,'&lt;')}" 질의응답에서 찾기</b></div>`;
+  box.innerHTML=(L.length?`<div class="sh">학교 ${L.length}곳</div>`+L.map((s,i)=>`<div class="it${i===0?' on':''}" role="option" data-i="${i}"><i style="background:${GC(s.age)}"></i><div><b>${hiName(s.n,q)}</b><br><small>${s.sg} ${s.em||''} · ${s.lv}등학교${s.bk?' · 분교':''}</small></div><em>${s.age==null?'—':s.age+'년'} · ${fmt(s.st)}명</em></div>`).join(''):'<div class="none">일치하는 학교가 없습니다. Enter를 누르면 질문으로 찾습니다.</div>')+
+    `<div class="sh">질문으로 찾기</div><div class="it sq" data-i="qa"><span style="color:#256EF4;display:inline-flex">${ic('search')}</span><b>"${q.replace(/</g,'&lt;')}" 질의응답에서 찾기</b></div>`;
   box.hidden=false; Q('#q').setAttribute('aria-expanded','true');
   box.querySelectorAll('.it').forEach(el=>el.onmousedown=e=>{ e.preventDefault(); pickSug(el.dataset.i); }); }
 function pickSug(i){ Q('#sug').hidden=true; if(i==='qa'||i===-1||i===undefined){ ask(); return; } const s=SUG[+i]&&SUG[+i].s; if(!s){ ask(); return; }
@@ -748,11 +872,12 @@ function insCalc(){ const L=SCHOOLS.filter(pass), A=SIM.age, SM=SIM.small;
   const cand=L.filter(s=>s.st>=SM&&s.age>=A);
   return {L,fut,backlog,ann,blCost,tot,P,saveAr,only,cand}; }
 let INS=null;
-function renderIns(){ INS=insCalc(); const I=INS, SM=SIM.small, A=SIM.age;
+function renderIns(){ INS=insCalc();
+  if(!HASYR){ head('인사이트',`${RN()} 재구조화 의사결정 인사이트`,'준공년도 자료 필요'); Q('#lbody').innerHTML=noYear(); return; } const I=INS, SM=SIM.small, A=SIM.age;
   head('인사이트',`${RN()} 재구조화 의사결정 인사이트`,`기준을 바꾸면 모든 카드와 지도가 즉시 다시 계산됩니다${IS_SAMPLE&&!SIAUTO?' · 현재 학생수·준공년도는 예시값':''}`);
-  const card=(n,t,c,ev,body,go,gl)=>`<div class="qa open"><div class="q" style="cursor:default"><span class="ar" style="color:#0064FF;font-weight:800">${n}</span>${t}</div><div class="ans"><p class="conc">${c}</p><div class="ev">${ev.map(([k,l,x])=>`<div class="r"><i class="${k}">${l}</i>${x}</div>`).join('')}</div>${body||''}${go?`<button class="mapgo" data-go="${go}"><b>지도에서 확인</b><small>${gl}</small></button>`:''}</div></div>`;
+  const card=(n,t,c,ev,body,go,gl)=>`<div class="qa open"><div class="q" style="cursor:default"><span class="ar" style="color:#256EF4;font-weight:800">${n}</span>${t}</div><div class="ans"><p class="conc">${c}</p><div class="ev">${ev.map(([k,l,x])=>`<div class="r"><i class="${k}">${l}</i>${x}</div>`).join('')}</div>${body||''}${go?`<button class="mapgo" data-go="${go}"><b>지도에서 확인</b><small>${gl}</small></button>`:''}</div></div>`;
   Q('#lbody').innerHTML=`
-  <div class="qa open"><div class="q" style="cursor:default"><span class="ar" style="color:#0064FF;font-weight:800">⑧</span>기준 시뮬레이터</div><div class="ans">
+  <div class="qa open"><div class="q" style="cursor:default"><span class="ar" style="color:#256EF4;font-weight:800">⑧</span>기준 시뮬레이터</div><div class="ans">
    <div class="sim">
     <label>학생 기준 <b id="svS">${SM}명 이상</b><input type="range" id="siS" min="20" max="120" step="10" value="${SM}"></label>
     <label>경과 기준 <b id="svA">${A}년 이상</b><input type="range" id="siA" min="30" max="50" step="5" value="${A}"></label>
@@ -762,7 +887,7 @@ function renderIns(){ INS=insCalc(); const I=INS, SM=SIM.small, A=SIM.age;
    <div class="kpis" style="margin-top:10px"><div class="kpi hot"><small>재구조화 검토 대상</small><b>${fmt(I.cand.length)}<em>곳</em></b></div><div class="kpi"><small>10년 개축 소요</small><b>${eok(I.tot)}<em>원</em></b></div>
     <div class="kpi"><small>통합 가능 쌍</small><b>${fmt(I.P.length)}<em>쌍</em></b></div><div class="kpi"><small>관리면적 감소</small><b>${fmt(I.saveAr)}<em>㎡</em></b></div></div>
    <button class="mapgo" data-go="cand"><b>지도에서 확인</b><small>경과 ${A}년 이상 · 학생 ${SM}명 이상</small></button></div></div>
-  ${card('①','5년 안에 대상에서 빠질 학교',`검토 대상 ${I.cand.length}곳 중 <b style="display:inline;color:#F04452">5년 뒤 학생 ${SM}명 미만</b>으로 떨어질 학교가 ${I.fut.length}곳입니다.`,
+  ${card('①','5년 안에 대상에서 빠질 학교',`검토 대상 ${I.cand.length}곳 중 <b style="display:inline;color:#D63D4A">5년 뒤 학생 ${SM}명 미만</b>으로 떨어질 학교가 ${I.fut.length}곳입니다.`,
     [['t1','수치',I.fut.slice(0,3).map(s=>`${short(s.n)} ${s.st}→${s.p5}명`).join(' · ')||'해당 없음'],['t2','근거','최근 2년 감소율을 5년간 연장'],['t3','한계','전입·개발계획 미반영, 추세 연장 추정']],
     I.fut.length?`<p class="desc">재구조화 투자 전에 <b style="display:inline">학생수 전망을 재확인</b>하거나 통폐합 검토로 전환할 필요가 있는 학교입니다.</p>`:'','fut','5년 뒤 기준 미달 예정')}
   ${card('③','10년 개축 소요 예산',`기준(${A}년)을 이미 넘은 학교 개축에 ${eok(I.blCost)}원, 앞으로 10년간 추가로 ${eok(I.tot-I.blCost)}원이 필요합니다.`,
@@ -827,7 +952,7 @@ function nlScope(P){ const p=[]; if(P.sg) p.push(P.sg); if(P.em) p.push(P.em); i
   if(P.st) p.push(`학생 ${P.st[0]}명 ${P.st[1]==='ge'?'이상':'이하'}`);
   return p.length?p.join(' · '):'전남 전체'; }
 function nlAnswer(q){
-  const P=nlParse(q); if(!P.m&&!P.age&&!P.st&&!P.sg&&!P.em&&!P.lv&&!P.isl&&!P.bk) return null;
+  const P=nlParse(q); if(!HASYR&&(P.age||['age','ar','pa','score'].includes(P.m))) return {P,noyr:true,scope:'전남 전체'}; if(!P.m&&!P.age&&!P.st&&!P.sg&&!P.em&&!P.lv&&!P.isl&&!P.bk) return null;
   const L=nlFilter(P); if(!L.length) return {P,empty:true,scope:nlScope(P)};
   const m=P.m||'age', M=MET[m], N=Math.min(P.n||10,50);
   const val=s=>M.f(s), fx=v=>v.toFixed(M.d);
@@ -847,11 +972,12 @@ function renderNL(q){
   const r=nlAnswer(q); if(!r) return false;
   setTab('ask');
   const head=Q('#lbody');
-  if(r.empty){ head.insertAdjacentHTML('afterbegin',`<div class="qa open" id="qaNL"><div class="q" style="cursor:default"><span class="ar" style="color:#0064FF">Q</span>${q}</div><div class="ans"><p class="conc">${r.scope} 조건에 해당하는 학교가 없습니다.</p><p class="desc">조건을 넓혀 다시 물어보십시오. 예: "신안군 40년 이상 초등학교", "감소율 상위 10곳"</p></div></div>`); return true; }
+  if(r.noyr){ Q('#lbody').insertAdjacentHTML('afterbegin',`<div class="qa open" id="qaNL"><div class="q" style="cursor:default"><span class="ar" style="color:#256EF4">Q</span>${q}</div><div class="ans">${noYear()}</div></div>`); return true; }
+  if(r.empty){ head.insertAdjacentHTML('afterbegin',`<div class="qa open" id="qaNL"><div class="q" style="cursor:default"><span class="ar" style="color:#256EF4">Q</span>${q}</div><div class="ans"><p class="conc">${r.scope} 조건에 해당하는 학교가 없습니다.</p><p class="desc">조건을 넓혀 다시 물어보십시오. 예: "신안군 40년 이상 초등학교", "감소율 상위 10곳"</p></div></div>`); return true; }
   const M=r.M, fx=v=>v.toFixed(M.d);
-  const rows=r.top.map((s,i)=>`<tr class="cl" data-id="${s.id}"><td>${i+1}. ${s.n}</td><td>${s.sg}</td><td>${s.lv}</td><td style="color:${GC(s.age)};font-weight:700">${s.age}년</td><td>${fmt(s.st)}명</td><td><b>${fx(M.f(s))}${M.u}</b></td></tr>`).join('');
+  const rows=r.top.map((s,i)=>`<tr class="cl" data-id="${s.id}"><td>${i+1}. ${s.n}</td><td>${s.sg}</td><td>${s.lv}</td><td style="color:${GC(s.age)};font-weight:700">${s.age==null?'—':s.age+'년'}</td><td>${fmt(s.st)}명</td><td><b>${fx(M.f(s))}${M.u}</b></td></tr>`).join('');
   const ch={t:`${M.l} 상위 ${Math.min(6,r.top.length)}곳`,a:'학생수',b:M.l,rows:r.top.slice(0,6).map(s=>({l:short(s.n),a:s.st,b:+fx(M.f(s))}))};
-  head.insertAdjacentHTML('afterbegin',`<div class="qa open" id="qaNL"><div class="q" style="cursor:default"><span class="ar" style="color:#0064FF">Q</span>${q}</div><div class="ans">
+  head.insertAdjacentHTML('afterbegin',`<div class="qa open" id="qaNL"><div class="q" style="cursor:default"><span class="ar" style="color:#256EF4">Q</span>${q}</div><div class="ans">
    <p class="conc">${r.c}</p>
    <div class="ev">${r.ev.map(([k,l,x])=>`<div class="r"><i class="${k}">${l}</i>${x}</div>`).join('')}</div>
    <table style="margin-bottom:10px"><thead><tr><th>학교</th><th>시군</th><th>급</th><th>경과</th><th>학생</th><th>${M.l}</th></tr></thead><tbody>${rows}</tbody></table>
@@ -877,7 +1003,8 @@ function renderStatus(){ const L=SCHOOLS.filter(pass),o=L.filter(s=>s.age>=40),s
   <div class="kpi hot" style="grid-column:span 2"><small>노후 + 소규모 교차</small><b>${b.length}<em>곳 · 재구조화 1차 검토군</em></b></div></div>
   <table><thead><tr><th>${GL()}</th><th>학교</th><th>학생</th><th>평균경과</th><th>40년↑</th></tr></thead><tbody>${Object.entries(g).sort((a,b)=>b[1].length-a[1].length).map(([k,v])=>`<tr class="cl" data-sg="${k}"><td>${k}</td><td>${v.length}</td><td>${fmt(v.reduce((x,s)=>x+s.st,0))}</td><td>${avg(v.map(s=>s.age)).toFixed(1)}</td><td>${v.filter(s=>s.age>=40).length}</td></tr>`).join('')}</tbody></table>`;
   document.querySelectorAll('tr.cl').forEach(tr=>tr.onclick=()=>{ if(!REGION) setRegion(tr.dataset.sg); else { const L=SCHOOLS.filter(s=>s.em===tr.dataset.sg&&pass(s)); highlight(L); fitTo(L);} }); }
-function renderCand(){ const L=RANK.filter(pass).slice(0,20); head('03','재구조화 검토 대상 · 상위 20',`2026년 기준 경과 ${AGEC}년 이상 · 학생 ${SMALL}명 이상 ${RANK.filter(pass).length}개교 · 경과연수 긴 순 · 행을 누르면 상세`);
+function renderCand(){ const L=RANK.filter(pass).slice(0,20); if(!HASYR){ head('03','재구조화 검토 대상','준공년도 자료 필요'); Q('#lbody').innerHTML=noYear(); return; }
+  head('03','재구조화 검토 대상 · 상위 20',`2026년 기준 경과 ${AGEC}년 이상 · 학생 ${SMALL}명 이상 ${RANK.filter(pass).length}개교 · 경과연수 긴 순 · 행을 누르면 상세`);
   Q('#lbody').innerHTML=`<table><thead><tr><th>학교</th><th>경과</th><th>학생</th><th>감소</th><th>점수</th></tr></thead><tbody>${L.map((s,i)=>`<tr class="cl" data-id="${s.id}"><td>${i+1}. ${s.n}<br><span style="color:var(--sub);font-size:11px">${s.sg}</span></td><td>${s.age}년</td><td>${s.st}</td><td>${(s.dec*100).toFixed(0)}%</td><td><b>${(s.score*100).toFixed(0)}</b></td></tr>`).join('')}</tbody></table>
   <div class="note" style="margin-top:10px"><b>제안 방향</b>1~5위는 통폐합·거점화 검토, 6~20위는 공간재구조화(유휴교실 전환·복합화) 검토 대상으로 분류하는 방안을 제안합니다.</div>
   <div class="btns"><button class="pri" id="cD">상위 5곳 드론 비행</button></div>`;
@@ -890,7 +1017,7 @@ function renderFuture(){ const rows=[0,5,10].map(y=>({l:`${NOW+y}년`,a:SCHOOLS.
   <div class="note warn"><b>유의</b>출생아 수와 지역 개발계획을 반영하지 않은 추세 연장입니다. 공식 추계로 대체하십시오.</div>`;
   Q('#lbody').querySelector('.big').onclick=e=>{const c=e.target.closest('.ch');c.classList.toggle('big');}; }
 function renderSrc(){ const miss=SCHOOLS.filter(s=>!s.yr||!s.x||!s.y).length; head('05','근거 그래프 · 데이터와 방법','출처, 계산식, 결측, 실자료 불러오기');
-  Q('#lbody').innerHTML=`${IS_SAMPLE?`<div class="note warn"><b>일부 예시값이 포함되어 있습니다</b>학교명·위치·학교급·설립형태·본교/분교 842개교는 실자료(전국초중등학교위치표준데이터, 2026-03-20 기준)입니다. <b>준공년도·학생수·연면적은 화면 확인용 예시값</b>이므로 KEIIS 건물정보와 학교알리미 자료로 교체해야 합니다.</div>`:''}
+  Q('#lbody').innerHTML=`${IS_SAMPLE?`<div class="note warn"><b>일부 예시값이 포함되어 있습니다</b>학교명·위치·학교급·설립형태·본교/분교 842개교는 실자료(전국초중등학교위치표준데이터, 2026-03-20 기준)입니다. <b>준공년도·연면적은 자료가 없어 &ldquo;—&rdquo;로 비워 둡니다</b>(건축물대장 또는 KEIIS 건물정보를 불러오면 채워집니다). 학생수는 학교알리미 자료가 있으면 실자료입니다.</div>`:''}
   <div class="note"><b>실자료 불러오기</b>CSV(UTF-8) 열: 학교명, 학교급, 시군, 위도, 경도, 준공년도, 연면적, 학생수, 5년전학생수, 학급수, 분교여부(Y/N), 설립<div class="btns"><button id="tpl">양식 받기</button><button class="pri" id="up">CSV 불러오기</button></div><input type="file" id="upF" accept=".csv" hidden></div>
   <div class="note"><b>KEIIS 건물정보 불러오기 <span style="font-weight:400;color:var(--sub)">· 비공개 자료</span></b>
    <div style="font-size:11.5px;color:var(--sub);line-height:1.6">파일은 <b>이 PC의 브라우저 안에서만</b> 읽으며 외부로 전송되지 않습니다. 계산 결과는 <b>브라우저를 닫으면 지워지는 임시 저장소</b>에만 둡니다.</div>
@@ -964,7 +1091,7 @@ fetch('data/buildings.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then
     s.bl=o.b.slice().sort((a,b)=>a.y-b.y).map(b=>({n:b.n,y:b.y,d:b.d,a:b.a,fl:b.fl,u:b.u,s:b.s,g:'',eq:b.eq})); s.bsrc='bldg'; hit++; });
   if(!hit) return; BLDAUTO={hit,updated:j.updated}; derive(); onFilter(); if(curTab==='ask') renderAsk(); else if(!DETAIL) setTab(curTab); else renderDetail(); stampAll();
   toast(`건축물대장 준공년도·연면적 ${hit}개교 자동 반영 (${j.updated} 갱신)`); }).catch(()=>{});
-function stampAll(){ const k=KEIIS?`준공년도 KEIIS ${KEIIS.n}개교`:BLDAUTO?`준공년도 건축물대장 ${BLDAUTO.hit}개교`:'준공년도 예시값', s=SIAUTO?`학생수 학교알리미 ${SIAUTO.hit}개교`:'학생수 예시값';
+function stampAll(){ const k=KEIIS?`준공년도 KEIIS ${KEIIS.n}개교`:BLDAUTO?`준공년도 건축물대장 ${BLDAUTO.hit}개교`:'준공년도 자료 없음', s=SIAUTO?`학생수 학교알리미 ${SIAUTO.hit}개교`:'학생수 예시값';
   Q('#stamp').textContent=`학교 위치 실자료 · ${s} · ${k}`; }
 /* ---------- KEIIS 건물정보(비공개, 브라우저 내 처리) ---------- */
 let KEIIS=(()=>{try{return JSON.parse(sessionStorage.getItem('keiis')||'null')}catch(e){return null}})();
@@ -1028,11 +1155,11 @@ function vwbFloors(p){ for(const k of ['gro_flo_co','grnd_flr','GRO_FLO_CO','flr
 function vwbSchool(f){ if(f._sid!==undefined) return f._sid; const c=turfCenter(f.geometry); let sid=null;
   for(const pc of VWP.values()){ const b=pc._bb; if(c[0]<b[0]||c[0]>b[2]||c[1]<b[1]||c[1]>b[3]) continue; if(pipGeom(c,pc.geometry)){ sid=pc._sid; break; } }
   f._sid=sid; return sid; }
-function vwbColor(f){ const sid=vwbSchool(f); if(sid){ const s=ALL.find(v=>v.id===sid); if(s) return HLIDS.size?(HLIDS.has(s.id)?'#0064FF':'#C4CAD1'):GC(s.age); }
+function vwbColor(f){ const sid=vwbSchool(f); if(sid){ const s=ALL.find(v=>v.id===sid); if(s) return HLIDS.size?(HLIDS.has(s.id)?'#256EF4':'#CDD1D5'):GC(s.age); }
   const p=f.properties||{}, nm=String(p.buld_nm||p.bd_nm||p.BULD_NM||'');
   if(/학교|초등|중학|고등/.test(nm)){ const c=turfCenter(f.geometry); let best=null,bd=1e9; ALL.forEach(s=>{ const d=(s.x-c[0])**2+(s.y-c[1])**2; if(d<bd){bd=d;best=s;} });
-    if(best&&bd<0.0000207){ f.properties._sid=best.id; return HLIDS.size?(HLIDS.has(best.id)?'#0064FF':'#C4CAD1'):GC(best.age); } }
-  return S.bm==='midnight'?'#56606b':'#EEF0F3'; }
+    if(best&&bd<0.0000207){ f.properties._sid=best.id; return HLIDS.size?(HLIDS.has(best.id)?'#256EF4':'#CDD1D5'):GC(best.age); } }
+  return S.bm==='midnight'?'#56606b':'#F4F5F6'; }
 function pipRing(pt,r){ let c=false; for(let i=0,j=r.length-1;i<r.length;j=i++){ const [xi,yi]=r[i],[xj,yj]=r[j]; if(((yi>pt[1])!==(yj>pt[1]))&&(pt[0]<(xj-xi)*(pt[1]-yi)/(yj-yi)+xi)) c=!c; } return c; }
 function pipGeom(pt,g){ const P=g.type==='MultiPolygon'?g.coordinates:[g.coordinates]; return P.some(poly=>pipRing(pt,poly[0])&&!poly.slice(1).some(h=>pipRing(pt,h))); }
 function bbGeom(g){ const P=g.type==='MultiPolygon'?g.coordinates:[g.coordinates]; let a=[180,90,-180,-90]; P.forEach(p=>p[0].forEach(([x,y])=>{a=[Math.min(a[0],x),Math.min(a[1],y),Math.max(a[2],x),Math.max(a[3],y)];})); return a; }
@@ -1096,7 +1223,7 @@ function l3Show(v){ L3V=v; document.querySelectorAll('#l3tabs button').forEach(b
   if(v==='sum') l3Sum(); else if(v==='find') l3Find(); else if(v==='src') l3Src(); else { map&&setTimeout(()=>map.resize(),30); } }
 function l3Head(tt,p){ return `<div class="l3h"><div><h2>${tt}</h2><p>${p}</p></div><div class="sp btns" style="margin:0"><button id="l3print">${ic('grid')} 인쇄·PDF</button></div></div>`; }
 function l3Bind(){ const p=Q('#l3print'); if(p) p.onclick=()=>window.print(); }
-function hbars(rows,unit,max){ const mx=max||Math.max(...rows.map(r=>r.v),1); return rows.map(r=>`<div class="hb" data-k="${r.l}"><span>${r.l}</span><span class="tr"><i style="width:${r.v/mx*100}%;background:${r.c||'#0064FF'}"></i></span><b>${r.f||fmt(r.v)}${unit}</b></div>`).join(''); }
+function hbars(rows,unit,max){ const mx=max||Math.max(...rows.map(r=>r.v),1); return rows.map(r=>`<div class="hb" data-k="${r.l}"><span>${r.l}</span><span class="tr"><i style="width:${r.v/mx*100}%;background:${r.c||'#256EF4'}"></i></span><b>${r.f||fmt(r.v)}${unit}</b></div>`).join(''); }
 function l3Sum(){ const L=SCHOOLS.filter(pass), g=by(L,GK()), T=L.reduce((x,s)=>x+s.st,0), T5=L.reduce((x,s)=>x+s.st5,0);
   const ageRows=Object.entries(g).map(([k,v])=>({l:k,v:+avg(v.map(s=>s.age)).toFixed(1)})).sort((a,b)=>b.v-a.v); ageRows.forEach(r=>{r.c=GC(r.v);r.f=r.v.toFixed(1);});
   const decRows=Object.entries(g).map(([k,v])=>{const a=v.reduce((x,s)=>x+s.st,0),b=v.reduce((x,s)=>x+s.st5,0);return {l:k,v:b?Math.max(0,(b-a)/b*100):0};}).sort((a,b)=>b.v-a.v); decRows.forEach(r=>r.f=r.v.toFixed(1));
@@ -1117,7 +1244,7 @@ function l3Find(){ Q('#l3body').innerHTML=l3Head('학교 찾기',`${RN()} ${SCHO
 function l3Tbl(){ const C=[['n','학교명'],['sg','시군'],['em','읍면동'],['lv','학교급'],['st','학생'],['cl','학급'],['yr','준공'],['age','경과'],['ar','연면적'],['score','점수']];
   let L=SCHOOLS.filter(s=>(!L3F.lv||s.lv===L3F.lv)&&(!L3F.q||(s.n+(s.em||'')+s.sg).includes(L3F.q)));
   L.sort((a,b)=>{const x=a[L3F.sort],y=b[L3F.sort]; return (typeof x==='string'?String(x).localeCompare(String(y),'ko'):((x||0)-(y||0)))*L3F.dir;});
-  Q('#l3tbl').innerHTML=`<table class="l3t"><thead><tr>${C.map(([k,l])=>`<th data-k="${k}">${l}${L3F.sort===k?(L3F.dir<0?' ▾':' ▴'):''}</th>`).join('')}</tr></thead><tbody>${L.slice(0,300).map(s=>`<tr data-id="${s.id}"><td>${s.n}</td><td>${s.sg}</td><td>${s.em||''}</td><td>${s.lv}</td><td>${fmt(s.st)}</td><td>${s.cl||'-'}</td><td>${s.yr}</td><td style="color:${GC(s.age)};font-weight:700">${s.age}년</td><td>${fmt(s.ar)}㎡</td><td><b>${(s.score*100).toFixed(0)}</b></td></tr>`).join('')}</tbody></table>${L.length>300?`<p style="color:#8B95A1;font-size:12px">300개교까지 표시 · 검색으로 좁혀 보십시오 (전체 ${L.length}개교)</p>`:''}`;
+  Q('#l3tbl').innerHTML=`<table class="l3t"><thead><tr>${C.map(([k,l])=>`<th data-k="${k}">${l}${L3F.sort===k?(L3F.dir<0?' ▾':' ▴'):''}</th>`).join('')}</tr></thead><tbody>${L.slice(0,300).map(s=>`<tr data-id="${s.id}"><td>${s.n}</td><td>${s.sg}</td><td>${s.em||''}</td><td>${s.lv}</td><td>${fmt(s.st)}</td><td>${s.cl||'-'}</td><td>${s.yr}</td><td style="color:${GC(s.age)};font-weight:700">${s.age}년</td><td>${fmt(s.ar)}㎡</td><td><b>${(s.score*100).toFixed(0)}</b></td></tr>`).join('')}</tbody></table>${L.length>300?`<p style="color:#6D7882;font-size:12px">300개교까지 표시 · 검색으로 좁혀 보십시오 (전체 ${L.length}개교)</p>`:''}`;
   Q('#l3tbl').querySelectorAll('th').forEach(th=>th.onclick=()=>{ const k=th.dataset.k; L3F.dir=L3F.sort===k?-L3F.dir:(typeof SCHOOLS[0][k]==='string'?1:-1); L3F.sort=k; l3Tbl(); });
   Q('#l3tbl').querySelectorAll('tr[data-id]').forEach(tr=>tr.onclick=()=>l3Open(+tr.dataset.id)); }
 function l3Src(){ renderSrc(); Q('#l3body').innerHTML=l3Head('근거자료','자료 출처 · 계산식 · 실자료 불러오기'); const box=document.createElement('div'); box.style.maxWidth='760px'; while(Q('#lbody').firstChild) box.appendChild(Q('#lbody').firstChild); Q('#l3body').appendChild(box); l3Bind(); }
@@ -1161,17 +1288,17 @@ function renderDetail(){ const s=DETAIL; if(!s) return;
    <div class="kpi"><small>학급당 학생수</small><b>${per?per.toFixed(1):'-'}<em>명</em></b></div>
    <div class="kpi ${dSt<-10?'hot':''}"><small>2년 전 대비</small><b>${dSt>0?'+':''}${dSt.toFixed(1)}<em>% (${fmt(s.st5||0)}명)</em></b></div></div>
   ${chartHTML({t:'학생수 변화',a:'2년 전',b:'현재',rows:[{l:'학생수',a:s.st5||0,b:s.st}]})}
-  <h3 style="font-size:13.5px;margin:12px 0 6px">건물 현황${src(s.bsrc==='keiis'?'KEIIS 건물정보':s.bsrc==='bldg'?'건축물대장':'준공년도 예시값')}</h3>
-  <div class="kpis"><div class="kpi"><small>대표 준공년도${s.ybasis?` · ${s.ybasis} ${s.yn}동`:''}</small><b>${s.yr}<em>년</em></b></div>
-   <div class="kpi"><small>경과연수</small><b style="color:${GC(s.age)}">${s.age}<em>년</em></b></div>
-   <div class="kpi"><small>연면적</small><b>${fmt(s.ar)}<em>㎡</em></b></div>
-   <div class="kpi"><small>학생 1인당 연면적</small><b>${s.st?(s.ar/s.st).toFixed(1):'-'}<em>㎡</em></b></div></div>
-  ${s.bl&&s.bl.length?`<div class="note"><b>건물 목록 ${s.bl.length}동 <span style="font-weight:400;color:#0064FF">· 파란 줄 = 준공년도 산정 대상(교사동 계열)</span>${src(s.bsrc==='bldg'?'국토교통부 건축물대장(표제부)':'KEIIS 건물정보 · 이 PC에서만 표시')}</b>
-   <div style="overflow-x:auto"><table style="margin-top:6px;min-width:520px"><thead><tr><th>건물명</th><th>사용승인</th><th>경과</th><th>연면적</th><th>층</th><th>주용도</th><th>구조</th><th>${s.bsrc==='bldg'?'내진':'등급'}</th></tr></thead><tbody>${s.bl.map(b=>`<tr${isEdu(b.n)?' style="background:#EEF5FF"':('CDE'.includes(b.g)&&b.g?' style="background:#fdecea"':'')}><td>${b.n}</td><td>${b.d.slice(0,10)}</td><td style="color:${GC(NOW-b.y)};font-weight:700">${NOW-b.y}년</td><td>${fmt(b.a)}㎡</td><td>${b.fl||'-'}</td><td>${b.u}</td><td>${b.s}</td><td>${s.bsrc==='bldg'?(b.eq==='1'?'적용':b.eq==='0'?'<span style="color:#F04452;font-weight:700">미적용</span>':'-'):(b.g||'-')}</td></tr>`).join('')}</tbody></table></div></div>`:''}
+  <h3 style="font-size:13.5px;margin:12px 0 6px">건물 현황${src(s.bsrc==='keiis'?'KEIIS 건물정보':s.bsrc==='bldg'?'건축물대장':'준공년도 자료 없음')}</h3>
+  <div class="kpis"><div class="kpi"><small>대표 준공년도${s.ybasis?` · ${s.ybasis} ${s.yn}동`:''}</small>${s.age==null?'<b>—</b>':`<b>${s.yr}<em>년</em></b>`}</div>
+   <div class="kpi"><small>경과연수</small>${s.age==null?'<b>—</b>':`<b style="color:${GC(s.age)}">${s.age}<em>년</em></b>`}</div>
+   <div class="kpi"><small>연면적</small>${s.age==null?'<b>—</b>':`<b>${fmt(s.ar)}<em>㎡</em></b>`}</div>
+   <div class="kpi"><small>학생 1인당 연면적</small>${(s.age==null||!s.st)?'<b>—</b>':`<b>${(s.ar/s.st).toFixed(1)}<em>㎡</em></b>`}</div></div>
+  ${s.bl&&s.bl.length?`<div class="note"><b>건물 목록 ${s.bl.length}동 <span style="font-weight:400;color:#256EF4">· 파란 줄 = 준공년도 산정 대상(교사동 계열)</span>${src(s.bsrc==='bldg'?'국토교통부 건축물대장(표제부)':'KEIIS 건물정보 · 이 PC에서만 표시')}</b>
+   <div style="overflow-x:auto"><table style="margin-top:6px;min-width:520px"><thead><tr><th>건물명</th><th>사용승인</th><th>경과</th><th>연면적</th><th>층</th><th>주용도</th><th>구조</th><th>${s.bsrc==='bldg'?'내진':'등급'}</th></tr></thead><tbody>${s.bl.map(b=>`<tr${isEdu(b.n)?' style="background:#EEF5FF"':('CDE'.includes(b.g)&&b.g?' style="background:#fdecea"':'')}><td>${b.n}</td><td>${b.d.slice(0,10)}</td><td style="color:${GC(NOW-b.y)};font-weight:700">${NOW-b.y}년</td><td>${fmt(b.a)}㎡</td><td>${b.fl||'-'}</td><td>${b.u}</td><td>${b.s}</td><td>${s.bsrc==='bldg'?(b.eq==='1'?'적용':b.eq==='0'?'<span style="color:#D63D4A;font-weight:700">미적용</span>':'-'):(b.g||'-')}</td></tr>`).join('')}</tbody></table></div></div>`:''}
   <div class="note" ${s.bl&&s.bl.length?'hidden':''}><b>교내 건물 ${B.length?B.length+'동':''}${src('브이월드 도로명주소건물 · 층수×바닥면적 추정')}</b>
    ${B.length?`<table style="margin-top:6px"><thead><tr><th>건물</th><th>지상층</th><th>바닥면적</th><th>연면적(추정)</th></tr></thead><tbody>${B.map(b=>`<tr><td>${b.n}</td><td>${b.fl}층</td><td>${fmt(b.fa)}㎡</td><td>${fmt(b.ga)}㎡</td></tr>`).join('')}</tbody></table>`
    :`<div style="color:var(--sub);font-size:11.5px;margin-top:4px">${VWKEY?'학교로 확대되면 브이월드 건물 정보를 불러와 여기에 표시합니다. 정확한 동별 목록은 [데이터·방법] → KEIIS 건물정보 불러오기로 반영됩니다.':'브이월드 키가 등록된 주소(깃허브 페이지)에서 건물 목록이 표시됩니다.'}</div>`}</div>
-  <div class="note"><b>재구조화 검토</b>${(s.age>=AGEC&&s.st>=SMALL)?`${RN()} 검토 대상 ${RANK.length}개교 중 <b style="display:inline;color:#0064FF">${rank}위</b>`:`검토 대상 아님 (경과 ${s.age}년 · 학생 ${fmt(s.st)}명 / 기준: 경과 ${AGEC}년 이상 · 학생 ${SMALL}명 이상)`}<br><span style="color:var(--sub);font-size:11.5px">기준: 2026년 기준 건물 경과 40년 이상 + 학생 60명 이상 · 경과연수 긴 순</span></div>`;
+  <div class="note"><b>재구조화 검토</b>${(s.age>=AGEC&&s.st>=SMALL)?`${RN()} 검토 대상 ${RANK.length}개교 중 <b style="display:inline;color:#256EF4">${rank}위</b>`:`검토 대상 아님 (경과 ${s.age}년 · 학생 ${fmt(s.st)}명 / 기준: 경과 ${AGEC}년 이상 · 학생 ${SMALL}명 이상)`}<br><span style="color:var(--sub);font-size:11.5px">기준: 2026년 기준 건물 경과 40년 이상 + 학생 60명 이상 · 경과연수 긴 순</span></div>`;
   Q('#dBack').onclick=closeSchool;
   const bg=Q('#lbody').querySelector('.big'); if(bg) bg.onclick=e=>e.target.closest('.ch').classList.toggle('big');
 }
@@ -1268,7 +1395,7 @@ if(map) map.on('click',e=>{ if(!S.sg||!map.getLayer('sg-fill')) return;
 function drawCV(){
   const cv=Q('#cv'); cv.style.display='block'; const W=cv.clientWidth,H=cv.clientHeight,dpr=devicePixelRatio||1;
   cv.width=W*dpr; cv.height=H*dpr; const c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0);
-  c.fillStyle='#F2F4F6'; c.fillRect(0,0,W,H); c.setTransform(dpr*CVV.k,0,0,dpr*CVV.k,dpr*CVV.tx,dpr*CVV.ty);
+  c.fillStyle='#F4F5F6'; c.fillRect(0,0,W,H); c.setTransform(dpr*CVV.k,0,0,dpr*CVV.k,dpr*CVV.tx,dpr*CVV.ty);
   const L0=innerWidth>980?Math.min(W*.31,430)+40:20, R0=innerWidth>980?250:20, T0=90, B0=140;
   const bx=[125.0,127.95], by=[33.95,35.55], kx=Math.cos(34.8*Math.PI/180);
   const sw=(W-L0-R0)/((bx[1]-bx[0])*kx), sh=(H-T0-B0)/((by[1]-by[0])*0.62), s=Math.min(sw,sh);
@@ -1277,16 +1404,16 @@ function drawCV(){
   const g=by2(SCHOOLS,'sg');
   GEO.features.forEach(f=>{ const a=avg((g[f.properties.name]||[]).map(v=>v.age)); const polys=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;
     c.beginPath(); polys.forEach(pl=>pl.forEach(r=>r.forEach(([x,y],i)=>{const [X,Y]=P(x,y); i?c.lineTo(X,Y):c.moveTo(X,Y);}))); 
-    c.fillStyle=S.sg?(a>=40?'#DCE8F8':a>=33?'#E6EEF9':'#EEF3FB'):'#F2F4F6'; c.fill('evenodd'); c.strokeStyle='#B0B8C1'; c.lineWidth=.7; c.stroke(); });
+    c.fillStyle=S.sg?(a>=40?'#B1CEFB':a>=33?'#ECF2FE':'#ECF2FE'):'#F4F5F6'; c.fill('evenodd'); c.strokeStyle='#B1B8BE'; c.lineWidth=.7; c.stroke(); });
   const fc=S.col?colFC():gridFC(); const items=[];
   if(S.col){ const mx=Math.max(...SCHOOLS.map(v=>v.st)); SCHOOLS.filter(pass).forEach(v=>items.push({x:v.x,y:v.y,h:6+v.st/mx*120,c:colColor(v),w:HLIDS.has(v.id)?4:3})); }
-  else fc.features.forEach(f=>{ const r=f.geometry.coordinates[0]; const t=f.properties.t; const cols=['#E8F2FF','#85B9FF','#4795FF','#0064FF','#003EA8'];
+  else fc.features.forEach(f=>{ const r=f.geometry.coordinates[0]; const t=f.properties.t; const cols=['#ECF2FE','#86AFF9','#4C87F6','#256EF4','#083891'];
     items.push({x:(r[0][0]+r[2][0])/2,y:(r[0][1]+r[2][1])/2,h:4+t*140*hK2,c:cols[Math.min(4,Math.floor(t*5))],w:Math.max(4,(r[1][0]-r[0][0])*kx*s*0.5)}); });
   items.sort((a,b)=>b.y-a.y).forEach(it=>{ const [X,Y]=P(it.x,it.y), w=it.w, d=w*0.5, h=it.h*(S.is3d?1:0.05);
     c.fillStyle=it.c; c.fillRect(X-w,Y-h,w*2,h);
     c.fillStyle='rgba(0,0,0,.18)'; c.beginPath(); c.moveTo(X+w,Y); c.lineTo(X+w+d,Y-d); c.lineTo(X+w+d,Y-h-d); c.lineTo(X+w,Y-h); c.fill();
     c.fillStyle='rgba(255,255,255,.35)'; c.beginPath(); c.moveTo(X-w,Y-h); c.lineTo(X-w+d,Y-h-d); c.lineTo(X+w+d,Y-h-d); c.lineTo(X+w,Y-h); c.fill(); });
-  c.font='12px "Noto Sans KR",sans-serif'; c.fillStyle='#4E5968'; c.textAlign='center';
+  c.font='12px "Noto Sans KR",sans-serif'; c.fillStyle='#464C53'; c.textAlign='center';
   GEO.features.forEach(f=>{ const L=g[f.properties.name]||[]; if(!L.length) return; const [X,Y]=P(avg(L.map(v=>v.x)),avg(L.map(v=>v.y))); c.fillText(f.properties.name,X,Y+16); });
 }
 const by2=by; let hK2=1;
