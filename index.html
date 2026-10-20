@@ -664,7 +664,7 @@ if(map){ const pop=new maplibregl.Popup({closeButton:false,offset:10});
 map.on('mousemove','grid',e=>{ const p=e.features[0].properties, ids=p.ids.split(',').map(Number), L=SCHOOLS.filter(s=>ids.includes(s.id)); map.getCanvas().style.cursor='pointer';
   pop.setLngLat(e.lngLat).setHTML(`<b>${METRICS[S.metric].l} ${fmt(p.v)}${METRICS[S.metric].u}</b><br>학교 ${L.length}곳 · 학생 ${fmt(L.reduce((x,s)=>x+s.st,0))}명<br>${L.slice(0,4).map(s=>`${s.n} (${s.age}년·${s.st}명)`).join('<br>')}${L.length>4?`<br>외 ${L.length-4}곳`:''}`).addTo(map); });
 map.on('mousemove','col',e=>{ const s=SCHOOLS.find(v=>v.id===e.features[0].properties.id); map.getCanvas().style.cursor='pointer';
-  pop.setLngLat(e.lngLat).setHTML(`<b>${s.n}</b><br>${s.ad||s.sg}${s.of?`<br>${s.of}`:''}<br>준공 ${s.yr}년(${s.age}년)<br>학생 ${s.st}명 · 2년 전 ${s.st5}명<br>연면적 ${fmt(s.ar)}㎡${s.nb?` · ${s.nb}개동`:''}`).addTo(map); });
+  pop.setLngLat(e.lngLat).setHTML(`<b>${s.n}</b><br>${s.ad||s.sg}${s.of?`<br>${s.of}`:''}<br>준공 ${s.age==null?'— (자료 없음)':`${s.yr}년(${s.age}년)`}<br>학생 ${s.st}명 · 2년 전 ${s.st5}명<br>연면적 ${fmt(s.ar)}㎡${s.nb?` · ${s.nb}개동`:''}`).addTo(map); });
 ['grid','col'].forEach(l=>map.on('mouseleave',l,()=>{map.getCanvas().style.cursor='';pop.remove();})); }
 
 function intro(){ introDone=true; Q('#intro').style.opacity=0; setTimeout(()=>Q('#intro')?.remove(),800);
@@ -1137,7 +1137,7 @@ function startDrone(){ stopDrone(); S.drone=true; renderRight(); const L=RANK.fi
     const s=L[i]; Q('#bdgT').textContent=`드론 비행 ${i+1} / ${L.length}`; Q('#bdgN').textContent=`재구조화 후보 ${i+1}위 · ${s.n} · ${s.sg}`;
     Q('#bdgP').querySelectorAll('i').forEach((e,j)=>e.classList.toggle('on',j<=i)); highlight([s]);
     if(E3.on) e3Fit([s]); else map&&map.flyTo({center:[s.x,s.y],zoom:14,pitch:62,bearing:(i*53)%360-70,duration:3200,essential:true});
-    if(autoV) speak(`${i+1}위, ${short(s.n)}. 준공 ${s.age}년, 학생 ${s.st}명.`);
+    if(autoV) speak(`${i+1}위, ${short(s.n)}. 준공 ${s.age==null?'자료 없음':`${s.age}년`}, 학생 ${s.st}명.`);
     i++; dT=setTimeout(go,5600); };
   go(); }
 function stopDrone(){ S.drone=false; clearTimeout(dT); Q('#badge').classList.add('hide'); renderRight(); }
@@ -1381,7 +1381,7 @@ function setRegion(r){
 }
 if(map){ const bp=new maplibregl.Popup({closeButton:false,offset:8});
   map.on('mousemove','vwb3d',e=>{ const p=e.features[0].properties; if(!p.sid){ bp.remove(); map.getCanvas().style.cursor=''; return; } const s=ALL.find(v=>v.id===p.sid); if(!s) return;
-    map.getCanvas().style.cursor='pointer'; bp.setLngLat(e.lngLat).setHTML(`<b>${s.n}</b><br>${p.nm||'교내 건물'} · 지상 ${p.fl}층<br>학교 준공 ${s.yr}년(${s.age}년) · 학생 ${s.st}명`).addTo(map); });
+    map.getCanvas().style.cursor='pointer'; bp.setLngLat(e.lngLat).setHTML(`<b>${s.n}</b><br>${p.nm||'교내 건물'} · 지상 ${p.fl}층<br>학교 준공 ${s.age==null?'— (자료 없음)':`${s.yr}년(${s.age}년)`} · 학생 ${s.st}명`).addTo(map); });
   map.on('mouseleave','vwb3d',()=>{ bp.remove(); map.getCanvas().style.cursor=''; }); }
 if(map) map.on('click',e=>{ if(!S.sg||!map.getLayer('sg-fill')) return;
   const hit=map.queryRenderedFeatures(e.point,{layers:['col','vwb3d'].filter(l=>map.getLayer(l))});
