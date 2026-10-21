@@ -9,9 +9,14 @@ import json, os, sys, time, urllib.parse, urllib.request
 from datetime import datetime, timezone, timedelta
 
 BK = os.environ.get("BLDG_KEY", "").strip()
+if not BK and sys.stdin.isatty():          # 내 PC에서 실행할 때: 키를 화면에 표시하지 않고 입력받음
+    import getpass
+    BK = getpass.getpass("건축HUB 인증키(Encoding 또는 Decoding) 붙여넣기 후 Enter: ").strip()
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "..", "data", "buildings.json")
 LIMIT = int(os.environ.get("LIMIT") or 0)
+TMO = int(os.environ.get("TIMEOUT") or 20)
+TIMEOUTS = [0]
 EPS = ["https://apis.data.go.kr/1613000/BldRgstHubService/getBrTitleInfo",
        "https://apis.data.go.kr/1613000/BldRgstService_v2/getBrTitleInfo"]
 EP = [None]
@@ -41,7 +46,7 @@ def call(q, ep_list=None):
         for i in range(3):
             try:
                 req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-                with urllib.request.urlopen(req, timeout=60) as r:
+                with urllib.request.urlopen(req, timeout=TMO) as r:
                     d = json.loads(r.read().decode("utf-8"))
                 h = (d.get("response") or {}).get("header") or {}
                 if str(h.get("resultCode", "00")) in ("00", "0"):
@@ -54,6 +59,11 @@ def call(q, ep_list=None):
                 break
             except Exception as e:
                 last = str(e).replace(BK, "***") + " / " + ep.split("/")[-2]
+                if "timed out" in last:
+                    TIMEOUTS[0] += 1
+                    if TIMEOUTS[0] >= 4 and EP[0] is None:
+                        sys.exit("공공데이터포털(apis.data.go.kr) 응답 없음(시간초과) — 해외 서버(GitHub Actions)에서는 접속이 막혀 있을 수 있습니다. 내 PC에서 실행하십시오.")
+                    break
                 if i < 2: time.sleep(2 * (i + 1))
     raise RuntimeError(last)
 
