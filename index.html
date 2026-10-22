@@ -1030,7 +1030,7 @@ function renderSrc(){ const miss=SCHOOLS.filter(s=>!s.yr||!s.x||!s.y).length; he
   <div class="note"><b>자동 갱신 자료</b><div style="font-size:11.5px;color:var(--sub);margin-top:2px">${SIAUTO?`학생수 학교알리미 <b>${SIAUTO.hit}개교</b> · 갱신 ${SIAUTO.updated}`:'학생수 미수집'} / ${BLDAUTO?`준공년도 건축물대장 <b>${BLDAUTO.hit}개교</b> · 갱신 ${BLDAUTO.updated}`:'준공년도 미수집'}<br>깃허브에서 자동 수집되며 인증키는 비밀저장소에만 보관됩니다.</div></div>
   <div class="note"><b>자료 보호</b>공개 페이지에는 공개 자료(학교 위치·학교알리미 학생수·건축물대장)만 올라갑니다. 인증키는 페이지 배포 시에만 주입되어 저장소 코드에 남지 않으며, KEIIS 등 비공개 자료는 서버로 전송되지 않습니다.</div>
   <div class="note"><b>출처</b>준공년도·연면적 KEIIS 건물정보 / 학생·학급 학교알리미 / 위치 전국초중등학교위치표준데이터 / 시군 경계 통계청(southkorea-maps) / 배경지도 국토교통부 브이월드 / 3D 건물 OpenStreetMap</div>
-  <div class="note"><b>계산식</b>경과연수 = ${NOW} − 대표 준공년도<br>대표 준공년도 = <b>교사동 계열(교사동·본관·별관·후관·신관·구관)</b> 건물의 사용승인일을 연면적으로 가중평균 (관사·기숙사·체육관·강당·급식실·창고 등 제외, 해당 동이 없으면 전체 건물로 계산)<br>격자: 확대 수준에 따라 5km·2km·600m·250m 정사각형으로 학교를 묶음<br>재구조화 점수 = 경과(정규화)×0.5 + (1−학생수 정규화)×0.3 + 2년 감소율(정규화)×0.2</div>
+  <div class="note"><b>계산식</b>경과연수 = ${NOW} − 대표 준공년도<br>대표 준공년도 = <b>교사동 계열(교사동·본관·별관·후관·신관·구관)</b> 건물의 사용승인일을 연면적으로 가중평균 (동 이름이 없으면 관사·사택·기숙사·체육관·강당·급식실·창고 등 부속시설을 뺀 건물로 계산, 사용승인일 미기재 동은 제외)<br>격자: 확대 수준에 따라 5km·2km·600m·250m 정사각형으로 학교를 묶음<br>재구조화 점수 = 경과(정규화)×0.5 + (1−학생수 정규화)×0.3 + 2년 감소율(정규화)×0.2</div>
   <div class="note"><b>결측</b>좌표·준공년도 결측 ${miss}건${fallback?'<br>배경지도 서버에 연결하지 못해 시군 경계만 표시 중입니다.':''}</div>`;
   Q('#pnuGo').onclick=pnuCollect; Q('#pnuStop').onclick=()=>{PNU.stop=true;};
   Q('#kBtn').onclick=()=>Q('#kFile').click();
@@ -1067,12 +1067,13 @@ async function pnuCollect(){
   toast(`지번 수집 완료 ${ok}개교 · 파일을 깃허브 scripts 폴더에 올리십시오.`);
 }
 /* ---------- 준공년도 산정 대상 건물(교사동 계열) ---------- */
-const EDU_RE=/교사|본관|별관|후관|신관|구관/, EDU_EX=/관사|기숙|유치|병설|체육|강당|급식|창고|차고|화장실|경비|정화|펌프|보일러|관리동/;
+const EDU_RE=/교사|본관|별관|후관|신관|구관/, EDU_EX=/관사|사택|숙직|기숙|유치|병설|체육|강당|급식|창고|차고|화장실|경비|정화|펌프|보일러|관리동|골프|운동부/;
 const isEdu=n=>EDU_RE.test(String(n||''))&&!EDU_EX.test(String(n||''));
 function yrFromRows(rows){ const v=(rows||[]).filter(b=>b.y>1900&&b.a>0);
-  const e=v.filter(b=>isEdu(b.n)); const use=e.length?e:v; if(!use.length) return null;
+  const e=v.filter(b=>isEdu(b.n)), o=v.filter(b=>!EDU_EX.test(String(b.n||''))); /* 교사동 → (없으면) 부속시설 제외 → 전체 */
+  const use=e.length?e:o.length?o:v; if(!use.length) return null;
   const A=use.reduce((x,b)=>x+b.a,0);
-  return {yr:Math.round(use.reduce((x,b)=>x+b.y*b.a,0)/A), ar:Math.round(v.reduce((x,b)=>x+b.a,0)), nb:v.length, basis:e.length?'교사동':'전체', ne:use.length}; }
+  return {yr:Math.round(use.reduce((x,b)=>x+b.y*b.a,0)/A), ar:Math.round(v.reduce((x,b)=>x+b.a,0)), nb:v.length, basis:e.length?'교사동':o.length?'부속시설 제외':'전체', ne:use.length}; }
 /* ---------- 학교알리미 학생수 자동 적용(data/schoolinfo.json) ---------- */
 let SIAUTO=null;
 function siAutoApply(j){
