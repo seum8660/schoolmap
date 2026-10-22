@@ -518,7 +518,7 @@ let RANK=[]; let SMALL=60, AGEC=40;  /* 재구조화 검토 대상: 2026년 기�
 let HASYR=false;
 function derive(){
   HASYR=!IS_SAMPLE||ALL.some(s=>s.bsrc);
-  const ag=SCHOOLS.map(s=>(!IS_SAMPLE||s.bsrc)?NOW-s.yr:null), st=SCHOOLS.map(s=>s.st);
+  const ag=SCHOOLS.map(s=>(s.yr!=null&&(!IS_SAMPLE||s.bsrc))?NOW-s.yr:null), st=SCHOOLS.map(s=>s.st);
   const agv=ag.filter(v=>v!=null), aMin=agv.length?Math.min(...agv):0, aMax=agv.length?Math.max(...agv):1,sMin=Math.min(...st),sMax=Math.max(...st);
   const dec=SCHOOLS.map(s=>s.st5>0?Math.max(0,(s.st5-s.st)/s.st5):0), dMax=Math.max(...dec)||1;
   SCHOOLS.forEach((s,i)=>{ s.age=ag[i]; s.dec=dec[i]; s.pa=(s.age!=null&&s.st>0)?s.ar/s.st:null;
@@ -664,7 +664,7 @@ if(map){ const pop=new maplibregl.Popup({closeButton:false,offset:10});
 map.on('mousemove','grid',e=>{ const p=e.features[0].properties, ids=p.ids.split(',').map(Number), L=SCHOOLS.filter(s=>ids.includes(s.id)); map.getCanvas().style.cursor='pointer';
   pop.setLngLat(e.lngLat).setHTML(`<b>${METRICS[S.metric].l} ${fmt(p.v)}${METRICS[S.metric].u}</b><br>학교 ${L.length}곳 · 학생 ${fmt(L.reduce((x,s)=>x+s.st,0))}명<br>${L.slice(0,4).map(s=>`${s.n} (${s.age}년·${s.st}명)`).join('<br>')}${L.length>4?`<br>외 ${L.length-4}곳`:''}`).addTo(map); });
 map.on('mousemove','col',e=>{ const s=SCHOOLS.find(v=>v.id===e.features[0].properties.id); map.getCanvas().style.cursor='pointer';
-  pop.setLngLat(e.lngLat).setHTML(`<b>${s.n}</b><br>${s.ad||s.sg}${s.of?`<br>${s.of}`:''}<br>준공 ${s.age==null?'— (자료 없음)':`${s.yr}년(${s.age}년)`}<br>학생 ${s.st}명 · 2년 전 ${s.st5}명<br>연면적 ${fmt(s.ar)}㎡${s.nb?` · ${s.nb}개동`:''}`).addTo(map); });
+  pop.setLngLat(e.lngLat).setHTML(`<b>${s.n}</b><br>${s.ad||s.sg}${s.of?`<br>${s.of}`:''}<br>준공 ${s.age==null?(s.ybasis==='사용승인일 미기재'?'— (대장에 사용승인일 미기재)':'— (자료 없음)'):`${s.yr}년(${s.age}년)`}<br>학생 ${s.st}명 · 2년 전 ${s.st5}명<br>연면적 ${fmt(s.ar)}㎡${s.nb?` · ${s.nb}개동`:''}`).addTo(map); });
 ['grid','col'].forEach(l=>map.on('mouseleave',l,()=>{map.getCanvas().style.cursor='';pop.remove();})); }
 
 function intro(){ introDone=true; Q('#intro').style.opacity=0; setTimeout(()=>Q('#intro')?.remove(),800);
@@ -1030,7 +1030,7 @@ function renderSrc(){ const miss=SCHOOLS.filter(s=>!s.yr||!s.x||!s.y).length; he
   <div class="note"><b>자동 갱신 자료</b><div style="font-size:11.5px;color:var(--sub);margin-top:2px">${SIAUTO?`학생수 학교알리미 <b>${SIAUTO.hit}개교</b> · 갱신 ${SIAUTO.updated}`:'학생수 미수집'} / ${BLDAUTO?`준공년도 건축물대장 <b>${BLDAUTO.hit}개교</b> · 갱신 ${BLDAUTO.updated}`:'준공년도 미수집'}<br>깃허브에서 자동 수집되며 인증키는 비밀저장소에만 보관됩니다.</div></div>
   <div class="note"><b>자료 보호</b>공개 페이지에는 공개 자료(학교 위치·학교알리미 학생수·건축물대장)만 올라갑니다. 인증키는 페이지 배포 시에만 주입되어 저장소 코드에 남지 않으며, KEIIS 등 비공개 자료는 서버로 전송되지 않습니다.</div>
   <div class="note"><b>출처</b>준공년도·연면적 KEIIS 건물정보 / 학생·학급 학교알리미 / 위치 전국초중등학교위치표준데이터 / 시군 경계 통계청(southkorea-maps) / 배경지도 국토교통부 브이월드 / 3D 건물 OpenStreetMap</div>
-  <div class="note"><b>계산식</b>경과연수 = ${NOW} − 대표 준공년도<br>대표 준공년도 = <b>교사동 계열(교사동·본관·별관·후관·신관·구관)</b> 건물의 사용승인일을 연면적으로 가중평균 (동 이름이 없으면 관사·사택·기숙사·체육관·강당·급식실·창고 등 부속시설을 뺀 건물로 계산, 사용승인일 미기재 동은 제외)<br>격자: 확대 수준에 따라 5km·2km·600m·250m 정사각형으로 학교를 묶음<br>재구조화 점수 = 경과(정규화)×0.5 + (1−학생수 정규화)×0.3 + 2년 감소율(정규화)×0.2</div>
+  <div class="note"><b>계산식</b>경과연수 = ${NOW} − 대표 준공년도<br>대표 준공년도 = <b>교사동 계열(교사동·본관·별관·후관·신관·구관)</b> 건물의 사용승인일을 연면적으로 가중평균 (동 이름이 없으면 관사·사택·기숙사·체육관·강당·급식실·창고 등 부속시설을 뺀 건물로 계산. 사용승인일이 없는 동이 더 크거나 1,000㎡ 이상 동에 사용승인일이 없으면 증축동만으로 평균내지 않고 '미기재'로 표시 — KEIIS 건물정보를 올리면 그 값이 우선)<br>격자: 확대 수준에 따라 5km·2km·600m·250m 정사각형으로 학교를 묶음<br>재구조화 점수 = 경과(정규화)×0.5 + (1−학생수 정규화)×0.3 + 2년 감소율(정규화)×0.2</div>
   <div class="note"><b>결측</b>좌표·준공년도 결측 ${miss}건${fallback?'<br>배경지도 서버에 연결하지 못해 시군 경계만 표시 중입니다.':''}</div>`;
   Q('#pnuGo').onclick=pnuCollect; Q('#pnuStop').onclick=()=>{PNU.stop=true;};
   Q('#kBtn').onclick=()=>Q('#kFile').click();
@@ -1069,11 +1069,15 @@ async function pnuCollect(){
 /* ---------- 준공년도 산정 대상 건물(교사동 계열) ---------- */
 const EDU_RE=/교사|본관|별관|후관|신관|구관/, EDU_EX=/관사|사택|숙직|기숙|유치|병설|체육|강당|급식|창고|차고|화장실|경비|정화|펌프|보일러|관리동|골프|운동부/;
 const isEdu=n=>EDU_RE.test(String(n||''))&&!EDU_EX.test(String(n||''));
-function yrFromRows(rows){ const v=(rows||[]).filter(b=>b.y>1900&&b.a>0);
-  const e=v.filter(b=>isEdu(b.n)), o=v.filter(b=>!EDU_EX.test(String(b.n||''))); /* 교사동 → (없으면) 부속시설 제외 → 전체 */
-  const use=e.length?e:o.length?o:v; if(!use.length) return null;
-  const A=use.reduce((x,b)=>x+b.a,0);
-  return {yr:Math.round(use.reduce((x,b)=>x+b.y*b.a,0)/A), ar:Math.round(v.reduce((x,b)=>x+b.a,0)), nb:v.length, basis:e.length?'교사동':o.length?'부속시설 제외':'전체', ne:use.length}; }
+function yrFromRows(rows){ const all=(rows||[]).filter(b=>b.a>0); if(!all.length) return null;
+  const e=all.filter(b=>isEdu(b.n)), o=all.filter(b=>!EDU_EX.test(String(b.n||''))); /* 교사동 → (없으면) 부속시설 제외 → 전체 */
+  const cand=e.length?e:o.length?o:all, basis=e.length?'교사동':o.length?'부속시설 제외':'전체';
+  const dated=cand.filter(b=>b.y>1900), Ad=dated.reduce((x,b)=>x+b.a,0), Au=cand.filter(b=>!(b.y>1900)).reduce((x,b)=>x+b.a,0);
+  const ar=Math.round(all.reduce((x,b)=>x+b.a,0)), nb=all.length;
+  /* 사용승인일 없는 동이 더 크거나 1,000㎡ 이상 동(옛 본관 등)에 날짜가 없으면, 증축동만으로 평균내지 않고 '미기재'로 둠 */
+  const bigU=cand.some(b=>!(b.y>1900)&&b.a>=1000);
+  if(!dated.length||Au>Ad||bigU) return {yr:null, ar, nb, basis:'사용승인일 미기재', ne:cand.length-dated.length};
+  return {yr:Math.round(dated.reduce((x,b)=>x+b.y*b.a,0)/Ad), ar, nb, basis, ne:dated.length}; }
 /* ---------- 학교알리미 학생수 자동 적용(data/schoolinfo.json) ---------- */
 let SIAUTO=null;
 function siAutoApply(j){
@@ -1382,7 +1386,7 @@ function setRegion(r){
 }
 if(map){ const bp=new maplibregl.Popup({closeButton:false,offset:8});
   map.on('mousemove','vwb3d',e=>{ const p=e.features[0].properties; if(!p.sid){ bp.remove(); map.getCanvas().style.cursor=''; return; } const s=ALL.find(v=>v.id===p.sid); if(!s) return;
-    map.getCanvas().style.cursor='pointer'; bp.setLngLat(e.lngLat).setHTML(`<b>${s.n}</b><br>${p.nm||'교내 건물'} · 지상 ${p.fl}층<br>학교 준공 ${s.age==null?'— (자료 없음)':`${s.yr}년(${s.age}년)`} · 학생 ${s.st}명`).addTo(map); });
+    map.getCanvas().style.cursor='pointer'; bp.setLngLat(e.lngLat).setHTML(`<b>${s.n}</b><br>${p.nm||'교내 건물'} · 지상 ${p.fl}층<br>학교 준공 ${s.age==null?(s.ybasis==='사용승인일 미기재'?'— (대장에 사용승인일 미기재)':'— (자료 없음)'):`${s.yr}년(${s.age}년)`} · 학생 ${s.st}명`).addTo(map); });
   map.on('mouseleave','vwb3d',()=>{ bp.remove(); map.getCanvas().style.cursor=''; }); }
 if(map) map.on('click',e=>{ if(!S.sg||!map.getLayer('sg-fill')) return;
   const hit=map.queryRenderedFeatures(e.point,{layers:['col','vwb3d'].filter(l=>map.getLayer(l))});
