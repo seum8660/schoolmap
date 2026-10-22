@@ -74,6 +74,26 @@ def call_sg(q, ep_list=None):
         if items: return items
     return []
 
+import re
+def stem(n):
+    """학교명 끝 3글자(예: 완도신지중학교→신지중, 무안사랑초등학교→사랑초)"""
+    t = re.sub(r"\s|\(.*?\)", "", n or "").replace("등학교", "").replace("학교", "")
+    return t[-3:] if len(t) >= 3 else t
+def mine(it, st):
+    """건물명에 '학교'가 들어 있는데 우리 학교 이름이 아니면 다른 학교 건물로 보고 제외"""
+    bn = re.sub(r"\s", "", (it.get("bldNm") or "")).replace("등학교", "").replace("학교", "", 1) if "학교" in (it.get("bldNm") or "") else ""
+    return (not bn) or (st in bn)
+def by_dong(s, st):
+    """본번 지번에서 0건일 때: 같은 법정동 전체 대장에서 학교명이 들어간 교육연구시설만 골라냄"""
+    out = []
+    for sg in sg_try(s["sigungu"]):
+        for pg in range(1, 21):
+            items = call({"sigunguCd": sg, "bjdongCd": s["bjdong"], "numOfRows": "100", "pageNo": str(pg), "_type": "json"})
+            out += [it for it in items if "교육연구" in (it.get("mainPurpsCdNm") or "") and st in re.sub(r"\s", "", (it.get("bldNm") or "")).replace("등학교", "")]
+            if len(items) < 100: break
+        if out: return out
+    return []
+
 def num(v):
     try: return float(str(v).replace(",", ""))
     except Exception: return 0.0
@@ -107,23 +127,28 @@ for i, s in enumerate(schools, 1):
             q2 = dict(base); q2["ji"] = "0000"; items = call_sg(q2); how = "표제부(부번생략)"
         if not items and base["platGbCd"] == "0":                   # 산 지번으로 재조회
             q3 = dict(base); q3["platGbCd"] = "1"; items = call_sg(q3); how = "표제부(산)"
-        if not items:                                           # 총괄표제부
-            items = call_sg(base, RECAP); how = "총괄표제부"
+        if not items:                                           # 같은 법정동에서 학교명으로 찾기
+            items = by_dong(s, stem(s["n"])); how = "법정동 내 학교명 검색"
         if not items:
             zero += 1
             if zero <= 10: print(f"  ? {s['n']}({s['addr']}) 건물 0건 · 조회코드 {'/'.join(sg_try(s['sigungu']))} · totalCount={LAST_CNT[0]}", file=sys.stderr)
-        rows = []
+        rows, st, other = [], stem(s["n"]), 0
         for it in items:
-            ymd = str(it.get("useAprDay") or "").strip()
+            ymd = re.sub(r"\D", "", str(it.get("useAprDay") or ""))
             u = (it.get("mainPurpsCdNm") or "").strip()
             if any(k in u for k in SKIP): continue
-            rows.append({"n": (it.get("dongNm") or it.get("bldNm") or "").strip() or "건물",
-                         "d": f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:8]}" if len(ymd) >= 8 else "",
+            if not mine(it, st): other += 1; continue
+            dn, bn, ep = [(it.get(k) or "").strip() for k in ("dongNm", "bldNm", "etcPurps")]
+            nm = " ".join(x for x in (dn, bn if bn and bn != dn else "") if x) or "건물"
+            if ep and ep not in nm and ep != u: nm += f"({ep})"
+            rows.append({"n": nm,
+                         "d": f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:8]}" if len(ymd) >= 8 else (ymd[:4] if len(ymd) >= 4 else ""),
                          "y": int(ymd[:4]) if ymd[:4].isdigit() else 0,
                          "a": round(num(it.get("totArea"))), "fl": int(num(it.get("grndFlrCnt"))),
                          "u": u, "s": (it.get("strctCdNm") or "").replace("구조", "").strip(),
                          "eq": (it.get("rserthqkDsgnApplyYn") or "").strip()})
-        res[s["code"]] = {"n": s["n"], "addr": s["addr"], "how": how, "b": rows}
+        res[s["code"]] = {"n": s["n"], "addr": s["addr"], "how": how, "b": rows,
+                          "nd": sum(1 for r in rows if not r["y"]), "ox": other}
         if rows: got += 1
     except Exception as e:
         fail += 1
