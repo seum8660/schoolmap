@@ -43,7 +43,7 @@ def call(q, ep_list=None):
     last = ""
     for ep in (ep_list or ([EP[0]] if EP[0] else EPS)):
         url = ep + "?serviceKey=" + key + "&" + urllib.parse.urlencode(q)
-        for i in range(3):
+        for i in range(5):
             try:
                 req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
                 with urllib.request.urlopen(req, timeout=TMO) as r:
@@ -64,7 +64,7 @@ def call(q, ep_list=None):
                     if TIMEOUTS[0] >= 4 and EP[0] is None:
                         raise RuntimeError("공공데이터포털 응답 없음(시간초과)")
                     break
-                if i < 2: time.sleep(2 * (i + 1))
+                if i < 4: time.sleep(3 * (i + 1))
     raise RuntimeError(last)
 
 def call_sg(q, ep_list=None):
@@ -79,10 +79,18 @@ def stem(n):
     """학교명 끝 3글자(예: 완도신지중학교→신지중, 무안사랑초등학교→사랑초)"""
     t = re.sub(r"\s|\(.*?\)", "", n or "").replace("등학교", "").replace("학교", "")
     return t[-3:] if len(t) >= 3 else t
-def mine(it, st):
-    """건물명에 '학교'가 들어 있는데 우리 학교 이름이 아니면 다른 학교 건물로 보고 제외"""
-    bn = re.sub(r"\s", "", (it.get("bldNm") or "")).replace("등학교", "").replace("학교", "", 1) if "학교" in (it.get("bldNm") or "") else ""
-    return (not bn) or (st in bn)
+def nrm(t):
+    return re.sub(r"\s|\(.*?\)", "", t or "").replace("등학교", "").replace("학교", "")
+OTHERS = None
+def mine(it, st, my_n):
+    """건물명에 '목록에 있는 다른 학교' 이름이 들어 있을 때만 제외(학교법인·옛 교명은 그대로 둠)"""
+    bn = nrm(it.get("bldNm"))
+    if not bn: return True
+    if st in bn: return True
+    me = nrm(my_n)
+    for o in OTHERS:
+        if o != me and len(o) >= 3 and o in bn and o not in me: return False
+    return True
 def by_dong(s, st):
     """본번 지번에서 0건일 때: 같은 법정동 전체 대장에서 학교명이 들어간 교육연구시설만 골라냄"""
     out = []
@@ -99,6 +107,8 @@ def num(v):
     except Exception: return 0.0
 
 schools = json.load(open(os.path.join(HERE, "schools_base.json"), encoding="utf-8"))
+OTHERS = sorted({nrm(x["n"]) for x in schools}, key=len, reverse=True)
+OTHERS = [o for o in OTHERS if len(o) >= 3]
 PNU = {}
 pf = os.path.join(HERE, "school_pnu.json")
 if os.path.exists(pf):
@@ -151,7 +161,7 @@ def work(s):
             ymd = re.sub(r"\D", "", str(it.get("useAprDay") or ""))
             u = (it.get("mainPurpsCdNm") or "").strip()
             if any(k in u for k in SKIP): continue
-            if not mine(it, st): other += 1; continue
+            if not mine(it, st, s["n"]): other += 1; continue
             dn, bn, ep = [(it.get(k) or "").strip() for k in ("dongNm", "bldNm", "etcPurps")]
             nm = " ".join(x for x in (dn, bn if bn and bn != dn else "") if x) or "건물"
             if ep and ep not in nm and ep != u: nm += f"({ep})"
@@ -165,7 +175,7 @@ def work(s):
                    "nd": sum(1 for r in rows if not r["y"]), "ox": other}, ""
     except Exception as e:
         return s, None, str(e)
-with ThreadPoolExecutor(max_workers=int(os.environ.get("WORKERS") or 4)) as ex:
+with ThreadPoolExecutor(max_workers=int(os.environ.get("WORKERS") or 2)) as ex:
     futs = [ex.submit(work, s) for s in todo]
     for f in as_completed(futs):
         s, r, err = f.result(); done += 1
@@ -184,6 +194,15 @@ with ThreadPoolExecutor(max_workers=int(os.environ.get("WORKERS") or 4)) as ex:
             if done == 30 and got == 0 and fail >= 25:
                 save(); sys.exit("처음 30개교 대부분 실패 — 위 '!' 줄의 문구를 확인하십시오.")
 
+retry = [x for x in todo if x["code"] not in res]
+if retry and time.time() - T0 < MAXMIN * 60:
+    print(f"실패·미처리 {len(retry)}개교 재조회")
+    for x in retry:
+        x2, r, err = work(x)
+        if r is not None:
+            res[x["code"]] = r; fail -= 1 if fail else 0
+            if r["b"]: got += 1
+        time.sleep(0.5)
 save(final=True)
 total_ok = sum(1 for v in res.values() if v.get("b"))
 print(f"완료: 이번 조회 {len(todo)}개교 · 건물 확인 {got}개교 · 0건 {zero}개교 · 실패 {fail}개교 → 누적 건물 확인 {total_ok}/{len(schools)}개교")
