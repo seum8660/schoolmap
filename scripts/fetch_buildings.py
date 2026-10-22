@@ -62,7 +62,7 @@ def call(q, ep_list=None):
                 if "timed out" in last:
                     TIMEOUTS[0] += 1
                     if TIMEOUTS[0] >= 4 and EP[0] is None:
-                        sys.exit("공공데이터포털(apis.data.go.kr) 응답 없음(시간초과) — 해외 서버(GitHub Actions)에서는 접속이 막혀 있을 수 있습니다. 내 PC에서 실행하십시오.")
+                        raise RuntimeError("공공데이터포털 응답 없음(시간초과)")
                     break
                 if i < 2: time.sleep(2 * (i + 1))
     raise RuntimeError(last)
@@ -87,7 +87,7 @@ def by_dong(s, st):
     """본번 지번에서 0건일 때: 같은 법정동 전체 대장에서 학교명이 들어간 교육연구시설만 골라냄"""
     out = []
     for sg in sg_try(s["sigungu"]):
-        for pg in range(1, 21):
+        for pg in range(1, 11):
             items = call({"sigunguCd": sg, "bjdongCd": s["bjdong"], "numOfRows": "100", "pageNo": str(pg), "_type": "json"})
             out += [it for it in items if "교육연구" in (it.get("mainPurpsCdNm") or "") and st in re.sub(r"\s", "", (it.get("bldNm") or "")).replace("등학교", "")]
             if len(items) < 100: break
@@ -112,8 +112,25 @@ def q_from_pnu(pnu):
     return {"sigunguCd": pnu[0:5], "bjdongCd": pnu[5:10], "platGbCd": "1" if pnu[10] == "2" else "0",
             "bun": pnu[11:15], "ji": pnu[15:19], "numOfRows": "200", "pageNo": "1", "_type": "json"}
 if LIMIT: schools = schools[:LIMIT]
-res, fail, got, zero = {}, 0, 0, 0
-for i, s in enumerate(schools, 1):
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
+LOCK = threading.Lock()
+kst_now = lambda: datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M")
+# 이어받기: 이미 건물이 확인된 학교는 건너뜀(FULL=1이면 전부 다시)
+res = {}
+if not os.environ.get("FULL") and os.path.exists(OUT):
+    try: res = {k: v for k, v in json.load(open(OUT, encoding="utf-8"))["schools"].items() if v.get("b")}
+    except Exception: res = {}
+todo = [s for s in schools if s["code"] not in res]
+print(f"대상 {len(schools)}개교 · 이미 확인 {len(res)}개교 · 이번 조회 {len(todo)}개교")
+def save(final=False):
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    json.dump({"updated": kst_now(), "source": "국토교통부 건축HUB 건축물대장(표제부)", "schools": res},
+              open(OUT, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+fail, got, zero, done = 0, 0, 0, 0
+T0 = time.time(); MAXMIN = int(os.environ.get("MAXMIN") or 100)
+def work(s):
+    if time.time() - T0 > MAXMIN * 60: return s, None, "시간제한"
     try:
         items, how = [], ""
         for pnu in PNU.get(s["code"], []):
@@ -129,9 +146,6 @@ for i, s in enumerate(schools, 1):
             q3 = dict(base); q3["platGbCd"] = "1"; items = call_sg(q3); how = "표제부(산)"
         if not items:                                           # 같은 법정동에서 학교명으로 찾기
             items = by_dong(s, stem(s["n"])); how = "법정동 내 학교명 검색"
-        if not items:
-            zero += 1
-            if zero <= 10: print(f"  ? {s['n']}({s['addr']}) 건물 0건 · 조회코드 {'/'.join(sg_try(s['sigungu']))} · totalCount={LAST_CNT[0]}", file=sys.stderr)
         rows, st, other = [], stem(s["n"]), 0
         for it in items:
             ymd = re.sub(r"\D", "", str(it.get("useAprDay") or ""))
@@ -147,20 +161,30 @@ for i, s in enumerate(schools, 1):
                          "a": round(num(it.get("totArea"))), "fl": int(num(it.get("grndFlrCnt"))),
                          "u": u, "s": (it.get("strctCdNm") or "").replace("구조", "").strip(),
                          "eq": (it.get("rserthqkDsgnApplyYn") or "").strip()})
-        res[s["code"]] = {"n": s["n"], "addr": s["addr"], "how": how, "b": rows,
-                          "nd": sum(1 for r in rows if not r["y"]), "ox": other}
-        if rows: got += 1
+        return s, {"n": s["n"], "addr": s["addr"], "how": how, "b": rows,
+                   "nd": sum(1 for r in rows if not r["y"]), "ox": other}, ""
     except Exception as e:
-        fail += 1
-        print(f"  ! {s['n']}({s['addr']}): {e}", file=sys.stderr)
-        if fail >= 5 and fail == i: sys.exit("첫 %d개교 모두 실패 — 위 '!' 줄의 문구를 확인하십시오." % i)
-    if i == 30 and got == 0:
-        sys.exit("처음 30개교 모두 건물 0건 — 인증키(BLDG_KEY)·API 활용신청 상태를 확인하십시오.")
-    if i % 50 == 0: print(f"  {i}/{len(schools)} 처리 · 건물 확인 {got}개교")
-    time.sleep(0.12)
+        return s, None, str(e)
+with ThreadPoolExecutor(max_workers=int(os.environ.get("WORKERS") or 4)) as ex:
+    futs = [ex.submit(work, s) for s in todo]
+    for f in as_completed(futs):
+        s, r, err = f.result(); done += 1
+        with LOCK:
+            if r is not None:
+                res[s["code"]] = r
+                if r["b"]: got += 1
+                else:
+                    zero += 1
+                    if zero <= 15: print(f"  ? {s['n']}({s['addr']}) 건물 0건 · 조회코드 {'/'.join(sg_try(s['sigungu']))}", file=sys.stderr)
+            elif err != "시간제한":
+                fail += 1
+                if fail <= 15: print(f"  ! {s['n']}({s['addr']}): {err}", file=sys.stderr)
+            if done % 50 == 0:
+                print(f"  {done}/{len(todo)} 처리 · 건물 확인 {got}개교 · {int(time.time()-T0)}초"); save()
+            if done == 30 and got == 0 and fail >= 25:
+                save(); sys.exit("처음 30개교 대부분 실패 — 위 '!' 줄의 문구를 확인하십시오.")
 
-os.makedirs(os.path.dirname(OUT), exist_ok=True)
-kst = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M")
-json.dump({"updated": kst, "source": "국토교통부 건축HUB 건축물대장(표제부)", "schools": res},
-          open(OUT, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-print(f"완료: {len(res)}개교 조회 · 건물 확인 {got}개교 · 0건 {zero}개교 · 실패 {fail}개교 → data/buildings.json")
+save(final=True)
+total_ok = sum(1 for v in res.values() if v.get("b"))
+print(f"완료: 이번 조회 {len(todo)}개교 · 건물 확인 {got}개교 · 0건 {zero}개교 · 실패 {fail}개교 → 누적 건물 확인 {total_ok}/{len(schools)}개교")
+if total_ok < len(schools) - zero: print("남은 학교가 있으면 한 번 더 실행하면 이어서 조회합니다.")
