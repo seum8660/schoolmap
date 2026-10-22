@@ -664,7 +664,7 @@ if(map){ const pop=new maplibregl.Popup({closeButton:false,offset:10});
 map.on('mousemove','grid',e=>{ const p=e.features[0].properties, ids=p.ids.split(',').map(Number), L=SCHOOLS.filter(s=>ids.includes(s.id)); map.getCanvas().style.cursor='pointer';
   pop.setLngLat(e.lngLat).setHTML(`<b>${METRICS[S.metric].l} ${fmt(p.v)}${METRICS[S.metric].u}</b><br>학교 ${L.length}곳 · 학생 ${fmt(L.reduce((x,s)=>x+s.st,0))}명<br>${L.slice(0,4).map(s=>`${s.n} (${s.age}년·${s.st}명)`).join('<br>')}${L.length>4?`<br>외 ${L.length-4}곳`:''}`).addTo(map); });
 map.on('mousemove','col',e=>{ const s=SCHOOLS.find(v=>v.id===e.features[0].properties.id); map.getCanvas().style.cursor='pointer';
-  pop.setLngLat(e.lngLat).setHTML(`<b>${s.n}</b><br>${s.ad||s.sg}${s.of?`<br>${s.of}`:''}<br>준공 ${s.age==null?(s.ybasis==='사용승인일 미기재'?'— (대장에 사용승인일 미기재)':'— (자료 없음)'):`${s.yr}년(${s.age}년)`}<br>학생 ${s.st}명 · 2년 전 ${s.st5}명<br>연면적 ${fmt(s.ar)}㎡${s.nb?` · ${s.nb}개동`:''}`).addTo(map); });
+  pop.setLngLat(e.lngLat).setHTML(`<b>${s.n}</b><br>${s.ad||s.sg}${s.of?`<br>${s.of}`:''}<br>준공 ${s.age==null?(NOYR(s)?'미기재 (대장에 사용승인일 없음)':'— (자료 없음)'):`${s.yr}년(${s.age}년)`}<br>학생 ${s.st}명 · 2년 전 ${s.st5}명<br>연면적 ${fmt(s.ar)}㎡${s.nb?` · ${s.nb}개동`:''}`).addTo(map); });
 ['grid','col'].forEach(l=>map.on('mouseleave',l,()=>{map.getCanvas().style.cursor='';pop.remove();})); }
 
 function intro(){ introDone=true; Q('#intro').style.opacity=0; setTimeout(()=>Q('#intro')?.remove(),800);
@@ -829,7 +829,7 @@ function schoolFind(q){ const k=nz(q); if(!k) return []; const ab=k.replace(/(�
 function hiName(n,q){ const k=q.trim(); if(!k) return n; const i=n.indexOf(k); return i<0?n:n.slice(0,i)+'<mark>'+n.slice(i,i+k.length)+'</mark>'+n.slice(i+k.length); }
 function renderSug(){ const q=Q('#q').value, box=Q('#sug'); if(!q.trim()){ box.hidden=true; Q('#q').setAttribute('aria-expanded','false'); return; }
   const L=schoolFind(q); SUG=L.map(s=>({t:'s',s})); SUGI=L.length?0:-1;
-  box.innerHTML=(L.length?`<div class="sh">학교 ${L.length}곳</div>`+L.map((s,i)=>`<div class="it${i===0?' on':''}" role="option" data-i="${i}"><i style="background:${GC(s.age)}"></i><div><b>${hiName(s.n,q)}</b><br><small>${s.sg} ${s.em||''} · ${s.lv}등학교${s.bk?' · 분교':''}</small></div><em>${s.age==null?'—':s.age+'년'} · ${fmt(s.st)}명</em></div>`).join(''):'<div class="none">일치하는 학교가 없습니다. Enter를 누르면 질문으로 찾습니다.</div>')+
+  box.innerHTML=(L.length?`<div class="sh">학교 ${L.length}곳</div>`+L.map((s,i)=>`<div class="it${i===0?' on':''}" role="option" data-i="${i}"><i style="background:${GC(s.age)}"></i><div><b>${hiName(s.n,q)}</b><br><small>${s.sg} ${s.em||''} · ${s.lv}등학교${s.bk?' · 분교':''}</small></div><em>${s.age==null?(NOYR(s)?'미기재':'—'):s.age+'년'} · ${fmt(s.st)}명</em></div>`).join(''):'<div class="none">일치하는 학교가 없습니다. Enter를 누르면 질문으로 찾습니다.</div>')+
     `<div class="sh">질문으로 찾기</div><div class="it sq" data-i="qa"><span style="color:#256EF4;display:inline-flex">${ic('search')}</span><b>"${q.replace(/</g,'&lt;')}" 질의응답에서 찾기</b></div>`;
   box.hidden=false; Q('#q').setAttribute('aria-expanded','true');
   box.querySelectorAll('.it').forEach(el=>el.onmousedown=e=>{ e.preventDefault(); pickSug(el.dataset.i); }); }
@@ -975,7 +975,7 @@ function renderNL(q){
   if(r.noyr){ Q('#lbody').insertAdjacentHTML('afterbegin',`<div class="qa open" id="qaNL"><div class="q" style="cursor:default"><span class="ar" style="color:#256EF4">Q</span>${q}</div><div class="ans">${noYear()}</div></div>`); return true; }
   if(r.empty){ head.insertAdjacentHTML('afterbegin',`<div class="qa open" id="qaNL"><div class="q" style="cursor:default"><span class="ar" style="color:#256EF4">Q</span>${q}</div><div class="ans"><p class="conc">${r.scope} 조건에 해당하는 학교가 없습니다.</p><p class="desc">조건을 넓혀 다시 물어보십시오. 예: "신안군 40년 이상 초등학교", "감소율 상위 10곳"</p></div></div>`); return true; }
   const M=r.M, fx=v=>v.toFixed(M.d);
-  const rows=r.top.map((s,i)=>`<tr class="cl" data-id="${s.id}"><td>${i+1}. ${s.n}</td><td>${s.sg}</td><td>${s.lv}</td><td style="color:${GC(s.age)};font-weight:700">${s.age==null?'—':s.age+'년'}</td><td>${fmt(s.st)}명</td><td><b>${fx(M.f(s))}${M.u}</b></td></tr>`).join('');
+  const rows=r.top.map((s,i)=>`<tr class="cl" data-id="${s.id}"><td>${i+1}. ${s.n}</td><td>${s.sg}</td><td>${s.lv}</td><td style="color:${GC(s.age)};font-weight:700">${s.age==null?(NOYR(s)?'미기재':'—'):s.age+'년'}</td><td>${fmt(s.st)}명</td><td><b>${fx(M.f(s))}${M.u}</b></td></tr>`).join('');
   const ch={t:`${M.l} 상위 ${Math.min(6,r.top.length)}곳`,a:'학생수',b:M.l,rows:r.top.slice(0,6).map(s=>({l:short(s.n),a:s.st,b:+fx(M.f(s))}))};
   head.insertAdjacentHTML('afterbegin',`<div class="qa open" id="qaNL"><div class="q" style="cursor:default"><span class="ar" style="color:#256EF4">Q</span>${q}</div><div class="ans">
    <p class="conc">${r.c}</p>
@@ -1068,6 +1068,7 @@ async function pnuCollect(){
 }
 /* ---------- 준공년도 산정 대상 건물(교사동 계열) ---------- */
 const EDU_RE=/교사|본관|별관|후관|신관|구관/, EDU_EX=/관사|사택|숙직|기숙|유치|병설|체육|강당|급식|창고|차고|화장실|경비|정화|펌프|보일러|관리동|골프|운동부/;
+function NOYR(s){ return s.ybasis==='사용승인일 미기재'; }
 const isEdu=n=>EDU_RE.test(String(n||''))&&!EDU_EX.test(String(n||''));
 function yrFromRows(rows){ const all=(rows||[]).filter(b=>b.a>0); if(!all.length) return null;
   const e=all.filter(b=>isEdu(b.n)), o=all.filter(b=>!EDU_EX.test(String(b.n||''))); /* 교사동 → (없으면) 부속시설 제외 → 전체 */
@@ -1142,7 +1143,7 @@ function startDrone(){ stopDrone(); S.drone=true; renderRight(); const L=RANK.fi
     const s=L[i]; Q('#bdgT').textContent=`드론 비행 ${i+1} / ${L.length}`; Q('#bdgN').textContent=`재구조화 후보 ${i+1}위 · ${s.n} · ${s.sg}`;
     Q('#bdgP').querySelectorAll('i').forEach((e,j)=>e.classList.toggle('on',j<=i)); highlight([s]);
     if(E3.on) e3Fit([s]); else map&&map.flyTo({center:[s.x,s.y],zoom:14,pitch:62,bearing:(i*53)%360-70,duration:3200,essential:true});
-    if(autoV) speak(`${i+1}위, ${short(s.n)}. 준공 ${s.age==null?'자료 없음':`${s.age}년`}, 학생 ${s.st}명.`);
+    if(autoV) speak(`${i+1}위, ${short(s.n)}. 준공 ${s.age==null?(NOYR(s)?'미기재':'자료 없음'):`${s.age}년`}, 학생 ${s.st}명.`);
     i++; dT=setTimeout(go,5600); };
   go(); }
 function stopDrone(){ S.drone=false; clearTimeout(dT); Q('#badge').classList.add('hide'); renderRight(); }
@@ -1294,12 +1295,12 @@ function renderDetail(){ const s=DETAIL; if(!s) return;
    <div class="kpi ${dSt<-10?'hot':''}"><small>2년 전 대비</small><b>${dSt>0?'+':''}${dSt.toFixed(1)}<em>% (${fmt(s.st5||0)}명)</em></b></div></div>
   ${chartHTML({t:'학생수 변화',a:'2년 전',b:'현재',rows:[{l:'학생수',a:s.st5||0,b:s.st}]})}
   <h3 style="font-size:13.5px;margin:12px 0 6px">건물 현황${src(s.bsrc==='keiis'?'KEIIS 건물정보':s.bsrc==='bldg'?'건축물대장':'준공년도 자료 없음')}</h3>
-  <div class="kpis"><div class="kpi"><small>대표 준공년도${s.ybasis?` · ${s.ybasis} ${s.yn}동`:''}</small>${s.age==null?'<b>—</b>':`<b>${s.yr}<em>년</em></b>`}</div>
-   <div class="kpi"><small>경과연수</small>${s.age==null?'<b>—</b>':`<b style="color:${GC(s.age)}">${s.age}<em>년</em></b>`}</div>
-   <div class="kpi"><small>연면적</small>${s.age==null?'<b>—</b>':`<b>${fmt(s.ar)}<em>㎡</em></b>`}</div>
-   <div class="kpi"><small>학생 1인당 연면적</small>${(s.age==null||!s.st)?'<b>—</b>':`<b>${(s.ar/s.st).toFixed(1)}<em>㎡</em></b>`}</div></div>
+  <div class="kpis"><div class="kpi"><small>대표 준공년도${s.ybasis?` · ${s.ybasis} ${s.yn}동`:''}</small>${s.age==null?(NOYR(s)?'<b>미기재</b>':'<b>—</b>'):`<b>${s.yr}<em>년</em></b>`}</div>
+   <div class="kpi"><small>경과연수</small>${s.age==null?(NOYR(s)?'<b>미기재</b>':'<b>—</b>'):`<b style="color:${GC(s.age)}">${s.age}<em>년</em></b>`}</div>
+   <div class="kpi"><small>연면적</small>${(s.age==null&&!NOYR(s))?'<b>—</b>':`<b>${fmt(s.ar)}<em>㎡</em></b>`}</div>
+   <div class="kpi"><small>학생 1인당 연면적</small>${((s.age==null&&!NOYR(s))||!s.st)?'<b>—</b>':`<b>${(s.ar/s.st).toFixed(1)}<em>㎡</em></b>`}</div></div>
   ${s.bl&&s.bl.length?`<div class="note"><b>건물 목록 ${s.bl.length}동 <span style="font-weight:400;color:#256EF4">· 파란 줄 = 준공년도 산정 대상(교사동 계열)</span>${src(s.bsrc==='bldg'?'국토교통부 건축물대장(표제부)':'KEIIS 건물정보 · 이 PC에서만 표시')}</b>
-   <div style="overflow-x:auto"><table style="margin-top:6px;min-width:520px"><thead><tr><th>건물명</th><th>사용승인</th><th>경과</th><th>연면적</th><th>층</th><th>주용도</th><th>구조</th><th>${s.bsrc==='bldg'?'내진':'등급'}</th></tr></thead><tbody>${s.bl.map(b=>`<tr${isEdu(b.n)?' style="background:#EEF5FF"':('CDE'.includes(b.g)&&b.g?' style="background:#fdecea"':'')}><td>${b.n}</td><td>${b.d.slice(0,10)}</td><td style="color:${GC(NOW-b.y)};font-weight:700">${NOW-b.y}년</td><td>${fmt(b.a)}㎡</td><td>${b.fl||'-'}</td><td>${b.u}</td><td>${b.s}</td><td>${s.bsrc==='bldg'?(b.eq==='1'?'적용':b.eq==='0'?'<span style="color:#D63D4A;font-weight:700">미적용</span>':'-'):(b.g||'-')}</td></tr>`).join('')}</tbody></table></div></div>`:''}
+   <div style="overflow-x:auto"><table style="margin-top:6px;min-width:520px"><thead><tr><th>건물명</th><th>사용승인</th><th>경과</th><th>연면적</th><th>층</th><th>주용도</th><th>구조</th><th>${s.bsrc==='bldg'?'내진':'등급'}</th></tr></thead><tbody>${s.bl.map(b=>`<tr${isEdu(b.n)?' style="background:#EEF5FF"':('CDE'.includes(b.g)&&b.g?' style="background:#fdecea"':'')}><td>${b.n}</td><td>${b.y?b.d.slice(0,10):'미기재'}</td><td style="color:${b.y?GC(NOW-b.y):'#888'};font-weight:700">${b.y?(NOW-b.y)+'년':'미기재'}</td><td>${fmt(b.a)}㎡</td><td>${b.fl||'-'}</td><td>${b.u}</td><td>${b.s}</td><td>${s.bsrc==='bldg'?(b.eq==='1'?'적용':b.eq==='0'?'<span style="color:#D63D4A;font-weight:700">미적용</span>':'-'):(b.g||'-')}</td></tr>`).join('')}</tbody></table></div></div>`:''}
   <div class="note" ${s.bl&&s.bl.length?'hidden':''}><b>교내 건물 ${B.length?B.length+'동':''}${src('브이월드 도로명주소건물 · 층수×바닥면적 추정')}</b>
    ${B.length?`<table style="margin-top:6px"><thead><tr><th>건물</th><th>지상층</th><th>바닥면적</th><th>연면적(추정)</th></tr></thead><tbody>${B.map(b=>`<tr><td>${b.n}</td><td>${b.fl}층</td><td>${fmt(b.fa)}㎡</td><td>${fmt(b.ga)}㎡</td></tr>`).join('')}</tbody></table>`
    :`<div style="color:var(--sub);font-size:11.5px;margin-top:4px">${VWKEY?'학교로 확대되면 브이월드 건물 정보를 불러와 여기에 표시합니다. 정확한 동별 목록은 [데이터·방법] → KEIIS 건물정보 불러오기로 반영됩니다.':'브이월드 키가 등록된 주소(깃허브 페이지)에서 건물 목록이 표시됩니다.'}</div>`}</div>
@@ -1386,7 +1387,7 @@ function setRegion(r){
 }
 if(map){ const bp=new maplibregl.Popup({closeButton:false,offset:8});
   map.on('mousemove','vwb3d',e=>{ const p=e.features[0].properties; if(!p.sid){ bp.remove(); map.getCanvas().style.cursor=''; return; } const s=ALL.find(v=>v.id===p.sid); if(!s) return;
-    map.getCanvas().style.cursor='pointer'; bp.setLngLat(e.lngLat).setHTML(`<b>${s.n}</b><br>${p.nm||'교내 건물'} · 지상 ${p.fl}층<br>학교 준공 ${s.age==null?(s.ybasis==='사용승인일 미기재'?'— (대장에 사용승인일 미기재)':'— (자료 없음)'):`${s.yr}년(${s.age}년)`} · 학생 ${s.st}명`).addTo(map); });
+    map.getCanvas().style.cursor='pointer'; bp.setLngLat(e.lngLat).setHTML(`<b>${s.n}</b><br>${p.nm||'교내 건물'} · 지상 ${p.fl}층<br>학교 준공 ${s.age==null?(NOYR(s)?'미기재 (대장에 사용승인일 없음)':'— (자료 없음)'):`${s.yr}년(${s.age}년)`} · 학생 ${s.st}명`).addTo(map); });
   map.on('mouseleave','vwb3d',()=>{ bp.remove(); map.getCanvas().style.cursor=''; }); }
 if(map) map.on('click',e=>{ if(!S.sg||!map.getLayer('sg-fill')) return;
   const hit=map.queryRenderedFeatures(e.point,{layers:['col','vwb3d'].filter(l=>map.getLayer(l))});
